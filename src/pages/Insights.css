@@ -1,0 +1,215 @@
+.insights-page__title {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.insights-page__metrics {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+}
+
+.insights-page__metric-card {
+  padding: 18px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.insights-page__metric-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 8px;
+}
+
+.insights-page__metric-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: block;
+}
+
+.insights-page__metric-unit {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.insights-page__metric-change {
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+  margin-top: 4px;
+}
+
+.insights-page__metric-change--up {
+  color: var(--accent);
+}
+
+.insights-page__metric-change--down {
+  color: var(--accent);
+}
+
+.insights-page__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+.insights-page__chart-card {
+  padding: 24px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  margin-bottom: 0;
+}
+
+.insights-page__section-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+}
+
+.insights-page__activity-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.insights-page__activity-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.insights-page__activity-item:last-child {
+  border-bottom: none;
+}
+
+.insights-page__activity-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+  flex-shrink: 0;
+}
+
+.insights-page__activity-content {
+  flex: 1;
+}
+
+.insights-page__activity-action {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  display: block;
+}
+
+.insights-page__activity-field {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.insights-page__activity-time {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.insights-page__calendar-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.insights-page__calendar-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 18px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.insights-page__calendar-date {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  min-width: 60px;
+}
+
+.insights-page__calendar-info {
+  flex: 1;
+}
+
+.insights-page__calendar-task {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  display: block;
+}
+
+.insights-page__calendar-field {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.insights-page__calendar-badge {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+}
+
+.insights-page__calendar-badge--irrigation {
+  background: var(--info-soft);
+  color: var(--info);
+}
+
+.insights-page__calendar-badge--fertilizer {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.insights-page__calendar-badge--disease {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.insights-page__calendar-badge--spray {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.insights-page__calendar-badge--soil {
+  background: var(--earth-100);
+  color: var(--text-secondary);
+}
+
+.insights-page__calendar-badge--harvest {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+@media (max-width: 1024px) {
+  .insights-page__metrics {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .insights-page__metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .insights-page__grid {
+    grid-template-columns: 1fr;
+  }
+}

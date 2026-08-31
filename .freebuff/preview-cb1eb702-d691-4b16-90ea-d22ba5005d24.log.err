@@ -1,0 +1,14 @@
+[31mfailed to load config from C:\Users\Sandipan Paul\Documents\DOCS\Project\Webside for this\Agri_de\vite.config.js[39m
+[2m3:43:31 AM[22m [31m[1m[vite][22m[39m Build failed with 1 error:
+
+[31m[PARSE_ERROR] [0mUnterminated regular expression
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m vite.config.js:8:11 [38;5;246m][0m
+   [38;5;246m│[0m
+ [38;5;246m8 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249mb[0m[38;5;249ma[0m[38;5;249ms[0m[38;5;249me[0m[38;5;249m:[0m[38;5;249m [0m/',
+ [38;5;240m  │[0m           ──┬─  
+ [38;5;240m  │[0m             ╰─── 
+[38;5;246m───╯[0m
+
+[2m3:43:31 AM[22m [31m[1m[vite][22m[39m server restart failed
+[2m3:43:32 AM[22m [31m[1m[vite][22m[39m Invalid URL
+[2m3:43:32 AM[22m [31m[1m[vite][22m[39m server restart failed

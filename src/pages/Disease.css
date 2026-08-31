@@ -1,0 +1,136 @@
+.disease-page__title {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.disease-page__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.disease-page__card {
+  padding: 24px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.disease-page__card--moderate {
+  border-left: 3px solid var(--warning);
+}
+
+.disease-page__card--low {
+  border-left: 3px solid var(--info);
+}
+
+.disease-page__card--high {
+  border-left: 3px solid var(--danger);
+}
+
+.disease-page__card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.disease-page__card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.disease-page__card-title svg {
+  color: var(--warning);
+}
+
+.disease-page__card-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+.disease-page__card-risk {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.disease-page__risk-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  min-width: 30px;
+}
+
+.disease-page__risk-bar {
+  flex: 1;
+  height: 6px;
+  background: var(--border);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.disease-page__risk-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 0.8s ease;
+}
+
+.disease-page__risk-value {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  min-width: 36px;
+}
+
+.disease-page__card-section {
+  margin-bottom: 14px;
+}
+
+.disease-page__card-section:last-child {
+  margin-bottom: 0;
+}
+
+.disease-page__card-section h4 {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.disease-page__card-section p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.disease-page__card-section--action {
+  padding: 12px;
+  background: var(--warning-soft);
+  border-radius: var(--radius-md);
+}
+
+@media (max-width: 768px) {
+  .disease-page__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.disease-page__simple-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}

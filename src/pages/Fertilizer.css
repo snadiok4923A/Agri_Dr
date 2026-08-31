@@ -1,0 +1,123 @@
+.fertilizer-page__title {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.fertilizer-page__section-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 14px;
+}
+
+.fertilizer-page__upcoming-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.fertilizer-page__upcoming-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.fertilizer-page__upcoming-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--accent-soft);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.fertilizer-page__upcoming-info {
+  flex: 1;
+}
+
+.fertilizer-page__upcoming-product {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: block;
+}
+
+.fertilizer-page__upcoming-detail {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.fertilizer-page__upcoming-amount {
+  text-align: right;
+  min-width: 100px;
+}
+
+.fertilizer-page__upcoming-qty {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: block;
+}
+
+.fertilizer-page__upcoming-due {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+  justify-content: flex-end;
+}
+
+.fertilizer-page__history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fertilizer-page__history-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 20px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.fertilizer-page__history-date {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  min-width: 60px;
+}
+
+.fertilizer-page__history-info {
+  flex: 1;
+}
+
+.fertilizer-page__history-product {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: block;
+}
+
+.fertilizer-page__history-detail {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+@media (max-width: 768px) {
+  .fertilizer-page__upcoming-card {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+}

@@ -1,0 +1,122 @@
+.finance-page__title {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.finance-page__summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.finance-page__summary-card {
+  padding: 24px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+}
+
+.finance-page__summary-card--expense {
+  background: var(--bg-surface);
+}
+
+.finance-page__summary-card--revenue {
+  background: var(--accent-soft);
+  border-color: transparent;
+}
+
+.finance-page__summary-card--profit {
+  background: var(--bg-surface);
+}
+
+.finance-page__summary-label {
+  font-size: 13px;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 8px;
+}
+
+.finance-page__summary-value {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.finance-page__summary-card--revenue .finance-page__summary-value {
+  color: var(--accent);
+}
+
+.finance-page__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.finance-page__section-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+}
+
+.finance-page__chart-row {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 20px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.finance-page__legend {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.finance-page__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.finance-page__legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.finance-page__legend-label {
+  flex: 1;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.finance-page__legend-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.finance-page__chart-container {
+  padding: 20px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+@media (max-width: 768px) {
+  .finance-page__summary {
+    grid-template-columns: 1fr;
+  }
+  .finance-page__grid {
+    grid-template-columns: 1fr;
+  }
+  .finance-page__chart-row {
+    flex-direction: column;
+  }
+}
