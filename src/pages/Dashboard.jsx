@@ -118,182 +118,207 @@ export default function Dashboard() {
   }
 
   // ===== ADVANCED MODE =====
-  return (
-    <div className="page-container dashboard">
-      <section className="dashboard__greeting section">
-        <h1 className="dashboard__greeting-text">{getGreeting(t)} 👋</h1>
-        <p className="dashboard__greeting-sub">{t('dashboard.farmHealthy')}</p>
-      </section>
+  const healthDonutData = [
+    { name: 'Health', value: farmData.farmHealth },
+    { name: 'Remaining', value: 100 - farmData.farmHealth },
+  ];
+  const healthyArea = fields.filter(f => f.status === 'healthy').reduce((sum, f) => sum + f.area, 0);
+  const totalArea = farmData.totalLand;
+  const totalYield = fields.reduce((sum, f) => sum + (f.cropAge / (f.variety === 'Basmati' ? 130 : f.variety === 'Samba Mahsuri' ? 115 : 120) * (f.variety === 'Basmati' ? 4.1 : f.variety === 'Samba Mahsuri' ? 3.5 : f.variety === 'Swarna' ? 3.2 : 3.8)), 0).toFixed(1);
+  const potentialYield = fields.reduce((sum, f) => sum + (f.variety === 'Basmati' ? 4.6 : f.variety === 'Samba Mahsuri' ? 4.1 : f.variety === 'Swarna' ? 4.0 : 4.3), 0).toFixed(1);
+  const warnings = fields.filter(f => f.status === 'needs-attention' || f.soilMoisture < 40);
 
-      <section className="dashboard__stats section">
-        {[
-          { icon: MapPin, value: `${farmData.totalLand} ${t('dashboard.acres')}`, label: t('dashboard.totalLand') },
-          { icon: Leaf, value: farmData.activeCrops, label: t('dashboard.activeCrops') },
-          { icon: Activity, value: `${farmData.farmHealth}/100`, label: t('dashboard.farmHealth') },
-          { icon: TrendingUp, value: `${farmData.expectedYield} ${t('dashboard.tons')}`, label: t('dashboard.expectedYield') },
-        ].map((s, i) => (
-          <div key={i} className="dashboard__stat-card">
-            <div className="dashboard__stat-icon"><s.icon size={18} /></div>
-            <div className="dashboard__stat-info">
-              <span className="dashboard__stat-value">{s.value}</span>
-              <span className="dashboard__stat-label">{s.label}</span>
+  return (
+    <div className="page-container dashboard adv-dashboard">
+      {/* Row 1: Weather Compact + Health Donut + Farm Area + Varieties + Yield */}
+      <div className="adv-top-grid">
+        {/* Compact Weather */}
+        <div className="adv-card adv-weather-compact">
+          <div className="adv-weather-compact__main">
+            <CloudSun size={28} className="adv-weather-compact__icon" />
+            <div>
+              <span className="adv-weather-compact__temp">{weatherData.current.temperature}°</span>
+              <span className="adv-weather-compact__cond">{weatherData.current.condition}</span>
             </div>
           </div>
-        ))}
-      </section>
+          <div className="adv-weather-compact__row">
+            <span className="adv-weather-compact__chip"><Droplets size={12} /> {weatherData.current.rainProbability}%</span>
+            <span className="adv-weather-compact__chip"><Wind size={12} /> {weatherData.current.wind} km/h</span>
+          </div>
+        </div>
 
-      {/* Advanced: Farm Performance Breakdown */}
-      <section className="section">
-        <div className="adv-performance">
-          <h2 className="dashboard__section-title">Farm Performance</h2>
-          <div className="adv-performance__grid">
-            {[
-              { label: 'Crop Health', value: 87 }, { label: 'Growth', value: 84 },
-              { label: 'Water', value: 72 }, { label: 'Nutrition', value: 81 },
-              { label: 'Disease Risk', value: 92 }, { label: 'Environment', value: 91 },
-            ].map((item, i) => (
-              <div key={i} className="adv-performance__item">
-                <span className="adv-performance__label">{item.label}</span>
-                <div className="adv-performance__bar">
-                  <div className="adv-performance__fill" style={{ width: `${item.value}%`, background: item.value >= 80 ? 'var(--accent)' : item.value >= 60 ? 'var(--warning)' : 'var(--danger)' }} />
-                </div>
-                <span className="adv-performance__value">{item.value}%</span>
-              </div>
+        {/* Farm Health Donut */}
+        <div className="adv-card adv-health-donut">
+          <div className="adv-health-donut__chart">
+            <ResponsiveContainer width="100%" height={140}>
+              <PieChart>
+                <Pie
+                  data={healthDonutData}
+                  cx="50%" cy="50%"
+                  innerRadius={42} outerRadius={58}
+                  startAngle={90} endAngle={-270}
+                  dataKey="value"
+                  stroke="none"
+                >
+                  <Cell fill="var(--accent)" />
+                  <Cell fill="var(--border)" />
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="adv-health-donut__center">
+              <span className="adv-health-donut__value">{farmData.farmHealth}</span>
+              <span className="adv-health-donut__label">%</span>
+            </div>
+          </div>
+          <div className="adv-health-donut__info">
+            <span className="adv-card__label">Farm Health</span>
+            <span className="adv-card__badge adv-card__badge--green">Healthy</span>
+          </div>
+        </div>
+
+        {/* Farm Area */}
+        <div className="adv-card adv-farm-area">
+          <span className="adv-card__label">Farm Area</span>
+          <div className="adv-farm-area__main">
+            <span className="adv-farm-area__big">{totalArea}</span>
+            <span className="adv-farm-area__unit">ac</span>
+          </div>
+          <div className="adv-farm-area__bar">
+            <div className="adv-farm-area__fill" style={{ width: `${(healthyArea / totalArea) * 100}%` }} />
+          </div>
+          <span className="adv-farm-area__sub"><span style={{ color: 'var(--accent)' }}>{healthyArea}</span> ac healthy</span>
+        </div>
+
+        {/* Active Varieties */}
+        <div className="adv-card adv-varieties">
+          <span className="adv-card__label">Active Varieties</span>
+          <span className="adv-varieties__count">{farmData.activeCrops}</span>
+          <div className="adv-varieties__chips">
+            {fields.map(f => (
+              <span key={f.id} className="adv-varieties__chip">{f.variety || f.crop}</span>
             ))}
           </div>
         </div>
-      </section>
 
-      <section className="dashboard__actions section">
-        <h2 className="dashboard__section-title">{t('dashboard.todaysActions')}</h2>
-        <p className="dashboard__section-subtitle">{criticalActions.length} {t('dashboard.thingsNeedAttention')}</p>
-        <div className="dashboard__action-list">
-          {criticalActions.map((action) => (
-            <div key={action.id} className="dashboard__action-card">
-              <div className="dashboard__action-priority"><StatusBadge status={action.category === 'critical' ? 'critical' : 'needs-attention'} /></div>
-              <div className="dashboard__action-content">
-                <h3 className="dashboard__action-title">{action.title}</h3>
-                <p className="dashboard__action-desc">{action.description}</p>
+        {/* Expected Yield */}
+        <div className="adv-card adv-yield-gauge">
+          <span className="adv-card__label">Expected Yield</span>
+          <div className="adv-yield-gauge__main">
+            <span className="adv-yield-gauge__value">{totalYield}</span>
+            <span className="adv-yield-gauge__unit">Ton</span>
+          </div>
+          <div className="adv-yield-gauge__bar">
+            <div className="adv-yield-gauge__fill" style={{ width: `${(parseFloat(totalYield) / parseFloat(potentialYield)) * 100}%` }} />
+          </div>
+          <span className="adv-yield-gauge__sub">Potential {potentialYield} Ton</span>
+        </div>
+      </div>
+
+      {/* Row 2: Warnings (only if any) + Performance Metrics */}
+      {warnings.length > 0 && (
+        <div className="adv-warnings section">
+          {warnings.map(f => (
+            <div key={f.id} className="adv-warning-chip">
+              <AlertTriangle size={14} className="adv-warning-chip__icon" />
+              <div>
+                <span className="adv-warning-chip__title">{f.soilMoisture < 40 ? 'Low Moisture' : 'Needs Attention'}</span>
+                <span className="adv-warning-chip__field">{f.name} · {f.variety || f.crop}</span>
               </div>
-              <button className="dashboard__action-btn" onClick={() => navigate('/improve')}>{t('dashboard.viewDetails')} <ArrowRight size={14} /></button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Row 3: Compact Action Cards */}
+      <section className="section">
+        <div className="adv-actions">
+          {criticalActions.map((action) => (
+            <div key={action.id} className={`adv-action-chip adv-action-chip--${action.category}`} onClick={() => navigate('/improve')}>
+              <div className="adv-action-chip__dot" />
+              <div>
+                <span className="adv-action-chip__title">{action.title}</span>
+                <span className="adv-action-chip__field">{action.field}</span>
+              </div>
+              <ArrowRight size={14} className="adv-action-chip__arrow" />
             </div>
           ))}
         </div>
       </section>
 
-      <div className="dashboard__grid">
-        <section className="dashboard__weather section">
-          <h2 className="dashboard__section-title">{t('dashboard.weatherForecast')}</h2>
-          <div className="dashboard__weather-main">
-            <div className="dashboard__weather-current">
-              <CloudSun size={48} className="dashboard__weather-icon" />
-              <div>
-                <span className="dashboard__weather-temp">{weatherData.current.temperature}°C</span>
-                <span className="dashboard__weather-condition">{weatherData.current.condition}</span>
-              </div>
-            </div>
-            <div className="dashboard__weather-details">
-              <div className="dashboard__weather-detail"><Droplets size={14} /><span>{weatherData.current.rainProbability}%</span></div>
-              <div className="dashboard__weather-detail"><Thermometer size={14} /><span>{weatherData.current.humidity}%</span></div>
-              <div className="dashboard__weather-detail"><Wind size={14} /><span>{weatherData.current.wind} km/h</span></div>
-            </div>
+      {/* Row 4: Charts — Health Trend + Yield Forecast side by side */}
+      <div className="adv-charts-grid section">
+        <div className="adv-card adv-chart-card">
+          <span className="adv-card__label">Health Trend</span>
+          <ResponsiveContainer width="100%" height={150}>
+            <AreaChart data={healthTrendData}>
+              <defs><linearGradient id="advHealthGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--accent)" stopOpacity={0.25} /><stop offset="100%" stopColor="var(--accent)" stopOpacity={0} /></linearGradient></defs>
+              <CartesianGrid stroke="var(--chart-grid)" strokeDasharray="3 3" />
+              <XAxis dataKey="day" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
+              <YAxis domain={[70, 95]} tick={{ fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} width={30} />
+              <Tooltip contentStyle={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', fontSize: 11 }} />
+              <Area type="monotone" dataKey="health" stroke="var(--accent)" fill="url(#advHealthGrad)" strokeWidth={2} dot={false} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="adv-card adv-chart-card">
+          <span className="adv-card__label">Yield Forecast</span>
+          <div className="adv-chart-card__stats">
+            <span className="adv-chart-card__stat"><span className="adv-chart-card__stat-dot" style={{ background: 'var(--accent)' }} />{totalYield}T actual</span>
+            <span className="adv-chart-card__stat"><span className="adv-chart-card__stat-dot" style={{ background: 'var(--text-muted)' }} />{potentialYield}T potential</span>
           </div>
-          <div className="dashboard__weather-impact"><AlertTriangle size={14} /><span>{weatherData.farmImpact.message}</span></div>
-          <div className="dashboard__forecast-mini">
-            {weatherData.forecast.map((day, i) => (
-              <div key={i} className="dashboard__forecast-day">
-                <span className="dashboard__forecast-name">{day.day.slice(0, 3)}</span>
-                <CloudSun size={16} />
-                <span className="dashboard__forecast-temp">{day.high}°</span>
-                <span className="dashboard__forecast-rain">{day.rain}%</span>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="dashboard__trend section">
-          <h2 className="dashboard__section-title">Health Trend</h2>
-          <div className="dashboard__trend-chart">
-            <ResponsiveContainer width="100%" height={180}>
-              <AreaChart data={healthTrendData}>
-                <defs><linearGradient id="healthGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--accent)" stopOpacity={0.2} /><stop offset="100%" stopColor="var(--accent)" stopOpacity={0} /></linearGradient></defs>
-                <CartesianGrid stroke="var(--chart-grid)" strokeDasharray="3 3" />
-                <XAxis dataKey="day" tick={{ fontSize: 11, fill: 'var(--chart-text)' }} axisLine={false} tickLine={false} />
-                <YAxis domain={[70, 95]} tick={{ fontSize: 11, fill: 'var(--chart-text)' }} axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', fontSize: 12 }} />
-                <Area type="monotone" dataKey="health" stroke="var(--accent)" fill="url(#healthGrad)" strokeWidth={2} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </section>
-      </div>
-
-      {/* Advanced: Yield Forecast */}
-      <section className="section">
-        <div className="adv-yield">
-          <h2 className="dashboard__section-title">Yield Forecast</h2>
-          <div className="adv-yield__grid">
-            <div className="adv-yield__stat">
-              <span className="adv-yield__label">Current Yield</span>
-              <span className="adv-yield__value">3.8 Ton</span>
-            </div>
-            <div className="adv-yield__stat">
-              <span className="adv-yield__label">Potential Yield</span>
-              <span className="adv-yield__value adv-yield__value--accent">4.3 Ton</span>
-            </div>
-            <div className="adv-yield__stat">
-              <span className="adv-yield__label">Yield Gap</span>
-              <span className="adv-yield__value adv-yield__value--warn">0.5 Ton</span>
-            </div>
-          </div>
-          <ResponsiveContainer width="100%" height={160}>
+          <ResponsiveContainer width="100%" height={150}>
             <LineChart data={yieldData}>
               <CartesianGrid stroke="var(--chart-grid)" strokeDasharray="3 3" />
-              <XAxis dataKey="month" tick={{ fontSize: 10, fill: 'var(--chart-text)' }} axisLine={false} tickLine={false} />
-              <YAxis domain={[2, 5]} tick={{ fontSize: 10, fill: 'var(--chart-text)' }} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', fontSize: 12 }} />
-              <Line type="monotone" dataKey="actual" stroke="var(--accent)" strokeWidth={2} dot={false} name="Actual" />
-              <Line type="monotone" dataKey="potential" stroke="var(--text-muted)" strokeWidth={2} strokeDasharray="5 5" dot={false} name="Potential" />
+              <XAxis dataKey="month" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
+              <YAxis domain={[2, 5]} tick={{ fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} width={30} />
+              <Tooltip contentStyle={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', fontSize: 11 }} />
+              <Line type="monotone" dataKey="actual" stroke="var(--accent)" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="potential" stroke="var(--text-muted)" strokeWidth={2} strokeDasharray="5 5" dot={false} />
             </LineChart>
           </ResponsiveContainer>
         </div>
-      </section>
+      </div>
 
-      <section className="dashboard__fields section">
-        <h2 className="dashboard__section-title">{t('dashboard.fieldsOverview')}</h2>
-        <div className="dashboard__fields-grid">
-          {fields.map((field) => (
-            <div key={field.id} className={`dashboard__field-card ${field.status === 'needs-attention' ? 'dashboard__field-card--alert' : ''}`} onClick={() => navigate('/farm')}>
-              <div className="dashboard__field-header">
-                <span className="dashboard__field-name">{field.name}</span>
-                <StatusBadge status={field.status} />
-              </div>
-              <div className="dashboard__field-crop"><Leaf size={14} /><span>{field.variety || field.crop}</span></div>
-              <div className="dashboard__field-health">
-                <div className="dashboard__field-health-bar">
-                  <div className="dashboard__field-health-fill" style={{ width: `${field.health}%`, background: field.health >= 80 ? 'var(--accent)' : 'var(--warning)' }} />
+      {/* Row 5: Field Cards — Visual Grid */}
+      <section className="section">
+        <span className="adv-section-label">Fields</span>
+        <div className="adv-fields-grid">
+          {fields.map((field) => {
+            const progress = Math.round((field.cropAge / (field.variety === 'Basmati' ? 130 : field.variety === 'Samba Mahsuri' ? 115 : 120)) * 100);
+            return (
+              <div key={field.id} className={`adv-field-card ${field.status === 'needs-attention' ? 'adv-field-card--alert' : ''}`} onClick={() => navigate('/farm')}>
+                <div className="adv-field-card__top">
+                  <span className="adv-field-card__name">{field.name}</span>
+                  <span className="adv-field-card__variety">{field.variety || field.crop}</span>
                 </div>
-                <span className="dashboard__field-health-value">{field.health}%</span>
+                <div className="adv-field-card__health-ring">
+                  <svg viewBox="0 0 44 44" className="adv-field-card__ring-svg">
+                    <circle cx="22" cy="22" r="18" fill="none" stroke="var(--border)" strokeWidth="3" />
+                    <circle cx="22" cy="22" r="18" fill="none" stroke={field.health >= 80 ? 'var(--accent)' : 'var(--warning)'} strokeWidth="3" strokeDasharray={`${field.health * 1.13} 113`} strokeLinecap="round" transform="rotate(-90 22 22)" />
+                  </svg>
+                  <span className="adv-field-card__health-val">{field.health}</span>
+                </div>
+                <div className="adv-field-card__meta">
+                  <span className="adv-field-card__meta-item"><Droplets size={11} /> {field.soilMoisture}%</span>
+                  <span className="adv-field-card__meta-item"><Clock size={11} /> {field.cropAge}d</span>
+                  <span className="adv-field-card__meta-item"><MapPin size={11} /> {field.area}ac</span>
+                </div>
               </div>
-              <div className="dashboard__field-meta">
-                <span>{field.area} ac</span><span>{field.cropAge} days</span><span>{field.soilMoisture}% moisture</span>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 
-      <section className="dashboard__activity section">
-        <h2 className="dashboard__section-title">{t('insights.recentActivity')}</h2>
-        <div className="dashboard__activity-list">
-          {activityData.map((activity) => (
-            <div key={activity.id} className="dashboard__activity-item">
-              <div className="dashboard__activity-dot" />
-              <div className="dashboard__activity-content">
-                <span className="dashboard__activity-action">{activity.action}</span>
-                <span className="dashboard__activity-field">{activity.field}</span>
-              </div>
-              <span className="dashboard__activity-time"><Clock size={12} />{activity.time}</span>
+      {/* Row 6: Activity */}
+      <section className="section">
+        <span className="adv-section-label">Recent Activity</span>
+        <div className="adv-activity">
+          {activityData.slice(0, 5).map((activity) => (
+            <div key={activity.id} className="adv-activity__item">
+              <div className="adv-activity__dot" />
+              <span className="adv-activity__text">{activity.action}</span>
+              <span className="adv-activity__field">{activity.field}</span>
+              <span className="adv-activity__time">{activity.time}</span>
             </div>
           ))}
         </div>
