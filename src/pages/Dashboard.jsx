@@ -126,6 +126,11 @@ export default function Dashboard() {
 
   return (
     <div className="page-container dashboard adv-dashboard">
+      {/* Greeting */}
+      <div className="adv-greeting">
+        <h1 className="adv-greeting__text">{getGreeting(t)}</h1>
+      </div>
+
       {/* Row 1: Farm Area + Expected Yield + Weather */}
       <div className="adv-top-grid adv-top-grid--3">
         {/* Farm Area Donut */}
@@ -158,7 +163,7 @@ export default function Dashboard() {
                   <span className="adv-donut-card__unit">ac</span>
                 </div>
               </div>
-              <span className="adv-donut-card__sub"><span style={{ color: '#4ade80' }}>{healthyArea}</span> ac healthy</span>
+              <span className="adv-donut-card__sub adv-donut-card__sub--green"><span className="adv-donut-card__sub-value">{healthyArea}</span> ac healthy</span>
             </div>
           );
         })()}
@@ -194,32 +199,24 @@ export default function Dashboard() {
                   <span className="adv-donut-card__unit">Ton</span>
                 </div>
               </div>
-              <span className="adv-donut-card__sub">Potential {potentialYield} Ton</span>
+              <span className="adv-donut-card__sub adv-donut-card__sub--accent">Potential {potentialYield} Ton</span>
             </div>
           );
         })()}
 
         {/* Compact Weather */}
         <div className="adv-card adv-weather-compact">
-          <div className="adv-weather-compact__top">
-            <div className="adv-weather-compact__main">
-              <CloudSun size={24} className="adv-weather-compact__icon" />
-              <div>
-                <span className="adv-weather-compact__temp">{weatherData.current.temperature}°</span>
-                <span className="adv-weather-compact__cond">{weatherData.current.condition}</span>
-              </div>
-            </div>
-            <div className="adv-weather-compact__row">
-              <span className="adv-weather-compact__chip"><Droplets size={11} /> {weatherData.current.humidity}%</span>
-              <span className="adv-weather-compact__chip"><Wind size={11} /> {weatherData.current.wind} km/h</span>
+          <div className="adv-weather-compact__main">
+            <CloudSun size={24} className="adv-weather-compact__icon" />
+            <div>
+              <span className="adv-weather-compact__temp">{weatherData.current.temperature}°</span>
+              <span className="adv-weather-compact__cond">{weatherData.current.condition}</span>
             </div>
           </div>
-          {weatherData.farmImpact.alert && (
-            <div className="adv-weather-warning">
-              <AlertTriangle size={13} className="adv-weather-warning__icon" />
-              <span className="adv-weather-warning__text">{weatherData.farmImpact.alert}</span>
-            </div>
-          )}
+          <div className="adv-weather-compact__row">
+            <span className="adv-weather-compact__chip"><Droplets size={11} /> {weatherData.current.humidity}%</span>
+            <span className="adv-weather-compact__chip"><Wind size={11} /> {weatherData.current.wind} km/h</span>
+          </div>
         </div>
       </div>
 
