@@ -8,7 +8,7 @@ import './MyFarm.css';
 
 export default function MyFarm() {
   const { t } = useLanguage();
-  const { isSimple, isStandard, isAdvanced } = useInfoLevel();
+  const { isSimple, isAdvanced } = useInfoLevel();
   const navigate = useNavigate();
 
   return (
@@ -54,7 +54,7 @@ export default function MyFarm() {
         )}
       </section>
 
-      {/* Farm Map: Standard and Advanced */}
+      {/* Farm Map: Advanced only */}
       {!isSimple && (
         <section className="myfarm__map section">
           <div className="myfarm__map-container">
@@ -63,7 +63,7 @@ export default function MyFarm() {
                 <div key={field.id} className={`myfarm__map-field myfarm__map-field--${field.status}`} style={{ gridColumn: field.coordinates.x > 40 ? '2' : '1', gridRow: field.coordinates.y > 40 ? '2' : '1' }} onClick={() => navigate('/crops')}>
                   <div className="myfarm__map-field-inner">
                     <span className="myfarm__map-field-name">{field.name}</span>
-                    <span className="myfarm__map-field-crop">{field.crop}</span>
+                    <span className="myfarm__map-field-crop">{field.variety || field.crop}</span>
                     <span className="myfarm__map-field-health">{field.health}%</span>
                   </div>
                   <div className="myfarm__map-field-area">{field.area} ac</div>
@@ -84,7 +84,7 @@ export default function MyFarm() {
                 <div className="myfarm__field-row-color" style={{ background: field.health >= 80 ? 'var(--accent)' : 'var(--warning)' }} />
                 <div>
                   <span className="myfarm__field-row-name">{field.name}</span>
-                  <span className="myfarm__field-row-crop">{field.crop} {!isSimple && `• ${field.area} ${t('dashboard.acres')}`}</span>
+                  <span className="myfarm__field-row-crop">{field.variety || field.crop} {!isSimple && `• ${field.area} ${t('dashboard.acres')}`}</span>
                 </div>
               </div>
               <div className="myfarm__field-row-center">

@@ -8,7 +8,7 @@ import './Crops.css';
 
 export default function Crops() {
   const { t } = useLanguage();
-  const { isSimple, isStandard, isAdvanced } = useInfoLevel();
+  const { isSimple, isAdvanced } = useInfoLevel();
   const navigate = useNavigate();
 
   return (
@@ -26,7 +26,7 @@ export default function Crops() {
               <div className="crops-page__simple-left">
                 <Leaf size={16} style={{ color: 'var(--accent)' }} />
                 <div>
-                  <span className="crops-page__simple-name">{crop.name}</span>
+                  <span className="crops-page__simple-name">{crop.variety || crop.name}</span>
                   <span className="crops-page__simple-field">{crop.field} • {crop.stage}</span>
                 </div>
               </div>
@@ -38,14 +38,14 @@ export default function Crops() {
           ))}
         </div>
       ) : (
-        /* STANDARD & ADVANCED: Card grid */
+        /* Advanced: Card grid */
         <div className="crops-page__grid">
           {crops.map((crop) => (
             <div key={crop.id} className="crops-page__card" onClick={() => navigate(`/crops/${crop.id}`)}>
               <div className="crops-page__card-header">
                 <div className="crops-page__card-crop">
                   <Leaf size={16} />
-                  <span className="crops-page__card-name">{crop.name}</span>
+                  <span className="crops-page__card-name">{crop.variety || crop.name}</span>
                 </div>
                 <StatusBadge status={crop.health >= 80 ? 'healthy' : 'needs-attention'} />
               </div>

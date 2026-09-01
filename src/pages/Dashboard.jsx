@@ -6,9 +6,11 @@ import {
   CloudSun, Droplets, AlertTriangle, TrendingUp, MapPin,
   Thermometer, Wind, CloudRain, Eye, ArrowRight, Leaf,
   CheckCircle2, Clock, Activity, Shield, Sprout,
+  Wheat, CircleDot, Sun, Cloud, CloudDrizzle,
 } from 'lucide-react';
 import {
   LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell,
 } from 'recharts';
 import StatusBadge from '../components/common/StatusBadge';
 import './Dashboard.css';
@@ -33,7 +35,7 @@ const yieldData = [
 
 export default function Dashboard() {
   const { t } = useLanguage();
-  const { isSimple, isStandard, isAdvanced } = useInfoLevel();
+  const { isSimple, isAdvanced } = useInfoLevel();
   const navigate = useNavigate();
 
   const criticalActions = isSimple
@@ -111,126 +113,6 @@ export default function Dashboard() {
             </div>
           </section>
         )}
-      </div>
-    );
-  }
-
-  // ===== STANDARD MODE =====
-  if (isStandard) {
-    return (
-      <div className="page-container dashboard">
-        <section className="dashboard__greeting section">
-          <h1 className="dashboard__greeting-text">{getGreeting(t)} 👋</h1>
-          <p className="dashboard__greeting-sub">{t('dashboard.farmHealthy')}</p>
-        </section>
-
-        <section className="dashboard__stats section">
-          {[
-            { icon: MapPin, value: `${farmData.totalLand} ${t('dashboard.acres')}`, label: t('dashboard.totalLand') },
-            { icon: Leaf, value: farmData.activeCrops, label: t('dashboard.activeCrops') },
-            { icon: Activity, value: `${farmData.farmHealth}/100`, label: t('dashboard.farmHealth') },
-            { icon: TrendingUp, value: `${farmData.expectedYield} ${t('dashboard.tons')}`, label: t('dashboard.expectedYield') },
-          ].map((s, i) => (
-            <div key={i} className="dashboard__stat-card">
-              <div className="dashboard__stat-icon"><s.icon size={18} /></div>
-              <div className="dashboard__stat-info">
-                <span className="dashboard__stat-value">{s.value}</span>
-                <span className="dashboard__stat-label">{s.label}</span>
-              </div>
-            </div>
-          ))}
-        </section>
-
-        <section className="dashboard__actions section">
-          <h2 className="dashboard__section-title">{t('dashboard.todaysActions')}</h2>
-          <p className="dashboard__section-subtitle">{criticalActions.length} {t('dashboard.thingsNeedAttention')}</p>
-          <div className="dashboard__action-list">
-            {criticalActions.map((action) => (
-              <div key={action.id} className="dashboard__action-card">
-                <div className="dashboard__action-priority"><StatusBadge status={action.category === 'critical' ? 'critical' : 'needs-attention'} /></div>
-                <div className="dashboard__action-content">
-                  <h3 className="dashboard__action-title">{action.title}</h3>
-                  <p className="dashboard__action-desc">{action.description}</p>
-                </div>
-                <button className="dashboard__action-btn" onClick={() => navigate('/improve')}>{t('dashboard.viewDetails')} <ArrowRight size={14} /></button>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <div className="dashboard__grid">
-          <section className="dashboard__weather section">
-            <h2 className="dashboard__section-title">{t('dashboard.weatherForecast')}</h2>
-            <div className="dashboard__weather-main">
-              <div className="dashboard__weather-current">
-                <CloudSun size={48} className="dashboard__weather-icon" />
-                <div>
-                  <span className="dashboard__weather-temp">{weatherData.current.temperature}°C</span>
-                  <span className="dashboard__weather-condition">{weatherData.current.condition}</span>
-                </div>
-              </div>
-              <div className="dashboard__weather-details">
-                <div className="dashboard__weather-detail"><Droplets size={14} /><span>{weatherData.current.rainProbability}%</span></div>
-                <div className="dashboard__weather-detail"><Thermometer size={14} /><span>{weatherData.current.humidity}%</span></div>
-                <div className="dashboard__weather-detail"><Wind size={14} /><span>{weatherData.current.wind} km/h</span></div>
-              </div>
-            </div>
-            <div className="dashboard__weather-impact"><AlertTriangle size={14} /><span>{weatherData.farmImpact.message}</span></div>
-          </section>
-
-          <section className="dashboard__trend section">
-            <h2 className="dashboard__section-title">Health Trend</h2>
-            <div className="dashboard__trend-chart">
-              <ResponsiveContainer width="100%" height={180}>
-                <AreaChart data={healthTrendData}>
-                  <defs><linearGradient id="healthGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--accent)" stopOpacity={0.2} /><stop offset="100%" stopColor="var(--accent)" stopOpacity={0} /></linearGradient></defs>
-                  <CartesianGrid stroke="var(--chart-grid)" strokeDasharray="3 3" />
-                  <XAxis dataKey="day" tick={{ fontSize: 11, fill: 'var(--chart-text)' }} axisLine={false} tickLine={false} />
-                  <YAxis domain={[70, 95]} tick={{ fontSize: 11, fill: 'var(--chart-text)' }} axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', fontSize: 12 }} />
-                  <Area type="monotone" dataKey="health" stroke="var(--accent)" fill="url(#healthGrad)" strokeWidth={2} />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </section>
-        </div>
-
-        <section className="dashboard__fields section">
-          <h2 className="dashboard__section-title">{t('dashboard.fieldsOverview')}</h2>
-          <div className="dashboard__fields-grid">
-            {fields.map((field) => (
-              <div key={field.id} className={`dashboard__field-card ${field.status === 'needs-attention' ? 'dashboard__field-card--alert' : ''}`} onClick={() => navigate('/farm')}>
-                <div className="dashboard__field-header">
-                  <span className="dashboard__field-name">{field.name}</span>
-                  <StatusBadge status={field.status} />
-                </div>
-                <div className="dashboard__field-crop"><Leaf size={14} /><span>{field.crop}</span></div>
-                <div className="dashboard__field-health">
-                  <div className="dashboard__field-health-bar">
-                    <div className="dashboard__field-health-fill" style={{ width: `${field.health}%`, background: field.health >= 80 ? 'var(--accent)' : 'var(--warning)' }} />
-                  </div>
-                  <span className="dashboard__field-health-value">{field.health}%</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="dashboard__activity section">
-          <h2 className="dashboard__section-title">{t('insights.recentActivity')}</h2>
-          <div className="dashboard__activity-list">
-            {activityData.slice(0, 4).map((activity) => (
-              <div key={activity.id} className="dashboard__activity-item">
-                <div className="dashboard__activity-dot" />
-                <div className="dashboard__activity-content">
-                  <span className="dashboard__activity-action">{activity.action}</span>
-                  <span className="dashboard__activity-field">{activity.field}</span>
-                </div>
-                <span className="dashboard__activity-time"><Clock size={12} />{activity.time}</span>
-              </div>
-            ))}
-          </div>
-        </section>
       </div>
     );
   }
@@ -386,7 +268,7 @@ export default function Dashboard() {
                 <span className="dashboard__field-name">{field.name}</span>
                 <StatusBadge status={field.status} />
               </div>
-              <div className="dashboard__field-crop"><Leaf size={14} /><span>{field.crop}</span></div>
+              <div className="dashboard__field-crop"><Leaf size={14} /><span>{field.variety || field.crop}</span></div>
               <div className="dashboard__field-health">
                 <div className="dashboard__field-health-bar">
                   <div className="dashboard__field-health-fill" style={{ width: `${field.health}%`, background: field.health >= 80 ? 'var(--accent)' : 'var(--warning)' }} />

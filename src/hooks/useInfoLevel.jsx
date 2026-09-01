@@ -4,13 +4,12 @@ const InfoLevelContext = createContext();
 
 export const INFO_LEVELS = {
   simple: 'simple',
-  standard: 'standard',
   advanced: 'advanced',
 };
 
 export function InfoLevelProvider({ children }) {
   const [level, setLevel] = useState(() => {
-    return localStorage.getItem('krisiveda-info-level') || 'standard';
+    return localStorage.getItem('krisiveda-info-level') || 'simple';
   });
 
   const changeLevel = useCallback((newLevel) => {
@@ -19,11 +18,10 @@ export function InfoLevelProvider({ children }) {
   }, []);
 
   const isSimple = level === 'simple';
-  const isStandard = level === 'standard';
   const isAdvanced = level === 'advanced';
 
   return (
-    <InfoLevelContext.Provider value={{ level, changeLevel, isSimple, isStandard, isAdvanced }}>
+    <InfoLevelContext.Provider value={{ level, changeLevel, isSimple, isAdvanced }}>
       {children}
     </InfoLevelContext.Provider>
   );

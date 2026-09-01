@@ -94,7 +94,7 @@ export default function Health() {
         <section className="health-page__fields section">
           <h2 className="health-page__section-title">Field Health Comparison</h2>
           <div className="health-page__fields-grid">
-            {[{ name: 'Field A', crop: 'Rice', health: 87 }, { name: 'Field B', crop: 'Rice', health: 74 }, { name: 'Field C', crop: 'Potato', health: 91 }, { name: 'Field D', crop: 'Vegetables', health: 82 }].map((f) => (
+            {[{ name: 'Field A', crop: 'IR-64', health: 87 }, { name: 'Field B', crop: 'Swarna', health: 74 }, { name: 'Field C', crop: 'Basmati', health: 91 }, { name: 'Field D', crop: 'Samba Mahsuri', health: 82 }].map((f) => (
               <div key={f.name} className="health-page__field-item">
                 <div className="health-page__field-info"><span className="health-page__field-name">{f.name}</span><span className="health-page__field-crop">{f.crop}</span></div>
                 <ProgressRing value={f.health} size={56} strokeWidth={4} />

@@ -24,7 +24,7 @@ export default function CropDetails() {
 
       <section className="crop-details__header section">
         <div className="crop-details__header-left">
-          <span className="crop-details__crop-name">{crop.name}</span>
+          <span className="crop-details__crop-name">{crop.variety || crop.name}</span>
           <span className="crop-details__crop-field">{crop.field}</span>
         </div>
       </section>

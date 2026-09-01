@@ -86,7 +86,6 @@ export default function Settings() {
             <div className="settings-page__level-grid">
               {[
                 { value: INFO_LEVELS.simple, label: t('settings.simple'), desc: 'Essential information only' },
-                { value: INFO_LEVELS.standard, label: t('settings.standard'), desc: 'Balanced view with key metrics' },
                 { value: INFO_LEVELS.advanced, label: t('settings.advanced'), desc: 'Full details and deep analytics' },
               ].map((opt) => (
                 <button
