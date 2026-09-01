@@ -118,10 +118,6 @@ export default function Dashboard() {
   }
 
   // ===== ADVANCED MODE =====
-  const healthDonutData = [
-    { name: 'Health', value: farmData.farmHealth },
-    { name: 'Remaining', value: 100 - farmData.farmHealth },
-  ];
   const healthyArea = fields.filter(f => f.status === 'healthy').reduce((sum, f) => sum + f.area, 0);
   const totalArea = farmData.totalLand;
   const totalYield = fields.reduce((sum, f) => sum + (f.cropAge / (f.variety === 'Basmati' ? 130 : f.variety === 'Samba Mahsuri' ? 115 : 120) * (f.variety === 'Basmati' ? 4.1 : f.variety === 'Samba Mahsuri' ? 3.5 : f.variety === 'Swarna' ? 3.2 : 3.8)), 0).toFixed(1);
@@ -130,52 +126,8 @@ export default function Dashboard() {
 
   return (
     <div className="page-container dashboard adv-dashboard">
-      {/* Row 1: Weather + Health Donut + Area Donut + Yield Donut */}
-      <div className="adv-top-grid adv-top-grid--4">
-        {/* Compact Weather */}
-        <div className="adv-card adv-weather-compact">
-          <div className="adv-weather-compact__main">
-            <CloudSun size={28} className="adv-weather-compact__icon" />
-            <div>
-              <span className="adv-weather-compact__temp">{weatherData.current.temperature}°</span>
-              <span className="adv-weather-compact__cond">{weatherData.current.condition}</span>
-            </div>
-          </div>
-          <div className="adv-weather-compact__row">
-            <span className="adv-weather-compact__chip"><Droplets size={12} /> {weatherData.current.rainProbability}%</span>
-            <span className="adv-weather-compact__chip"><Wind size={12} /> {weatherData.current.wind} km/h</span>
-          </div>
-        </div>
-
-        {/* Farm Health Donut */}
-        <div className="adv-card adv-health-donut">
-          <div className="adv-health-donut__chart">
-            <ResponsiveContainer width="100%" height={140}>
-              <PieChart>
-                <Pie
-                  data={healthDonutData}
-                  cx="50%" cy="50%"
-                  innerRadius={42} outerRadius={58}
-                  startAngle={90} endAngle={-270}
-                  dataKey="value"
-                  stroke="none"
-                >
-                  <Cell fill="var(--accent)" />
-                  <Cell fill="var(--border)" />
-                </Pie>
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="adv-health-donut__center">
-              <span className="adv-health-donut__value">{farmData.farmHealth}</span>
-              <span className="adv-health-donut__label">%</span>
-            </div>
-          </div>
-          <div className="adv-health-donut__info">
-            <span className="adv-card__label">Farm Health</span>
-            <span className="adv-card__badge adv-card__badge--green">Healthy</span>
-          </div>
-        </div>
-
+      {/* Row 1: Farm Area + Expected Yield + Weather */}
+      <div className="adv-top-grid adv-top-grid--3">
         {/* Farm Area Donut */}
         {(() => {
           const areaDonutData = [
@@ -183,14 +135,15 @@ export default function Dashboard() {
             { name: 'Remaining', value: totalArea - healthyArea },
           ];
           return (
-            <div className="adv-card adv-health-donut">
-              <div className="adv-health-donut__chart">
-                <ResponsiveContainer width="100%" height={140}>
+            <div className="adv-card adv-donut-card">
+              <span className="adv-card__label adv-card__label--center">Farm Area</span>
+              <div className="adv-donut-card__chart">
+                <ResponsiveContainer width="100%" height={150}>
                   <PieChart>
                     <Pie
                       data={areaDonutData}
                       cx="50%" cy="50%"
-                      innerRadius={42} outerRadius={58}
+                      innerRadius={44} outerRadius={60}
                       startAngle={90} endAngle={-270}
                       dataKey="value"
                       stroke="none"
@@ -200,15 +153,12 @@ export default function Dashboard() {
                     </Pie>
                   </PieChart>
                 </ResponsiveContainer>
-                <div className="adv-health-donut__center">
-                  <span className="adv-health-donut__value">{totalArea}</span>
-                  <span className="adv-health-donut__label">ac</span>
+                <div className="adv-donut-card__center">
+                  <span className="adv-donut-card__value">{totalArea}</span>
+                  <span className="adv-donut-card__unit">ac</span>
                 </div>
               </div>
-              <div className="adv-health-donut__info">
-                <span className="adv-card__label">Farm Area</span>
-                <span className="adv-card__badge adv-card__badge--green">{healthyArea} ac healthy</span>
-              </div>
+              <span className="adv-donut-card__sub"><span style={{ color: '#4ade80' }}>{healthyArea}</span> ac healthy</span>
             </div>
           );
         })()}
@@ -221,14 +171,15 @@ export default function Dashboard() {
             { name: 'Remaining', value: 100 - yieldPct },
           ];
           return (
-            <div className="adv-card adv-health-donut">
-              <div className="adv-health-donut__chart">
-                <ResponsiveContainer width="100%" height={140}>
+            <div className="adv-card adv-donut-card">
+              <span className="adv-card__label adv-card__label--center">Expected Yield</span>
+              <div className="adv-donut-card__chart">
+                <ResponsiveContainer width="100%" height={150}>
                   <PieChart>
                     <Pie
                       data={yieldDonutData}
                       cx="50%" cy="50%"
-                      innerRadius={42} outerRadius={58}
+                      innerRadius={44} outerRadius={60}
                       startAngle={90} endAngle={-270}
                       dataKey="value"
                       stroke="none"
@@ -238,18 +189,38 @@ export default function Dashboard() {
                     </Pie>
                   </PieChart>
                 </ResponsiveContainer>
-                <div className="adv-health-donut__center">
-                  <span className="adv-health-donut__value">{totalYield}</span>
-                  <span className="adv-health-donut__label">Ton</span>
+                <div className="adv-donut-card__center">
+                  <span className="adv-donut-card__value">{totalYield}</span>
+                  <span className="adv-donut-card__unit">Ton</span>
                 </div>
               </div>
-              <div className="adv-health-donut__info">
-                <span className="adv-card__label">Expected Yield</span>
-                <span className="adv-card__badge" style={{ background: 'rgba(34,211,238,0.12)', color: 'var(--accent)' }}>Potential {potentialYield}T</span>
-              </div>
+              <span className="adv-donut-card__sub">Potential {potentialYield} Ton</span>
             </div>
           );
         })()}
+
+        {/* Compact Weather */}
+        <div className="adv-card adv-weather-compact">
+          <div className="adv-weather-compact__top">
+            <div className="adv-weather-compact__main">
+              <CloudSun size={24} className="adv-weather-compact__icon" />
+              <div>
+                <span className="adv-weather-compact__temp">{weatherData.current.temperature}°</span>
+                <span className="adv-weather-compact__cond">{weatherData.current.condition}</span>
+              </div>
+            </div>
+            <div className="adv-weather-compact__row">
+              <span className="adv-weather-compact__chip"><Droplets size={11} /> {weatherData.current.humidity}%</span>
+              <span className="adv-weather-compact__chip"><Wind size={11} /> {weatherData.current.wind} km/h</span>
+            </div>
+          </div>
+          {weatherData.farmImpact.alert && (
+            <div className="adv-weather-warning">
+              <AlertTriangle size={13} className="adv-weather-warning__icon" />
+              <span className="adv-weather-warning__text">{weatherData.farmImpact.alert}</span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Row 2: Warnings (only if any) + Performance Metrics */}
