@@ -10,13 +10,13 @@ npm install
 
 ## Run Server
 
-```bash
-npm run dev -- --port 5175 --host 127.0.0.1
-```
+Default port: 5173. If in use, pick the next free port.
 
-Default port: 5173. If in use, pick the next free port and update the command.
+```bash
+npx vite --port 5176 --host 127.0.0.1
+```
 
 **Windows detach (PowerShell):**
 ```powershell
-Start-Process npm.cmd -ArgumentList 'run','dev','--','--port','5175','--host','127.0.0.1' -WindowStyle Hidden -PassThru | ForEach-Object { $_.Id }
+Start-Process -FilePath 'C:\Program Files\nodejs\node.exe' -ArgumentList 'node_modules/vite/bin/vite.js','--port','5176','--host','127.0.0.1' -WorkingDirectory '<project_root>' -RedirectStandardOutput '<log>' -RedirectStandardError '<log>.err' -WindowStyle Hidden -PassThru | ForEach-Object { $_.Id }
 ```

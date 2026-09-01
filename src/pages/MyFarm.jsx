@@ -23,7 +23,7 @@ export default function MyFarm() {
         <div className="myfarm__stat">
           <div className="myfarm__stat-icon" style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}><MapPin size={20} /></div>
           <div className="myfarm__stat-content">
-            <span className="myfarm__stat-value">{farmData.totalLand} {isSimple ? 'Ac' : t('farm.acres')}</span>
+            <span className="myfarm__stat-value">{farmData.totalLand} {isSimple ? 'Ac' : t('dashboard.acres')}</span>
             <span className="myfarm__stat-label">{t('farm.totalLand')}</span>
           </div>
         </div>
@@ -84,7 +84,7 @@ export default function MyFarm() {
                 <div className="myfarm__field-row-color" style={{ background: field.health >= 80 ? 'var(--accent)' : 'var(--warning)' }} />
                 <div>
                   <span className="myfarm__field-row-name">{field.name}</span>
-                  <span className="myfarm__field-row-crop">{field.crop} {!isSimple && `• ${field.area} ${t('farm.acres')}`}</span>
+                  <span className="myfarm__field-row-crop">{field.crop} {!isSimple && `• ${field.area} ${t('dashboard.acres')}`}</span>
                 </div>
               </div>
               <div className="myfarm__field-row-center">
