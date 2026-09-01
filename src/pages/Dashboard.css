@@ -632,8 +632,12 @@
 /* Top Grid */
 .adv-top-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+  grid-template-columns: repeat(5, 1fr);
   gap: 12px;
+}
+
+.adv-top-grid--4 {
+  grid-template-columns: repeat(4, 1fr);
 }
 
 /* Weather Compact */
@@ -725,112 +729,7 @@
   margin-top: 4px;
 }
 
-/* Farm Area */
-.adv-farm-area__main {
-  display: flex;
-  align-items: baseline;
-  gap: 4px;
-  margin: 10px 0 8px;
-}
 
-.adv-farm-area__big {
-  font-size: 32px;
-  font-weight: 800;
-  color: var(--text-primary);
-  line-height: 1;
-}
-
-.adv-farm-area__unit {
-  font-size: 14px;
-  color: var(--text-muted);
-  font-weight: 600;
-}
-
-.adv-farm-area__bar {
-  height: 4px;
-  background: var(--border);
-  border-radius: var(--radius-full);
-  overflow: hidden;
-  margin-bottom: 6px;
-}
-
-.adv-farm-area__fill {
-  height: 100%;
-  background: var(--accent);
-  border-radius: var(--radius-full);
-  transition: width 0.8s ease;
-}
-
-.adv-farm-area__sub {
-  font-size: 11px;
-  color: var(--text-muted);
-}
-
-/* Varieties */
-.adv-varieties__count {
-  font-size: 36px;
-  font-weight: 800;
-  color: var(--text-primary);
-  line-height: 1.1;
-  margin: 8px 0 10px;
-}
-
-.adv-varieties__chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-.adv-varieties__chip {
-  font-size: 10px;
-  font-weight: 600;
-  padding: 2px 8px;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-full);
-  color: var(--text-secondary);
-}
-
-/* Yield Gauge */
-.adv-yield-gauge__main {
-  display: flex;
-  align-items: baseline;
-  gap: 4px;
-  margin: 8px 0;
-}
-
-.adv-yield-gauge__value {
-  font-size: 32px;
-  font-weight: 800;
-  color: var(--text-primary);
-  line-height: 1;
-}
-
-.adv-yield-gauge__unit {
-  font-size: 14px;
-  color: var(--text-muted);
-  font-weight: 600;
-}
-
-.adv-yield-gauge__bar {
-  height: 4px;
-  background: var(--border);
-  border-radius: var(--radius-full);
-  overflow: hidden;
-  margin-bottom: 6px;
-}
-
-.adv-yield-gauge__fill {
-  height: 100%;
-  background: var(--accent);
-  border-radius: var(--radius-full);
-  transition: width 0.8s ease;
-}
-
-.adv-yield-gauge__sub {
-  font-size: 11px;
-  color: var(--text-muted);
-}
 
 /* Warnings */
 .adv-warnings {
@@ -979,89 +878,7 @@
   margin-bottom: 12px;
 }
 
-/* Field Cards */
-.adv-fields-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-}
 
-.adv-field-card {
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 16px;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 10px;
-}
-
-.adv-field-card:hover {
-  border-color: var(--accent);
-  background: var(--bg-elevated);
-}
-
-.adv-field-card--alert {
-  border-color: rgba(232, 169, 78, 0.3);
-}
-
-.adv-field-card__top {
-  width: 100%;
-}
-
-.adv-field-card__name {
-  display: block;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-.adv-field-card__variety {
-  display: block;
-  font-size: 11px;
-  color: var(--text-muted);
-  margin-top: 2px;
-}
-
-.adv-field-card__health-ring {
-  position: relative;
-  width: 44px;
-  height: 44px;
-}
-
-.adv-field-card__ring-svg {
-  width: 44px;
-  height: 44px;
-}
-
-.adv-field-card__health-val {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-.adv-field-card__meta {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.adv-field-card__meta-item {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  font-size: 10px;
-  color: var(--text-muted);
-}
 
 /* Activity */
 .adv-activity {
@@ -1111,27 +928,19 @@
 
 /* Responsive */
 @media (max-width: 1100px) {
-  .adv-top-grid {
-    grid-template-columns: 1fr 1fr 1fr;
-  }
-  .adv-top-grid > :nth-child(4),
-  .adv-top-grid > :nth-child(5) {
-    grid-column: span 1;
-  }
-  .adv-fields-grid {
+  .adv-top-grid,
+  .adv-top-grid--4 {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (max-width: 768px) {
-  .adv-top-grid {
+  .adv-top-grid,
+  .adv-top-grid--4 {
     grid-template-columns: 1fr 1fr;
   }
   .adv-charts-grid {
     grid-template-columns: 1fr;
-  }
-  .adv-fields-grid {
-    grid-template-columns: repeat(2, 1fr);
   }
   .adv-actions {
     flex-direction: column;
@@ -1142,10 +951,8 @@
 }
 
 @media (max-width: 480px) {
-  .adv-top-grid {
+  .adv-top-grid,
+  .adv-top-grid--4 {
     grid-template-columns: 1fr;
-  }
-  .adv-fields-grid {
-    grid-template-columns: 1fr 1fr;
   }
 }

@@ -130,8 +130,8 @@ export default function Dashboard() {
 
   return (
     <div className="page-container dashboard adv-dashboard">
-      {/* Row 1: Weather Compact + Health Donut + Farm Area + Varieties + Yield */}
-      <div className="adv-top-grid">
+      {/* Row 1: Weather + Health Donut + Area Donut + Yield Donut */}
+      <div className="adv-top-grid adv-top-grid--4">
         {/* Compact Weather */}
         <div className="adv-card adv-weather-compact">
           <div className="adv-weather-compact__main">
@@ -176,42 +176,80 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Farm Area */}
-        <div className="adv-card adv-farm-area">
-          <span className="adv-card__label">Farm Area</span>
-          <div className="adv-farm-area__main">
-            <span className="adv-farm-area__big">{totalArea}</span>
-            <span className="adv-farm-area__unit">ac</span>
-          </div>
-          <div className="adv-farm-area__bar">
-            <div className="adv-farm-area__fill" style={{ width: `${(healthyArea / totalArea) * 100}%` }} />
-          </div>
-          <span className="adv-farm-area__sub"><span style={{ color: 'var(--accent)' }}>{healthyArea}</span> ac healthy</span>
-        </div>
+        {/* Farm Area Donut */}
+        {(() => {
+          const areaDonutData = [
+            { name: 'Healthy', value: healthyArea },
+            { name: 'Remaining', value: totalArea - healthyArea },
+          ];
+          return (
+            <div className="adv-card adv-health-donut">
+              <div className="adv-health-donut__chart">
+                <ResponsiveContainer width="100%" height={140}>
+                  <PieChart>
+                    <Pie
+                      data={areaDonutData}
+                      cx="50%" cy="50%"
+                      innerRadius={42} outerRadius={58}
+                      startAngle={90} endAngle={-270}
+                      dataKey="value"
+                      stroke="none"
+                    >
+                      <Cell fill="#4ade80" />
+                      <Cell fill="var(--border)" />
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="adv-health-donut__center">
+                  <span className="adv-health-donut__value">{totalArea}</span>
+                  <span className="adv-health-donut__label">ac</span>
+                </div>
+              </div>
+              <div className="adv-health-donut__info">
+                <span className="adv-card__label">Farm Area</span>
+                <span className="adv-card__badge adv-card__badge--green">{healthyArea} ac healthy</span>
+              </div>
+            </div>
+          );
+        })()}
 
-        {/* Active Varieties */}
-        <div className="adv-card adv-varieties">
-          <span className="adv-card__label">Active Varieties</span>
-          <span className="adv-varieties__count">{farmData.activeCrops}</span>
-          <div className="adv-varieties__chips">
-            {fields.map(f => (
-              <span key={f.id} className="adv-varieties__chip">{f.variety || f.crop}</span>
-            ))}
-          </div>
-        </div>
-
-        {/* Expected Yield */}
-        <div className="adv-card adv-yield-gauge">
-          <span className="adv-card__label">Expected Yield</span>
-          <div className="adv-yield-gauge__main">
-            <span className="adv-yield-gauge__value">{totalYield}</span>
-            <span className="adv-yield-gauge__unit">Ton</span>
-          </div>
-          <div className="adv-yield-gauge__bar">
-            <div className="adv-yield-gauge__fill" style={{ width: `${(parseFloat(totalYield) / parseFloat(potentialYield)) * 100}%` }} />
-          </div>
-          <span className="adv-yield-gauge__sub">Potential {potentialYield} Ton</span>
-        </div>
+        {/* Expected Yield Donut */}
+        {(() => {
+          const yieldPct = Math.round((parseFloat(totalYield) / parseFloat(potentialYield)) * 100);
+          const yieldDonutData = [
+            { name: 'Expected', value: yieldPct },
+            { name: 'Remaining', value: 100 - yieldPct },
+          ];
+          return (
+            <div className="adv-card adv-health-donut">
+              <div className="adv-health-donut__chart">
+                <ResponsiveContainer width="100%" height={140}>
+                  <PieChart>
+                    <Pie
+                      data={yieldDonutData}
+                      cx="50%" cy="50%"
+                      innerRadius={42} outerRadius={58}
+                      startAngle={90} endAngle={-270}
+                      dataKey="value"
+                      stroke="none"
+                    >
+                      <Cell fill="var(--accent)" />
+                      <Cell fill="var(--border)" />
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="adv-health-donut__center">
+                  <span className="adv-health-donut__value">{totalYield}</span>
+                  <span className="adv-health-donut__label">Ton</span>
+                </div>
+              </div>
+              <div className="adv-health-donut__info">
+                <span className="adv-card__label">Expected Yield</span>
+                <span className="adv-card__badge" style={{ background: 'rgba(34,211,238,0.12)', color: 'var(--accent)' }}>Potential {potentialYield}T</span>
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       {/* Row 2: Warnings (only if any) + Performance Metrics */}
@@ -279,37 +317,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Row 5: Field Cards — Visual Grid */}
-      <section className="section">
-        <span className="adv-section-label">Fields</span>
-        <div className="adv-fields-grid">
-          {fields.map((field) => {
-            const progress = Math.round((field.cropAge / (field.variety === 'Basmati' ? 130 : field.variety === 'Samba Mahsuri' ? 115 : 120)) * 100);
-            return (
-              <div key={field.id} className={`adv-field-card ${field.status === 'needs-attention' ? 'adv-field-card--alert' : ''}`} onClick={() => navigate('/farm')}>
-                <div className="adv-field-card__top">
-                  <span className="adv-field-card__name">{field.name}</span>
-                  <span className="adv-field-card__variety">{field.variety || field.crop}</span>
-                </div>
-                <div className="adv-field-card__health-ring">
-                  <svg viewBox="0 0 44 44" className="adv-field-card__ring-svg">
-                    <circle cx="22" cy="22" r="18" fill="none" stroke="var(--border)" strokeWidth="3" />
-                    <circle cx="22" cy="22" r="18" fill="none" stroke={field.health >= 80 ? 'var(--accent)' : 'var(--warning)'} strokeWidth="3" strokeDasharray={`${field.health * 1.13} 113`} strokeLinecap="round" transform="rotate(-90 22 22)" />
-                  </svg>
-                  <span className="adv-field-card__health-val">{field.health}</span>
-                </div>
-                <div className="adv-field-card__meta">
-                  <span className="adv-field-card__meta-item"><Droplets size={11} /> {field.soilMoisture}%</span>
-                  <span className="adv-field-card__meta-item"><Clock size={11} /> {field.cropAge}d</span>
-                  <span className="adv-field-card__meta-item"><MapPin size={11} /> {field.area}ac</span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Row 6: Activity */}
+      {/* Row 5: Activity */}
       <section className="section">
         <span className="adv-section-label">Recent Activity</span>
         <div className="adv-activity">
