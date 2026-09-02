@@ -3,5 +3,5 @@ import { defineConfig } from 'vite'
 
 export default defineConfig({
     plugins: [react()],
-    base: '/Agri_De/',
+    base: '/Agri_Dr/',
 })
