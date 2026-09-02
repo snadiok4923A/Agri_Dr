@@ -1,5 +1,4 @@
 import { useLanguage } from '../hooks/useLanguage';
-import { useInfoLevel } from '../hooks/useInfoLevel';
 import { farmData, fields, weatherData, recommendations, activityData } from '../data/mockData';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -35,89 +34,10 @@ const yieldData = [
 
 export default function Dashboard() {
   const { t } = useLanguage();
-  const { isSimple, isAdvanced } = useInfoLevel();
   const navigate = useNavigate();
 
-  const criticalActions = isSimple
-    ? recommendations.filter(r => r.category === 'critical').slice(0, 1)
-    : recommendations.filter(r => r.category === 'critical' || r.category === 'important').slice(0, isAdvanced ? 4 : 3);
+  const criticalActions = recommendations.filter(r => r.category === 'critical' || r.category === 'important').slice(0, 4);
 
-  // ===== SIMPLE MODE =====
-  if (isSimple) {
-    return (
-      <div className="page-container dashboard">
-        <section className="dashboard__greeting section">
-          <h1 className="dashboard__greeting-text">{getGreeting(t)} 👋</h1>
-          <p className="dashboard__greeting-sub">{t('dashboard.farmHealthy')}</p>
-        </section>
-
-        {/* Simple Farm Health Card */}
-        <section className="section">
-          <div className="simple-card simple-card--accent">
-            <div className="simple-card__row">
-              <div>
-                <span className="simple-card__big-number">87%</span>
-                <span className="simple-card__big-label">Crop Health</span>
-              </div>
-              <StatusBadge status="healthy" size="md" />
-            </div>
-          </div>
-        </section>
-
-        {/* Simple Status Strips */}
-        <section className="section">
-          <div className="simple-strips">
-            <div className="simple-strip">
-              <Leaf size={16} />
-              <span className="simple-strip__label">Crop</span>
-              <span className="simple-strip__value simple-strip__value--good">Healthy ✓</span>
-            </div>
-            <div className="simple-strip">
-              <Droplets size={16} />
-              <span className="simple-strip__label">Water</span>
-              <span className="simple-strip__value simple-strip__value--warn">Needs Attention ⚠</span>
-            </div>
-            <div className="simple-strip">
-              <Sprout size={16} />
-              <span className="simple-strip__label">Soil</span>
-              <span className="simple-strip__value simple-strip__value--good">Good ✓</span>
-            </div>
-            <div className="simple-strip">
-              <TrendingUp size={16} />
-              <span className="simple-strip__label">Yield</span>
-              <span className="simple-strip__value simple-strip__value--good">On Track ✓</span>
-            </div>
-          </div>
-        </section>
-
-        {/* Simple Weather */}
-        <section className="section">
-          <div className="simple-card">
-            <div className="simple-card__row">
-              <CloudSun size={32} style={{ color: 'var(--warning)' }} />
-              <div>
-                <span className="simple-card__big-number">{weatherData.current.temperature}°C</span>
-                <span className="simple-card__big-label">Rain expected today</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Simple Today's Action */}
-        {criticalActions.length > 0 && (
-          <section className="section">
-            <div className="simple-card simple-card--alert">
-              <h3 className="simple-card__title">Today's Action</h3>
-              <p className="simple-card__desc">{criticalActions[0].description}</p>
-              <button className="simple-card__btn" onClick={() => navigate('/improve')}>{t('dashboard.viewDetails')} →</button>
-            </div>
-          </section>
-        )}
-      </div>
-    );
-  }
-
-  // ===== ADVANCED MODE =====
   const healthyArea = fields.filter(f => f.status === 'healthy').reduce((sum, f) => sum + f.area, 0);
   const totalArea = farmData.totalLand;
   const totalYield = fields.reduce((sum, f) => sum + (f.cropAge / (f.variety === 'Basmati' ? 130 : f.variety === 'Samba Mahsuri' ? 115 : 120) * (f.variety === 'Basmati' ? 4.1 : f.variety === 'Samba Mahsuri' ? 3.5 : f.variety === 'Swarna' ? 3.2 : 3.8)), 0).toFixed(1);

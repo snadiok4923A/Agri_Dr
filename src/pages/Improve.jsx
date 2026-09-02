@@ -1,5 +1,4 @@
 import { useLanguage } from '../hooks/useLanguage';
-import { useInfoLevel } from '../hooks/useInfoLevel';
 import { crops, recommendations } from '../data/mockData';
 import { Droplets, FlaskConical, Bug, Sprout, ArrowRight } from 'lucide-react';
 import StatusBadge from '../components/common/StatusBadge';
@@ -14,28 +13,7 @@ const improvements = [
 
 export default function Improve() {
   const { t } = useLanguage();
-  const { isSimple, isAdvanced } = useInfoLevel();
   const mainCrop = crops[0];
-
-  if (isSimple) {
-    return (
-      <div className="page-container improve-page">
-        <section className="improve-page__header section"><h1 className="improve-page__title">{t('nav.improve')}</h1></section>
-        <section className="section">
-          <div className="simple-card">
-            <span className="simple-card__big-number">3.8 → 4.3 Ton</span>
-            <span className="simple-card__big-label">Potential yield improvement</span>
-          </div>
-        </section>
-        <section className="section">
-          <div className="simple-card simple-card--alert"><h3 className="simple-card__title">Improve Irrigation</h3><p className="simple-card__desc">High Priority — +0.2 Ton potential</p></div>
-        </section>
-        <section className="section">
-          <div className="simple-card"><h3 className="simple-card__title">Nutrient Balance</h3><p className="simple-card__desc">Medium Priority — +0.15 Ton potential</p></div>
-        </section>
-      </div>
-    );
-  }
 
   return (
     <div className="page-container improve-page">
@@ -68,8 +46,7 @@ export default function Improve() {
           ))}
         </div>
       </section>
-      {isAdvanced && (
-        <section className="improve-page__recommendations section">
+      <section className="improve-page__recommendations section">
           <h2 className="improve-page__section-title">Active Recommendations</h2>
           <div className="improve-page__rec-list">
             {recommendations.slice(0, 3).map((rec) => (
@@ -82,7 +59,6 @@ export default function Improve() {
             ))}
           </div>
         </section>
-      )}
     </div>
   );
 }

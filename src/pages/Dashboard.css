@@ -654,7 +654,7 @@
 }
 
 .adv-top-grid--3 {
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1.4fr 1.4fr 0.7fr;
 }
 
 /* Donut Card (title above, donut, subtext below) */
@@ -728,27 +728,30 @@
 
 /* Weather Compact */
 .adv-weather-compact {
-  justify-content: space-between;
+  justify-content: center;
+  padding: 14px 12px;
+  gap: 8px;
 }
 
 .adv-weather-compact__top {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
 }
 
 .adv-weather-compact__main {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .adv-weather-compact__icon {
   color: var(--accent);
+  flex-shrink: 0;
 }
 
 .adv-weather-compact__temp {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 800;
   color: var(--text-primary);
   line-height: 1;
@@ -756,25 +759,25 @@
 
 .adv-weather-compact__cond {
   display: block;
-  font-size: 11px;
+  font-size: 10px;
   color: var(--text-muted);
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
 .adv-weather-compact__row {
   display: flex;
-  gap: 6px;
-  margin-top: 10px;
+  gap: 4px;
+  flex-wrap: wrap;
 }
 
 .adv-weather-compact__chip {
   display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 11px;
+  gap: 3px;
+  font-size: 10px;
   color: var(--text-secondary);
   background: var(--bg-elevated);
-  padding: 3px 8px;
+  padding: 2px 6px;
   border-radius: var(--radius-full);
 }
 

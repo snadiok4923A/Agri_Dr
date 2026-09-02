@@ -1,5 +1,4 @@
 import { useLanguage } from '../hooks/useLanguage';
-import { useInfoLevel } from '../hooks/useInfoLevel';
 import { diseaseData } from '../data/mockData';
 import { Bug, Shield, Search } from 'lucide-react';
 import StatusBadge from '../components/common/StatusBadge';
@@ -7,28 +6,7 @@ import './Disease.css';
 
 export default function Disease() {
   const { t } = useLanguage();
-  const { isSimple, isAdvanced } = useInfoLevel();
 
-  if (isSimple) {
-    return (
-      <div className="page-container disease-page">
-        <section className="disease-page__header section"><h1 className="disease-page__title">{t('nav.disease')}</h1></section>
-        <div className="disease-page__simple-list">
-          {diseaseData.map((d) => (
-            <div key={d.id} className="simple-card">
-              <div className="simple-card__row">
-                <div>
-                  <span className="simple-card__title">{d.name}</span>
-                  <span className="simple-card__big-label">{d.field} • {d.detected}</span>
-                </div>
-                <StatusBadge status={d.severity} />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="page-container disease-page">
@@ -49,7 +27,7 @@ export default function Disease() {
             <div className="disease-page__card-section"><h4>{t('disease.symptoms')}</h4><p>{disease.symptoms}</p></div>
             <div className="disease-page__card-section"><h4>{t('disease.possibleCause')}</h4><p>{disease.cause}</p></div>
             <div className="disease-page__card-section disease-page__card-section--action"><h4><Shield size={14} /> {t('disease.recommendedAction')}</h4><p>{disease.recommendedAction}</p></div>
-            {isAdvanced && <div className="disease-page__card-section"><h4><Search size={14} /> {t('disease.prevention')}</h4><p>{disease.prevention}</p></div>}
+            <div className="disease-page__card-section"><h4><Search size={14} /> {t('disease.prevention')}</h4><p>{disease.prevention}</p></div>
           </div>
         ))}
       </div>

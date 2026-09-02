@@ -1,5 +1,4 @@
 import { useLanguage } from '../hooks/useLanguage';
-import { useInfoLevel } from '../hooks/useInfoLevel';
 import { marketData } from '../data/mockData';
 import { TrendingUp, TrendingDown, Store } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
@@ -7,30 +6,7 @@ import './Market.css';
 
 export default function Market() {
   const { t } = useLanguage();
-  const { isSimple, isAdvanced } = useInfoLevel();
 
-  if (isSimple) {
-    return (
-      <div className="page-container market-page">
-        <section className="market-page__header section"><h1 className="market-page__title">{t('nav.market')}</h1></section>
-        <div className="market-page__simple-list">
-          {marketData.crops.map((crop, i) => (
-            <div key={i} className="simple-card">
-              <div className="simple-card__row">
-                <div>
-                  <span className="simple-card__big-number" style={{ fontSize: 28 }}>{t('common.rupeeSymbol')}{crop.price}</span>
-                  <span className="simple-card__big-label">{crop.name} / {t('common.quintal')}</span>
-                </div>
-                <span style={{ color: crop.trend === 'up' ? 'var(--accent)' : 'var(--danger)', fontWeight: 600, fontSize: 14 }}>
-                  {crop.trend === 'up' ? '↗' : '↘'} {Math.abs(crop.change)}%
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="page-container market-page">
@@ -61,14 +37,12 @@ export default function Market() {
                 </LineChart>
               </ResponsiveContainer>
             </div>
-            {isAdvanced && (
-              <div className="market-page__markets">
+            <div className="market-page__markets">
                 <h4 className="market-page__markets-title">{t('market.nearbyMarkets')}</h4>
                 {crop.markets.map((market, j) => (
                   <div key={j} className="market-page__market-row"><Store size={14} /><span className="market-page__market-name">{market.name}</span><span className="market-page__market-price">{t('common.rupeeSymbol')}{market.price}</span></div>
                 ))}
               </div>
-            )}
           </div>
         ))}
       </div>

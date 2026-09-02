@@ -1,6 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../hooks/useLanguage';
-import { useInfoLevel } from '../hooks/useInfoLevel';
 import { crops } from '../data/mockData';
 import { ArrowLeft, CheckCircle2, Circle } from 'lucide-react';
 import ProgressBar from '../components/common/ProgressBar';
@@ -10,7 +9,6 @@ export default function CropDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const { isSimple, isAdvanced } = useInfoLevel();
   const crop = crops.find(c => c.id === id) || crops[0];
 
   const progress = (crop.day / crop.totalDays) * 100;
@@ -95,16 +93,13 @@ export default function CropDetails() {
           <div className="crop-details__factor">
             <ProgressBar value={crop.factors.diseaseProtection} label={t('crops.diseaseProtection')} />
           </div>
-          {isAdvanced && (
-            <div className="crop-details__factor">
-              <ProgressBar value={crop.factors.environment} label={t('crops.environmental')} />
-            </div>
-          )}
+          <div className="crop-details__factor">
+            <ProgressBar value={crop.factors.environment} label={t('crops.environmental')} />
+          </div>
         </div>
       </section>
 
-      {/* Advanced: Detailed breakdown */}
-      {isAdvanced && (
+      {/* Detailed breakdown */}
         <section className="crop-details__advanced section">
           <h2 className="crop-details__section-title">Detailed Analysis</h2>
           <div className="crop-details__advanced-grid">
@@ -130,7 +125,6 @@ export default function CropDetails() {
             </div>
           </div>
         </section>
-      )}
     </div>
   );
 }

@@ -1,5 +1,4 @@
 import { useLanguage } from '../hooks/useLanguage';
-import { useInfoLevel } from '../hooks/useInfoLevel';
 import { useState } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import ProgressRing from '../components/common/ProgressRing';
@@ -15,38 +14,7 @@ const trends = {
 
 export default function Health() {
   const { t } = useLanguage();
-  const { isSimple, isAdvanced } = useInfoLevel();
   const [period, setPeriod] = useState('7d');
-
-  if (isSimple) {
-    return (
-      <div className="page-container health-page">
-        <section className="health-page__header section"><h1 className="health-page__title">{t('health.overallHealth')}</h1></section>
-        <section className="section">
-          <div className="simple-card simple-card--accent">
-            <div className="simple-card__row">
-              <div><span className="simple-card__big-number">87%</span><span className="simple-card__big-label">Crop Health</span></div>
-              <ProgressRing value={87} size={80} strokeWidth={6} />
-            </div>
-          </div>
-        </section>
-        <section className="section">
-          <div className="simple-strips">
-            <div className="simple-strip"><span className="simple-strip__label">Status</span><span className="simple-strip__value simple-strip__value--good">Healthy ✓</span></div>
-            <div className="simple-strip"><span className="simple-strip__label">Water</span><span className="simple-strip__value simple-strip__value--warn">72%</span></div>
-            <div className="simple-strip"><span className="simple-strip__label">Soil</span><span className="simple-strip__value simple-strip__value--good">Good ✓</span></div>
-            <div className="simple-strip"><span className="simple-strip__label">Disease</span><span className="simple-strip__value simple-strip__value--good">Low Risk ✓</span></div>
-          </div>
-        </section>
-        <section className="section">
-          <div className="simple-card">
-            <h3 className="simple-card__title">Recommendation</h3>
-            <p className="simple-card__desc">Check irrigation in Field B. Moisture is slightly low.</p>
-          </div>
-        </section>
-      </div>
-    );
-  }
 
   return (
     <div className="page-container health-page">
@@ -65,7 +33,7 @@ export default function Health() {
           <div className="health-page__breakdown-item"><ProgressBar value={healthData.water} label={t('health.waterStress')} /></div>
           <div className="health-page__breakdown-item"><ProgressBar value={healthData.nutrition} label={t('health.nutrition')} /></div>
           <div className="health-page__breakdown-item"><ProgressBar value={100 - healthData.diseaseRisk} label={t('health.diseaseRisk')} /></div>
-          {isAdvanced && <div className="health-page__breakdown-item"><ProgressBar value={healthData.environment} label={t('health.environment')} /></div>}
+          <div className="health-page__breakdown-item"><ProgressBar value={healthData.environment} label={t('health.environment')} /></div>
         </div>
       </section>
       <section className="health-page__trend section">
@@ -74,7 +42,7 @@ export default function Health() {
           <div className="health-page__period-selector">
             <button className={period === '7d' ? 'active' : ''} onClick={() => setPeriod('7d')}>{t('health.sevenDay')}</button>
             <button className={period === '14d' ? 'active' : ''} onClick={() => setPeriod('14d')}>{t('health.fourteenDay')}</button>
-            {isAdvanced && <button className={period === '30d' ? 'active' : ''} onClick={() => setPeriod('30d')}>{t('health.thirtyDay')}</button>}
+            <button className={period === '30d' ? 'active' : ''} onClick={() => setPeriod('30d')}>{t('health.thirtyDay')}</button>
           </div>
         </div>
         <div className="health-page__chart">
@@ -90,8 +58,7 @@ export default function Health() {
           </ResponsiveContainer>
         </div>
       </section>
-      {isAdvanced && (
-        <section className="health-page__fields section">
+      <section className="health-page__fields section">
           <h2 className="health-page__section-title">Field Health Comparison</h2>
           <div className="health-page__fields-grid">
             {[{ name: 'Field A', crop: 'IR-64', health: 87 }, { name: 'Field B', crop: 'Swarna', health: 74 }, { name: 'Field C', crop: 'Basmati', health: 91 }, { name: 'Field D', crop: 'Samba Mahsuri', health: 82 }].map((f) => (
@@ -102,7 +69,6 @@ export default function Health() {
             ))}
           </div>
         </section>
-      )}
     </div>
   );
 }

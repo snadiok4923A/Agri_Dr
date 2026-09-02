@@ -1,5 +1,4 @@
 import { useLanguage } from '../hooks/useLanguage';
-import { useInfoLevel } from '../hooks/useInfoLevel';
 import { analyticsData, activityData, calendarData } from '../data/mockData';
 import { Clock } from 'lucide-react';
 import { AreaChart, Area, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -7,23 +6,7 @@ import './Insights.css';
 
 export default function Insights() {
   const { t } = useLanguage();
-  const { isSimple, isAdvanced } = useInfoLevel();
 
-  if (isSimple) {
-    return (
-      <div className="page-container insights-page">
-        <section className="insights-page__header section"><h1 className="insights-page__title">{t('nav.insights')}</h1></section>
-        <section className="section">
-          <div className="simple-strips">
-            <div className="simple-strip"><span className="simple-strip__label">Health</span><span className="simple-strip__value simple-strip__value--good">84%</span></div>
-            <div className="simple-strip"><span className="simple-strip__label">Yield</span><span className="simple-strip__value simple-strip__value--good">On Track ✓</span></div>
-            <div className="simple-strip"><span className="simple-strip__label">Water</span><span className="simple-strip__value simple-strip__value--good">Good ✓</span></div>
-            <div className="simple-strip"><span className="simple-strip__label">Profit</span><span className="simple-strip__value simple-strip__value--good">₹93,750</span></div>
-          </div>
-        </section>
-      </div>
-    );
-  }
 
   return (
     <div className="page-container insights-page">
@@ -51,8 +34,7 @@ export default function Insights() {
             </AreaChart>
           </ResponsiveContainer>
         </section>
-        {isAdvanced && (
-          <section className="insights-page__chart-card section">
+        <section className="insights-page__chart-card section">
             <h2 className="insights-page__section-title">{t('insights.yield')}</h2>
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={analyticsData.yieldTrend}>
@@ -65,7 +47,6 @@ export default function Insights() {
               </LineChart>
             </ResponsiveContainer>
           </section>
-        )}
       </div>
       <section className="insights-page__activity section">
         <h2 className="insights-page__section-title">{t('insights.recentActivity')}</h2>
@@ -79,8 +60,7 @@ export default function Insights() {
           ))}
         </div>
       </section>
-      {isAdvanced && (
-        <section className="insights-page__calendar section">
+      <section className="insights-page__calendar section">
           <h2 className="insights-page__section-title">Crop Calendar</h2>
           <div className="insights-page__calendar-list">
             {calendarData.map((c, i) => (
@@ -92,7 +72,6 @@ export default function Insights() {
             ))}
           </div>
         </section>
-      )}
     </div>
   );
 }

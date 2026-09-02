@@ -1,6 +1,5 @@
 import { useState, useRef } from 'react';
 import { useLanguage } from '../hooks/useLanguage';
-import { useInfoLevel } from '../hooks/useInfoLevel';
 import { Camera, Mic, Send, Volume2, Bot, User, Sparkles, Stethoscope } from 'lucide-react';
 import { askAgricultureAI } from '../data/mockData';
 import './AIDoctor.css';
@@ -20,7 +19,6 @@ const mockDiagnosis = {
 
 export default function AIDoctor() {
   const { t, language } = useLanguage();
-  const { isSimple, isAdvanced } = useInfoLevel();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [listening, setListening] = useState(false);
@@ -73,8 +71,7 @@ export default function AIDoctor() {
             <button className="ai-doctor__action-btn" onClick={handlePhoto}><Camera size={22} /><span>{t('ai.takePhoto')}</span></button>
             <button className="ai-doctor__action-btn ai-doctor__action-btn--voice" onClick={handleVoice}><Mic size={22} /><span>{t('ai.askByVoice')}</span></button>
           </div>
-          {!isSimple && (
-            <div className="ai-doctor__suggested">
+          <div className="ai-doctor__suggested">
               <span className="ai-doctor__suggested-label">{t('ai.suggestedQuestions')}</span>
               <div className="ai-doctor__suggested-list">
                 {(suggestedQuestions[language] || suggestedQuestions.en).map((q, i) => (
@@ -82,7 +79,6 @@ export default function AIDoctor() {
                 ))}
               </div>
             </div>
-          )}
         </section>
       ) : (
         <div className="ai-doctor__chat">
@@ -104,12 +100,12 @@ export default function AIDoctor() {
                         <strong>{t('ai.whatToDo')}:</strong>
                         <ol>{msg.diagnosis.actions.map((a, j) => <li key={j}>{a}</li>)}</ol>
                       </div>
-                      {isAdvanced && <button className="ai-doctor__listen-btn"><Volume2 size={14} /> {t('ai.listen')}</button>}
+                      <button className="ai-doctor__listen-btn"><Volume2 size={14} /> {t('ai.listen')}</button>
                     </div>
                   ) : (
                     <>
                       <p>{msg.content}</p>
-                      {isAdvanced && msg.confidence && <span className="ai-doctor__confidence">{t('ai.confidence')}: {msg.confidence}%</span>}
+                      {msg.confidence && <span className="ai-doctor__confidence">{t('ai.confidence')}: {msg.confidence}%</span>}
                     </>
                   )}
                 </div>

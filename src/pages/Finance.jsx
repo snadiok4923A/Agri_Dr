@@ -1,28 +1,11 @@
 import { useLanguage } from '../hooks/useLanguage';
-import { useInfoLevel } from '../hooks/useInfoLevel';
 import { financeData } from '../data/mockData';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import './Finance.css';
 
 export default function Finance() {
   const { t } = useLanguage();
-  const { isSimple, isAdvanced } = useInfoLevel();
   const { expenses, revenue, monthlyExpenses } = financeData;
-
-  if (isSimple) {
-    return (
-      <div className="page-container finance-page">
-        <section className="finance-page__header section"><h1 className="finance-page__title">{t('nav.finance')}</h1></section>
-        <section className="section">
-          <div className="simple-strips">
-            <div className="simple-strip"><span className="simple-strip__label">Expenses</span><span className="simple-strip__value" style={{ color: 'var(--text-primary)' }}>₹{expenses.total.toLocaleString('en-IN')}</span></div>
-            <div className="simple-strip"><span className="simple-strip__label">Revenue</span><span className="simple-strip__value simple-strip__value--good">₹{revenue.expected.toLocaleString('en-IN')}</span></div>
-            <div className="simple-strip"><span className="simple-strip__label">Profit</span><span className="simple-strip__value simple-strip__value--good">₹{revenue.estimatedProfit.toLocaleString('en-IN')}</span></div>
-          </div>
-        </section>
-      </div>
-    );
-  }
 
   return (
     <div className="page-container finance-page">

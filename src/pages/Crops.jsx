@@ -1,5 +1,4 @@
 import { useLanguage } from '../hooks/useLanguage';
-import { useInfoLevel } from '../hooks/useInfoLevel';
 import { crops } from '../data/mockData';
 import { useNavigate } from 'react-router-dom';
 import { Leaf, ArrowRight } from 'lucide-react';
@@ -8,7 +7,6 @@ import './Crops.css';
 
 export default function Crops() {
   const { t } = useLanguage();
-  const { isSimple, isAdvanced } = useInfoLevel();
   const navigate = useNavigate();
 
   return (
@@ -18,28 +16,7 @@ export default function Crops() {
         <p className="crops-page__subtitle">{crops.length} {t('dashboard.activeCrops')}</p>
       </section>
 
-      {isSimple ? (
-        /* SIMPLE: Clean list format */
-        <div className="crops-page__simple-list">
-          {crops.map((crop) => (
-            <div key={crop.id} className="crops-page__simple-row" onClick={() => navigate(`/crops/${crop.id}`)}>
-              <div className="crops-page__simple-left">
-                <Leaf size={16} style={{ color: 'var(--accent)' }} />
-                <div>
-                  <span className="crops-page__simple-name">{crop.variety || crop.name}</span>
-                  <span className="crops-page__simple-field">{crop.field} • {crop.stage}</span>
-                </div>
-              </div>
-              <div className="crops-page__simple-right">
-                <span className="crops-page__simple-health" style={{ color: crop.health >= 80 ? 'var(--accent)' : 'var(--warning)' }}>{crop.health}%</span>
-                <StatusBadge status={crop.health >= 80 ? 'healthy' : 'needs-attention'} />
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        /* Advanced: Card grid */
-        <div className="crops-page__grid">
+      <div className="crops-page__grid">
           {crops.map((crop) => (
             <div key={crop.id} className="crops-page__card" onClick={() => navigate(`/crops/${crop.id}`)}>
               <div className="crops-page__card-header">
@@ -68,18 +45,14 @@ export default function Crops() {
                 <span className="crops-page__card-health-label">{t('crops.cropHealth')}</span>
                 <span className={`crops-page__card-health-value ${crop.health >= 80 ? 'crops-page__card-health-value--good' : 'crops-page__card-health-value--warn'}`}>{crop.health}%</span>
               </div>
-              {isAdvanced && (
-                <>
-                  <div className="crops-page__card-stage">
-                    <span className="crops-page__card-stage-label">Expected Yield</span>
-                    <span className="crops-page__card-stage-value">{crop.expectedYield} Ton</span>
-                  </div>
-                  <div className="crops-page__card-stage">
-                    <span className="crops-page__card-stage-label">Potential Yield</span>
-                    <span className="crops-page__card-stage-value" style={{ color: 'var(--accent)' }}>{crop.potentialYield} Ton</span>
-                  </div>
-                </>
-              )}
+              <div className="crops-page__card-stage">
+                <span className="crops-page__card-stage-label">Expected Yield</span>
+                <span className="crops-page__card-stage-value">{crop.expectedYield} Ton</span>
+              </div>
+              <div className="crops-page__card-stage">
+                <span className="crops-page__card-stage-label">Potential Yield</span>
+                <span className="crops-page__card-stage-value" style={{ color: 'var(--accent)' }}>{crop.potentialYield} Ton</span>
+              </div>
               <div className="crops-page__card-footer">
                 <span>{crop.expectedYield} {t('common.ton')} expected</span>
                 <ArrowRight size={14} />
@@ -87,7 +60,6 @@ export default function Crops() {
             </div>
           ))}
         </div>
-      )}
     </div>
   );
 }

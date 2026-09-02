@@ -1,13 +1,11 @@
 import { useLanguage } from '../hooks/useLanguage';
 import { useTheme } from '../hooks/useTheme';
-import { useInfoLevel, INFO_LEVELS } from '../hooks/useInfoLevel';
-import { Settings as SettingsIcon, Globe, Palette, BarChart3, Bell, Ruler } from 'lucide-react';
+import { Settings as SettingsIcon, Globe, Palette } from 'lucide-react';
 import './Settings.css';
 
 export default function Settings() {
   const { language, changeLanguage, languages, t } = useLanguage();
   const { theme, setTheme } = useTheme();
-  const { level, changeLevel } = useInfoLevel();
 
   return (
     <div className="page-container settings-page">
@@ -65,41 +63,6 @@ export default function Settings() {
                   <span className="settings-page__lang-flag">{lang.flag}</span>
                   <span className="settings-page__lang-native">{lang.native}</span>
                   <span className="settings-page__lang-name">{lang.name}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Information Level */}
-        <section className="settings-page__section">
-          <div className="settings-page__section-header">
-            <div className="settings-page__section-icon">
-              <BarChart3 size={18} />
-            </div>
-            <div>
-              <h2 className="settings-page__section-title">{t('settings.informationLevel')}</h2>
-              <p className="settings-page__section-subtitle">Control how much detail you see</p>
-            </div>
-          </div>
-          <div className="settings-page__section-content">
-            <div className="settings-page__level-grid">
-              {[
-                { value: INFO_LEVELS.simple, label: t('settings.simple'), desc: 'Essential information only' },
-                { value: INFO_LEVELS.advanced, label: t('settings.advanced'), desc: 'Full details and deep analytics' },
-              ].map((opt) => (
-                <button
-                  key={opt.value}
-                  className={`settings-page__level-option ${opt.value === level ? 'settings-page__level-option--active' : ''}`}
-                  onClick={() => changeLevel(opt.value)}
-                >
-                  <span className="settings-page__level-radio">
-                    {opt.value === level && <span className="settings-page__level-dot" />}
-                  </span>
-                  <div>
-                    <span className="settings-page__level-label">{opt.label}</span>
-                    <span className="settings-page__level-desc">{opt.desc}</span>
-                  </div>
                 </button>
               ))}
             </div>

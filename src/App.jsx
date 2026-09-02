@@ -1,7 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from './hooks/useTheme';
 import { LanguageProvider } from './hooks/useLanguage';
-import { InfoLevelProvider } from './hooks/useInfoLevel';
 import Layout from './components/layout/Layout';
 import Dashboard from './pages/Dashboard';
 import MyFarm from './pages/MyFarm';
@@ -24,7 +23,6 @@ export default function App() {
   return (
     <ThemeProvider>
       <LanguageProvider>
-        <InfoLevelProvider>
           <BrowserRouter basename="/Agri_de">
             <Routes>
               <Route path="/" element={<Layout />}>
@@ -47,7 +45,6 @@ export default function App() {
               </Route>
             </Routes>
           </BrowserRouter>
-        </InfoLevelProvider>
       </LanguageProvider>
     </ThemeProvider>
   );
