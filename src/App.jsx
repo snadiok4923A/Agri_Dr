@@ -25,7 +25,7 @@ export default function App() {
     <ThemeProvider>
       <LanguageProvider>
         <InfoLevelProvider>
-          <BrowserRouter basename="/Agri_Dr">
+          <BrowserRouter basename="/Agri_de">
             <Routes>
               <Route path="/" element={<Layout />}>
                 <Route index element={<Dashboard />} />
