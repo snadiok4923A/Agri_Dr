@@ -612,9 +612,9 @@
 
 /* Greeting-row weather card */
 .adv-greeting-row .adv-weather-compact {
-  flex-shrink: 0;
+  flex-shrink: 1;
   width: auto;
-  min-width: 170px;
+  min-width: 140px;
   padding: 12px 14px;
   gap: 6px;
 }
@@ -1036,18 +1036,51 @@
 }
 
 @media (max-width: 768px) {
+  .adv-greeting-row__text {
+    font-size: 20px;
+  }
   .adv-greeting-row {
-    flex-direction: column;
-    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 12px;
   }
   .adv-greeting-row .adv-weather-compact {
-    width: 100%;
+    min-width: 0;
+    padding: 8px 10px;
+    gap: 4px;
+  }
+  .adv-greeting-row .adv-weather-compact__main {
+    gap: 6px;
+  }
+  .adv-greeting-row .adv-weather-compact__icon {
+    font-size: 16px;
+  }
+  .adv-greeting-row .adv-weather-compact__temp {
+    font-size: 16px;
+  }
+  .adv-greeting-row .adv-weather-compact__cond {
+    font-size: 10px;
+  }
+  .adv-greeting-row .adv-weather-compact__chip {
+    font-size: 9px;
+    padding: 2px 5px;
   }
   .adv-top-grid,
   .adv-top-grid--2,
   .adv-top-grid--4,
   .adv-top-grid--3 {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
+  }
+  .adv-donut-card__chart {
+    max-width: 180px;
+  }
+  .adv-donut-card__value {
+    font-size: 24px;
+  }
+  .adv-donut-card__sub {
+    font-size: 13px;
+  }
+  .adv-donut-card__sub-value {
+    font-size: 14px;
   }
   .adv-charts-grid {
     grid-template-columns: 1fr;
@@ -1058,9 +1091,35 @@
   .adv-warnings {
     flex-direction: column;
   }
+  .adv-warning-chip {
+    min-width: 0;
+  }
+  .adv-action-chip {
+    min-width: 0;
+  }
 }
 
 @media (max-width: 480px) {
+  .adv-greeting-row__text {
+    font-size: 17px;
+  }
+  .adv-greeting-row .adv-weather-compact {
+    min-width: 120px;
+    padding: 6px 8px;
+  }
+  .adv-greeting-row .adv-weather-compact__temp {
+    font-size: 14px;
+  }
+  .adv-greeting-row .adv-weather-compact__cond {
+    font-size: 9px;
+  }
+  .adv-greeting-row .adv-weather-compact__icon {
+    font-size: 14px;
+  }
+  .adv-greeting-row .adv-weather-compact__chip {
+    font-size: 8px;
+    padding: 1px 4px;
+  }
   .adv-top-grid,
   .adv-top-grid--2,
   .adv-top-grid--4,
