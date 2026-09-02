@@ -46,13 +46,26 @@ export default function Dashboard() {
 
   return (
     <div className="page-container dashboard adv-dashboard">
-      {/* Greeting */}
-      <div className="adv-greeting">
-        <h1 className="adv-greeting__text">{getGreeting(t)}</h1>
+      {/* Greeting + Weather Row */}
+      <div className="adv-greeting-row">
+        <h1 className="adv-greeting-row__text">{getGreeting(t)}</h1>
+        <div className="adv-card adv-weather-compact">
+          <div className="adv-weather-compact__main">
+            <CloudSun size={20} className="adv-weather-compact__icon" />
+            <div>
+              <span className="adv-weather-compact__temp">{weatherData.current.temperature}°</span>
+              <span className="adv-weather-compact__cond">{weatherData.current.condition}</span>
+            </div>
+          </div>
+          <div className="adv-weather-compact__row">
+            <span className="adv-weather-compact__chip"><Droplets size={10} /> {weatherData.current.humidity}%</span>
+            <span className="adv-weather-compact__chip"><Wind size={10} /> {weatherData.current.wind} km/h</span>
+          </div>
+        </div>
       </div>
 
-      {/* Row 1: Farm Area + Expected Yield + Weather */}
-      <div className="adv-top-grid adv-top-grid--3">
+      {/* Farm Area + Expected Yield */}
+      <div className="adv-top-grid adv-top-grid--2">
         {/* Farm Area Donut */}
         {(() => {
           const areaDonutData = [
@@ -124,20 +137,6 @@ export default function Dashboard() {
           );
         })()}
 
-        {/* Compact Weather */}
-        <div className="adv-card adv-weather-compact">
-          <div className="adv-weather-compact__main">
-            <CloudSun size={24} className="adv-weather-compact__icon" />
-            <div>
-              <span className="adv-weather-compact__temp">{weatherData.current.temperature}°</span>
-              <span className="adv-weather-compact__cond">{weatherData.current.condition}</span>
-            </div>
-          </div>
-          <div className="adv-weather-compact__row">
-            <span className="adv-weather-compact__chip"><Droplets size={11} /> {weatherData.current.humidity}%</span>
-            <span className="adv-weather-compact__chip"><Wind size={11} /> {weatherData.current.wind} km/h</span>
-          </div>
-        </div>
       </div>
 
       {/* Row 2: Warnings (only if any) + Performance Metrics */}
