@@ -75,25 +75,28 @@ export default function Dashboard() {
           return (
             <div className="adv-card adv-donut-card">
               <span className="adv-card__label adv-card__label--center">Farm Area</span>
-              <div className="adv-donut-card__chart">
-                <ResponsiveContainer width="100%" height={150}>
-                  <PieChart>
-                    <Pie
-                      data={areaDonutData}
-                      cx="50%" cy="50%"
-                      innerRadius={44} outerRadius={60}
-                      startAngle={90} endAngle={-270}
-                      dataKey="value"
-                      stroke="none"
-                    >
-                      <Cell fill="#4ade80" />
-                      <Cell fill="var(--border)" />
-                    </Pie>
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="adv-donut-card__center">
+              <div className="adv-donut-card__chart-row">
+                <div className="adv-donut-card__chart">
+                  <ResponsiveContainer width="100%" height="100%" aspect={1} minWidth={0}>
+                    <PieChart>
+                      <Pie
+                        data={areaDonutData}
+                        cx="50%" cy="50%"
+                        innerRadius="38%" outerRadius="52%"
+                        startAngle={90} endAngle={-270}
+                        dataKey="value"
+                        stroke="none"
+                      >
+                        <Cell fill="#4ade80" />
+                        <Cell fill="var(--border)" />
+                      </Pie>
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="adv-donut-card__value-row">
                   <span className="adv-donut-card__value">{totalArea}</span>
                   <span className="adv-donut-card__unit">ac</span>
+                  <span className="adv-donut-card__value-label">Total</span>
                 </div>
               </div>
               <span className="adv-donut-card__sub adv-donut-card__sub--green"><span className="adv-donut-card__sub-value">{healthyArea}</span> ac healthy</span>
@@ -111,25 +114,28 @@ export default function Dashboard() {
           return (
             <div className="adv-card adv-donut-card">
               <span className="adv-card__label adv-card__label--center">Expected Yield</span>
-              <div className="adv-donut-card__chart">
-                <ResponsiveContainer width="100%" height={150}>
-                  <PieChart>
-                    <Pie
-                      data={yieldDonutData}
-                      cx="50%" cy="50%"
-                      innerRadius={44} outerRadius={60}
-                      startAngle={90} endAngle={-270}
-                      dataKey="value"
-                      stroke="none"
-                    >
-                      <Cell fill="var(--accent)" />
-                      <Cell fill="var(--border)" />
-                    </Pie>
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="adv-donut-card__center">
+              <div className="adv-donut-card__chart-row">
+                <div className="adv-donut-card__chart">
+                  <ResponsiveContainer width="100%" height="100%" aspect={1} minWidth={0}>
+                    <PieChart>
+                      <Pie
+                        data={yieldDonutData}
+                        cx="50%" cy="50%"
+                        innerRadius="38%" outerRadius="52%"
+                        startAngle={90} endAngle={-270}
+                        dataKey="value"
+                        stroke="none"
+                      >
+                        <Cell fill="var(--accent)" />
+                        <Cell fill="var(--border)" />
+                      </Pie>
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="adv-donut-card__value-row">
                   <span className="adv-donut-card__value">{totalYield}</span>
                   <span className="adv-donut-card__unit">Ton</span>
+                  <span className="adv-donut-card__value-label">Expected</span>
                 </div>
               </div>
               <span className="adv-donut-card__sub adv-donut-card__sub--accent">Potential {potentialYield} Ton</span>
