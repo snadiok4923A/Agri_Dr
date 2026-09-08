@@ -697,9 +697,8 @@
   grid-template-columns: repeat(3, 1fr);
 }
 
-.adv-top-grid--2 {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+.adv-top-grid--1 {
+  grid-template-columns: 1fr;
   width: 100%;
 }
 
@@ -727,7 +726,7 @@
 .adv-donut-card__chart {
   position: relative;
   width: 100%;
-  max-width: 130px;
+  max-width: 155px;
   aspect-ratio: 1 / 1;
   flex-shrink: 0;
 }
@@ -747,7 +746,7 @@
 }
 
 .adv-donut-card__unit {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-muted);
   font-weight: 600;
   margin-left: 1px;
@@ -1088,34 +1087,33 @@
   .adv-top-grid--3 {
     grid-template-columns: 1fr;
   }
-  .adv-top-grid--2 {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
+  .adv-top-grid--1 {
+    grid-template-columns: 1fr;
   }
   .adv-donut-card {
     padding: 14px 10px;
-    gap: 5px;
+    gap: 6px;
   }
   .adv-donut-card__chart-row {
-    gap: 8px;
+    gap: 10px;
   }
   .adv-donut-card__chart {
-    max-width: 100px;
+    max-width: 120px;
   }
   .adv-donut-card__value {
-    font-size: 18px;
+    font-size: 20px;
   }
   .adv-donut-card__unit {
-    font-size: 10px;
+    font-size: 12px;
   }
   .adv-donut-card__value-label {
-    font-size: 9px;
+    font-size: 10px;
   }
   .adv-donut-card__sub {
-    font-size: 11px;
+    font-size: 12px;
   }
   .adv-donut-card__sub-value {
-    font-size: 13px;
+    font-size: 14px;
   }
   .adv-charts-grid {
     grid-template-columns: 1fr;
@@ -1163,9 +1161,8 @@
   .adv-top-grid--3 {
     grid-template-columns: 1fr;
   }
-  .adv-top-grid--2 {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
+  .adv-top-grid--1 {
+    grid-template-columns: 1fr;
   }
   .adv-donut-card {
     padding: 14px 10px;
@@ -1175,22 +1172,22 @@
     gap: 10px;
   }
   .adv-donut-card__chart {
-    max-width: 95px;
+    max-width: 110px;
   }
   .adv-donut-card__value {
-    font-size: 18px;
+    font-size: 20px;
   }
   .adv-donut-card__unit {
-    font-size: 10px;
+    font-size: 12px;
   }
   .adv-donut-card__value-label {
-    font-size: 9px;
+    font-size: 10px;
   }
   .adv-donut-card__sub {
-    font-size: 11px;
+    font-size: 12px;
   }
   .adv-donut-card__sub-value {
-    font-size: 12px;
+    font-size: 14px;
   }
   .adv-card__label {
     font-size: 10px;

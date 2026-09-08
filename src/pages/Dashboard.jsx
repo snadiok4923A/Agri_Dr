@@ -1,5 +1,5 @@
 import { useLanguage } from '../hooks/useLanguage';
-import { farmData, fields, weatherData, recommendations, activityData } from '../data/mockData';
+import { fields, weatherData, recommendations, activityData } from '../data/mockData';
 import { useNavigate } from 'react-router-dom';
 import {
   CloudSun, Droplets, AlertTriangle, TrendingUp, MapPin,
@@ -38,8 +38,6 @@ export default function Dashboard() {
 
   const criticalActions = recommendations.filter(r => r.category === 'critical' || r.category === 'important').slice(0, 4);
 
-  const healthyArea = fields.filter(f => f.status === 'healthy').reduce((sum, f) => sum + f.area, 0);
-  const totalArea = farmData.totalLand;
   const totalYield = fields.reduce((sum, f) => sum + (f.cropAge / (f.variety === 'Basmati' ? 130 : f.variety === 'Samba Mahsuri' ? 115 : 120) * (f.variety === 'Basmati' ? 4.1 : f.variety === 'Samba Mahsuri' ? 3.5 : f.variety === 'Swarna' ? 3.2 : 3.8)), 0).toFixed(1);
   const potentialYield = fields.reduce((sum, f) => sum + (f.variety === 'Basmati' ? 4.6 : f.variety === 'Samba Mahsuri' ? 4.1 : f.variety === 'Swarna' ? 4.0 : 4.3), 0).toFixed(1);
   const warnings = fields.filter(f => f.status === 'needs-attention' || f.soilMoisture < 40);
@@ -64,46 +62,8 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Farm Area + Expected Yield */}
-      <div className="adv-top-grid adv-top-grid--2">
-        {/* Farm Area Donut */}
-        {(() => {
-          const areaDonutData = [
-            { name: 'Healthy', value: healthyArea },
-            { name: 'Remaining', value: totalArea - healthyArea },
-          ];
-          return (
-            <div className="adv-card adv-donut-card">
-              <span className="adv-card__label adv-card__label--center">Farm Area</span>
-              <div className="adv-donut-card__chart-row">
-                <div className="adv-donut-card__chart">
-                  <ResponsiveContainer width="100%" height="100%" aspect={1} minWidth={0}>
-                    <PieChart>
-                      <Pie
-                        data={areaDonutData}
-                        cx="50%" cy="50%"
-                        innerRadius="38%" outerRadius="52%"
-                        startAngle={90} endAngle={-270}
-                        dataKey="value"
-                        stroke="none"
-                      >
-                        <Cell fill="#4ade80" />
-                        <Cell fill="var(--border)" />
-                      </Pie>
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-                <div className="adv-donut-card__value-row">
-                  <span className="adv-donut-card__value">{totalArea}</span>
-                  <span className="adv-donut-card__unit">ac</span>
-                  <span className="adv-donut-card__value-label">Total</span>
-                </div>
-              </div>
-              <span className="adv-donut-card__sub adv-donut-card__sub--green"><span className="adv-donut-card__sub-value">{healthyArea}</span> ac healthy</span>
-            </div>
-          );
-        })()}
-
+      {/* Expected Yield */}
+      <div className="adv-top-grid adv-top-grid--1">
         {/* Expected Yield Donut */}
         {(() => {
           const yieldPct = Math.round((parseFloat(totalYield) / parseFloat(potentialYield)) * 100);
