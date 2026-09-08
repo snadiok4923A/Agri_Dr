@@ -9,12 +9,12 @@ Run from the project root:
 npm run dev
 ```
 
-The Vite dev server starts on port 5173 by default.
+The Vite dev server starts on port 5173 by default (but may need 5176 if 5173 is occupied).
 Base path: `/Agri_Dr/`
 
 ## Current preview
-- **URL**: `http://[::1]:5173/Agri_Dr/`
-- **Port**: 5173
+- **URL**: `http://[::1]:5176/Agri_Dr/`
+- **Port**: 5176
 - **Base path**: `/Agri_Dr/`
 
 ## Detach command (Windows PowerShell)
