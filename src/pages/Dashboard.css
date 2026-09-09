@@ -31,12 +31,13 @@
     gap: 6px;
     font-size: 12px;
     font-weight: 600;
-    color: var(--accent);
+    color: var(--gold);
     letter-spacing: 0.02em;
 }
 
 .dashboard-greeting-icon {
-    color: var(--accent);
+    color: var(--gold);
+    filter: drop-shadow(0 0 5px var(--gold-dim));
 }
 
 .dashboard-greeting-title {
@@ -67,7 +68,7 @@
 
 .dashboard-weather-compact:hover {
     transform: translateY(-2px);
-    border-color: var(--accent);
+    border-color: var(--leaf);
 }
 
 .dashboard-weather-info {
@@ -121,16 +122,38 @@
     overflow: hidden;
 }
 
-/* Background aesthetic soft gradient */
+/* ============================================================
+   GLASS PANEL SYSTEM — translucent cards floating on the aurora
+   ============================================================ */
+.dashboard-hero-card,
+.dashboard-stat-card,
+.dashboard-action-card,
+.dashboard-variety-chip,
+.dashboard-variety-spotlight,
+.dashboard-insight-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-highlight), 0 12px 40px rgba(0, 0, 0, 0.28);
+}
+
+/* Background aesthetic: soft gold-to-green aura inside the hero glass */
 .dashboard-hero-card::before {
     content: "";
     position: absolute;
     top: -40%;
-    left: -20%;
-    width: 320px;
-    height: 320px;
+    left: -12%;
+    width: 380px;
+    height: 380px;
     border-radius: 50%;
-    background: radial-gradient(circle, var(--accent-soft) 0%, transparent 70%);
+    background: radial-gradient(
+        circle,
+        var(--gold-soft) 0%,
+        var(--leaf-soft) 45%,
+        transparent 72%
+    );
+    filter: blur(24px);
     pointer-events: none;
 }
 
@@ -166,8 +189,76 @@
 
 .dashboard-ring-fill {
     fill: none;
-    stroke: var(--accent);
+    /* Golden harvest ring with a soft breathing glow */
+    stroke: var(--gold);
+    filter: drop-shadow(0 0 6px var(--gold-dim));
+    animation: ringGlow 4.5s ease-in-out infinite alternate;
     transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes ringGlow {
+    from {
+        filter: drop-shadow(0 0 4px var(--gold-dim));
+    }
+    to {
+        filter: drop-shadow(0 0 10px var(--gold-dim));
+    }
+}
+
+/* Tiny floating pollen particles inside the hero glass */
+.dashboard-hero-particles {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    border-radius: inherit;
+}
+
+.dashboard-hero-particles span {
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--gold);
+    opacity: 0.35;
+    filter: blur(1px);
+    animation: pollenFloat 9s ease-in-out infinite;
+}
+
+.dashboard-hero-particles span:nth-child(1) {
+    left: 18%;
+    bottom: 12%;
+    animation-delay: 0s;
+}
+
+.dashboard-hero-particles span:nth-child(2) {
+    left: 55%;
+    bottom: 8%;
+    background: var(--leaf);
+    animation-delay: 2.8s;
+    animation-duration: 11s;
+}
+
+.dashboard-hero-particles span:nth-child(3) {
+    left: 78%;
+    bottom: 18%;
+    animation-delay: 5.4s;
+    animation-duration: 10s;
+}
+
+@keyframes pollenFloat {
+    0%,
+    100% {
+        transform: translateY(0) translateX(0);
+        opacity: 0.12;
+    }
+    35% {
+        opacity: 0.4;
+    }
+    50% {
+        transform: translateY(-46px) translateX(8px);
+        opacity: 0.3;
+    }
 }
 
 .dashboard-ring-artwork {
@@ -238,16 +329,19 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 4px 12px;
-    background: var(--accent-soft);
-    border: 1px solid var(--border);
+    padding: 5px 14px;
+    background: var(--gold-soft);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-highlight);
     border-radius: var(--radius-full);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 }
 
 .dashboard-hero-pct {
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 800;
-    color: var(--accent);
+    color: var(--gold);
 }
 
 .dashboard-hero-pct-label {
@@ -321,10 +415,11 @@
     background: var(--border-light);
 }
 
-/* ==================== 3. PRODUCTION + PROFIT CARDS ==================== */
+/* ==================== 3. KEY METRIC CARDS (YIELD · PROFIT · COST · MEDICINE) ==================== */
 .dashboard-stats-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    /* Four production-first metrics on desktop */
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 16px;
 }
 
@@ -351,11 +446,23 @@
 }
 
 .dashboard-stat-card--prod:hover {
-    border-color: var(--accent);
+    border-color: var(--leaf);
+    box-shadow: var(--glass-highlight), 0 14px 44px rgba(111, 207, 142, 0.14);
 }
 
 .dashboard-stat-card--profit:hover {
-    border-color: var(--success);
+    border-color: var(--gold);
+    box-shadow: var(--glass-highlight), 0 14px 44px rgba(232, 184, 75, 0.14);
+}
+
+.dashboard-stat-card--cost:hover {
+    border-color: var(--leaf);
+    box-shadow: var(--glass-highlight), 0 14px 44px rgba(111, 207, 142, 0.14);
+}
+
+.dashboard-stat-card--medicine:hover {
+    border-color: var(--danger);
+    box-shadow: var(--glass-highlight), 0 14px 44px rgba(232, 99, 111, 0.14);
 }
 
 .dashboard-stat-card__top {
@@ -382,13 +489,23 @@
 }
 
 .dashboard-stat-card__icon--prod {
-    background: var(--accent-soft);
-    color: var(--accent);
+    background: var(--leaf-soft);
+    color: var(--leaf);
 }
 
 .dashboard-stat-card__icon--profit {
-    background: rgba(74, 222, 128, 0.12);
-    color: var(--success);
+    background: var(--gold-soft);
+    color: var(--gold);
+}
+
+.dashboard-stat-card__icon--cost {
+    background: var(--leaf-soft);
+    color: var(--leaf);
+}
+
+.dashboard-stat-card__icon--medicine {
+    background: rgba(232, 99, 111, 0.12);
+    color: var(--danger);
 }
 
 .dashboard-stat-card__main {
@@ -437,13 +554,45 @@
 }
 
 .dashboard-stat-card__pill--prod {
-    background: var(--accent-soft);
-    color: var(--accent);
+    background: var(--leaf-soft);
+    color: var(--leaf);
 }
 
 .dashboard-stat-card__pill--profit {
-    background: rgba(74, 222, 128, 0.12);
-    color: var(--success);
+    background: var(--gold-soft);
+    color: var(--gold);
+}
+
+.dashboard-stat-card__pill--cost {
+    background: var(--leaf-soft);
+    color: var(--leaf);
+}
+
+.dashboard-stat-card__pill--medicine {
+    background: rgba(232, 99, 111, 0.1);
+    color: var(--danger);
+}
+
+/* Medicine card: stacked name + quantity instead of one giant number */
+.dashboard-stat-card__main--stacked {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    align-items: flex-start;
+}
+
+.dashboard-stat-card__medicine-name {
+    font-size: 19px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+    line-height: 1.15;
+}
+
+.dashboard-stat-card__medicine-qty {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
 }
 
 .dashboard-stat-card__arrow {
@@ -481,7 +630,7 @@
 .dashboard-section-link {
     font-size: 12px;
     font-weight: 700;
-    color: var(--accent);
+    color: var(--leaf);
     cursor: pointer;
     transition: color var(--transition-fast);
 }
@@ -513,8 +662,9 @@
 
 .dashboard-action-card:hover {
     transform: translateY(-2px);
-    border-color: var(--accent);
-    background: var(--bg-elevated);
+    border-color: var(--gold-dim);
+    background: var(--glass-bg-strong);
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.32);
 }
 
 .dashboard-action-card__icon {
@@ -632,8 +782,8 @@
 }
 
 .dashboard-action-card__badge--production {
-    background: rgba(6, 182, 212, 0.12);
-    color: #06b6d4;
+    background: var(--gold-soft);
+    color: var(--gold);
 }
 
 .dashboard-action-card__subtitle {
@@ -654,7 +804,7 @@
 
 .dashboard-action-card:hover .dashboard-action-card__arrow {
     transform: translateX(3px);
-    color: var(--accent);
+    color: var(--gold);
 }
 
 /* ==================== 5. RICE VARIETIES ==================== */
@@ -685,14 +835,16 @@
 }
 
 .dashboard-variety-chip:hover {
-    border-color: var(--accent);
+    border-color: var(--leaf);
     color: var(--text-primary);
 }
 
 .dashboard-variety-chip--active {
-    background: var(--accent-soft);
-    border-color: var(--accent);
-    color: var(--accent);
+    /* Golden selection glow — echoes the production ring */
+    background: var(--gold-soft);
+    border-color: var(--gold-dim);
+    color: var(--gold);
+    box-shadow: 0 0 14px rgba(232, 184, 75, 0.12);
 }
 
 .dashboard-variety-chip__acre {
@@ -702,7 +854,7 @@
 }
 
 .dashboard-variety-chip--active .dashboard-variety-chip__acre {
-    color: var(--accent);
+    color: var(--gold);
     opacity: 0.8;
 }
 
@@ -762,9 +914,9 @@
 }
 
 .dashboard-variety-spotlight__btn:hover {
-    background: var(--accent-soft);
-    border-color: var(--accent);
-    color: var(--accent);
+    background: var(--leaf-soft);
+    border-color: var(--leaf);
+    color: var(--leaf);
 }
 
 .dashboard-variety-spotlight__metrics {
@@ -850,13 +1002,13 @@
     font-weight: 700;
     padding: 2px 8px;
     border-radius: var(--radius-full);
-    background: var(--accent-soft);
-    color: var(--accent);
+    background: var(--leaf-soft);
+    color: var(--leaf);
 }
 
 .dashboard-insight-card__badge--profit {
-    background: rgba(74, 222, 128, 0.12);
-    color: var(--success);
+    background: var(--gold-soft);
+    color: var(--gold);
 }
 
 .dashboard-insight-card__chart {
@@ -897,7 +1049,8 @@
 
 .dashboard-profit-bar-fill {
     height: 100%;
-    background: var(--success);
+    /* Golden profit gradient */
+    background: linear-gradient(90deg, var(--gold-dim), var(--gold));
     border-radius: var(--radius-full);
     transition: width 0.6s ease;
 }
@@ -917,6 +1070,11 @@
     .dashboard-hero-card {
         gap: 24px;
         padding: 22px;
+    }
+
+    /* Four metric cards fold into a 2×2 grid */
+    .dashboard-stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
@@ -961,6 +1119,14 @@
 
     .dashboard-stat-card__currency {
         font-size: 16px;
+    }
+
+    .dashboard-stat-card__medicine-name {
+        font-size: 15px;
+    }
+
+    .dashboard-stat-card__label {
+        font-size: 10px;
     }
 
     .dashboard-actions-grid {
@@ -1023,6 +1189,14 @@
 
     .dashboard-stat-card__currency {
         font-size: 14px;
+    }
+
+    .dashboard-stat-card__medicine-name {
+        font-size: 13px;
+    }
+
+    .dashboard-stat-card__medicine-qty {
+        font-size: 10.5px;
     }
 
     .dashboard-stat-card__label {

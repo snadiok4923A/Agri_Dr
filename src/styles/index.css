@@ -15,6 +15,13 @@
     --transition-slow: 350ms ease;
     --sidebar-width: 240px;
     --header-height: 64px;
+    /* Agricultural accent palette — Sonali gold + Kacha kolapata leaf green */
+    --gold: #e8b84b;
+    --gold-soft: rgba(232, 184, 75, 0.12);
+    --gold-dim: rgba(232, 184, 75, 0.55);
+    --leaf: #6fcf8e;
+    --leaf-soft: rgba(111, 207, 142, 0.12);
+    --forest: #123524;
 }
 
 /* Dark Theme (Default) */
@@ -58,6 +65,17 @@
     --green-900: #090b0a;
     --earth-100: #1c1b1a;
     --earth-200: #141312;
+    /* Glassmorphism tokens (dark) */
+    --glass-bg: rgba(255, 255, 255, 0.04);
+    --glass-bg-strong: rgba(255, 255, 255, 0.06);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.07);
+    --glass-blur: 18px;
+    --gold: #e8b84b;
+    --gold-soft: rgba(232, 184, 75, 0.12);
+    --gold-dim: rgba(232, 184, 75, 0.55);
+    --leaf: #6fcf8e;
+    --leaf-soft: rgba(111, 207, 142, 0.12);
 }
 
 /* Light Theme — Warm Coffee / Cream Palette */
@@ -100,6 +118,16 @@
     --green-900: #29261f;
     --earth-100: #f5f0e8;
     --earth-200: #efe8dc;
+    /* Glass tokens neutralised for the light (coffee) theme */
+    --glass-bg: rgba(255, 255, 255, 0.5);
+    --glass-bg-strong: rgba(255, 255, 255, 0.65);
+    --glass-border: rgba(41, 38, 31, 0.08);
+    --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    --gold: #b8860b;
+    --gold-soft: rgba(184, 134, 11, 0.1);
+    --gold-dim: rgba(184, 134, 11, 0.6);
+    --leaf: #3f8051;
+    --leaf-soft: rgba(63, 128, 81, 0.1);
 }
 
 * {
@@ -126,6 +154,69 @@ body {
         background var(--transition-base),
         color var(--transition-base);
     overflow-x: hidden;
+}
+
+/* ============================================================
+   ATMOSPHERIC GRADIENT BACKGROUND (dark theme)
+   Large, heavily-softened gold + leaf-green glows drifting very
+   slowly behind the glass panels. Scoped to dark theme so the
+   coffee light theme remains untouched.
+   ============================================================ */
+[data-theme="dark"] body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    pointer-events: none;
+    background:
+        radial-gradient(
+            42rem 34rem at 12% -6%,
+            rgba(232, 184, 75, 0.13),
+            transparent 68%
+        ),
+        radial-gradient(
+            46rem 40rem at 96% 8%,
+            rgba(111, 207, 142, 0.1),
+            transparent 70%
+        ),
+        radial-gradient(
+            52rem 44rem at 50% 118%,
+            rgba(18, 53, 36, 0.55),
+            transparent 72%
+        ),
+        var(--bg-primary);
+    animation: auroraDrift 38s ease-in-out infinite alternate;
+}
+
+/* Faint vignette to seat the glow — keeps the centre calm for content */
+[data-theme="dark"] body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: radial-gradient(
+        120rem 80rem at 50% 40%,
+        transparent 55%,
+        rgba(0, 0, 0, 0.28) 100%
+    );
+}
+
+@keyframes auroraDrift {
+    0% {
+        background-position:
+            0% 0%,
+            0% 0%,
+            50% 100%;
+        filter: hue-rotate(0deg);
+    }
+    100% {
+        background-position:
+            4% 3%,
+            -3% -2%,
+            46% 96%;
+        filter: hue-rotate(6deg);
+    }
 }
 
 #root {

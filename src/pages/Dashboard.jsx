@@ -2,7 +2,13 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import { useLanguage } from "../hooks/useLanguage";
-import { farmData, crops, weatherData, analyticsData } from "../data/mockData";
+import {
+    farmData,
+    crops,
+    fields,
+    weatherData,
+    analyticsData,
+} from "../data/mockData";
 import {
     ArrowRight,
     ChevronRight,
@@ -11,6 +17,8 @@ import {
     Sprout,
     Wheat,
     Sparkles,
+    IndianRupee,
+    Pill,
 } from "lucide-react";
 import { AreaChart, Area, ResponsiveContainer, XAxis, Tooltip } from "recharts";
 import {
@@ -67,6 +75,14 @@ export default function Dashboard() {
     const currentEst = farmData.currentProductionEstimate;
     const yieldPct = Math.round((currentEst / totalYield) * 100);
 
+    // Highest-urgency treatment across fields (drives the medicine card)
+    const urgentField =
+        fields.find((f) => f.medicineRequirement?.urgency === "high") || fields[0];
+    const treatment = urgentField.medicineRequirement;
+    const costShare = Math.round(
+        (farmData.estimatedCost / farmData.estimatedRevenue) * 100,
+    );
+
     // Circular progress calculations (Radius 70, Stroke 10, Box 160)
     const ringRadius = 66;
     const ringCircumference = 2 * Math.PI * ringRadius;
@@ -101,8 +117,10 @@ export default function Dashboard() {
         {
             id: "yield",
             type: "production",
-            title: "16.1 Ton Target on Track",
-            subtitle: "Close 2.3T gap for +₹89K profit",
+            title: "Expected Profit Opportunity",
+            subtitle: `Close ${(
+                farmData.potentialYield - totalYield
+            ).toFixed(1)}T gap for +₹89K profit`,
             badge: "+78% Margin",
             path: "/improve",
         },
@@ -149,6 +167,12 @@ export default function Dashboard() {
             {/* ==================== 2. MAIN RICE PRODUCTION VISUAL ==================== */}
             <motion.section className="dashboard-hero-section" {...reveal(1)}>
                 <div className="dashboard-hero-card">
+                    {/* Soft floating pollen particles — atmosphere, not distraction */}
+                    <div className="dashboard-hero-particles" aria-hidden="true">
+                        <span />
+                        <span />
+                        <span />
+                    </div>
                     {/* Left: Beautiful Agricultural Vector with Circular Progress Ring */}
                     <div className="dashboard-hero-visual">
                         <div className="dashboard-ring-container">
@@ -335,6 +359,77 @@ export default function Dashboard() {
                         </span>
                     </div>
                 </div>
+
+                {/* Production Cost Card */}
+                <div
+                    className="dashboard-stat-card dashboard-stat-card--cost"
+                    onClick={() => navigate("/finance")}
+                    role="button"
+                    tabIndex={0}
+                >
+                    <div className="dashboard-stat-card__top">
+                        <span className="dashboard-stat-card__label">
+                            Estimated Production Cost
+                        </span>
+                        <div className="dashboard-stat-card__icon dashboard-stat-card__icon--cost">
+                            <IndianRupee size={18} />
+                        </div>
+                    </div>
+                    <div className="dashboard-stat-card__main">
+                        <span className="dashboard-stat-card__currency">₹</span>
+                        <span className="dashboard-stat-card__number">
+                            <AnimatedNumber value={farmData.estimatedCost} />
+                        </span>
+                    </div>
+                    <div className="dashboard-stat-card__footer">
+                        <span className="dashboard-stat-card__pill dashboard-stat-card__pill--cost">
+                            <TrendingUp size={12} style={{ transform: "rotate(180deg)" }} />
+                            <span>
+                                <AnimatedNumber value={costShare} decimals={1} />
+                                % of Revenue
+                            </span>
+                        </span>
+                        <span className="dashboard-stat-card__arrow">
+                            <ArrowRight size={14} />
+                        </span>
+                    </div>
+                </div>
+
+                {/* Treatment / Medicine Card */}
+                <div
+                    className="dashboard-stat-card dashboard-stat-card--medicine"
+                    onClick={() => navigate("/disease")}
+                    role="button"
+                    tabIndex={0}
+                >
+                    <div className="dashboard-stat-card__top">
+                        <span className="dashboard-stat-card__label">
+                            Treatment Required
+                        </span>
+                        <div className="dashboard-stat-card__icon dashboard-stat-card__icon--medicine">
+                            <Pill size={18} />
+                        </div>
+                    </div>
+                    <div className="dashboard-stat-card__main dashboard-stat-card__main--stacked">
+                        <span className="dashboard-stat-card__medicine-name">
+                            {treatment.medicine.split(" ").slice(0, 2).join(" ")}
+                        </span>
+                        <span className="dashboard-stat-card__medicine-qty">
+                            Required: {treatment.quantity}
+                        </span>
+                    </div>
+                    <div className="dashboard-stat-card__footer">
+                        <span className="dashboard-stat-card__pill dashboard-stat-card__pill--medicine">
+                            <Sparkles size={12} />
+                            <span>
+                                {urgentField.name} · {treatment.purpose.split(" ")[0]} Blast
+                            </span>
+                        </span>
+                        <span className="dashboard-stat-card__arrow">
+                            <ArrowRight size={14} />
+                        </span>
+                    </div>
+                </div>
             </motion.section>
 
             {/* ==================== 4. IMPORTANT ACTIONS ==================== */}
@@ -506,10 +601,10 @@ export default function Dashboard() {
                         <div className="dashboard-insight-card__header">
                             <div>
                                 <span className="dashboard-insight-card__title">
-                                    Season Production Flow
+                                    Production Forecast
                                 </span>
                                 <span className="dashboard-insight-card__sub">
-                                    April to September (Tons)
+                                    April – September (Tons)
                                 </span>
                             </div>
                             <span className="dashboard-insight-card__badge">
@@ -587,10 +682,10 @@ export default function Dashboard() {
                         <div className="dashboard-insight-card__header">
                             <div>
                                 <span className="dashboard-insight-card__title">
-                                    Net Profit by Variety
+                                    Profit Forecast
                                 </span>
                                 <span className="dashboard-insight-card__sub">
-                                    Total: ₹4,89,680 (78.3% Margin)
+                                    By variety · Total ₹4,89,680
                                 </span>
                             </div>
                             <span className="dashboard-insight-card__badge dashboard-insight-card__badge--profit">
