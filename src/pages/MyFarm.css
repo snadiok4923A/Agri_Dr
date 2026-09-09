@@ -1,314 +1,309 @@
 .myfarm__title {
-  font-size: 28px;
-  font-weight: 800;
-  letter-spacing: -0.03em;
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
 }
 
 .myfarm__subtitle {
-  font-size: 14px;
-  color: var(--text-muted);
-  margin-top: 4px;
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-top: 4px;
 }
 
 .myfarm__stats {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
 }
 
 .myfarm__stat {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 20px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 20px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
 }
 
 .myfarm__stat-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
 }
 
 .myfarm__stat-content {
-  display: flex;
-  flex-direction: column;
+    display: flex;
+    flex-direction: column;
 }
 
 .myfarm__stat-value {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--text-primary);
-  letter-spacing: -0.02em;
-  line-height: 1.1;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
 }
 
 .myfarm__stat-unit {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-muted);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-muted);
 }
 
 .myfarm__stat-label {
-  font-size: 12px;
-  color: var(--text-muted);
-  margin-top: 2px;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
 }
 
 /* Farm Map */
 .myfarm__map-container {
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 24px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 24px;
 }
 
 .myfarm__map-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 180px 180px;
-  gap: 12px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 170px 170px;
+    gap: 14px;
 }
 
 .myfarm__map-field {
-  position: relative;
-  border: 2px dashed var(--border);
-  border-radius: var(--radius-lg);
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  overflow: hidden;
-}
-
-.myfarm__map-field::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  opacity: 0.05;
-  border-radius: var(--radius-lg);
-}
-
-.myfarm__map-field--healthy::before {
-  background: var(--accent);
-}
-
-.myfarm__map-field--needs-attention::before {
-  background: var(--warning);
+    position: relative;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    background: var(--bg-elevated);
 }
 
 .myfarm__map-field:hover {
-  border-color: var(--accent);
-  transform: scale(1.01);
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
 }
 
-.myfarm__map-field--needs-attention:hover {
-  border-color: var(--warning);
+.myfarm__map-field--healthy {
+    border-color: rgba(74, 222, 128, 0.25);
+}
+
+.myfarm__map-field--needs-attention {
+    border-color: rgba(232, 169, 78, 0.35);
 }
 
 .myfarm__map-field-inner {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
 .myfarm__map-field-name {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--text-primary);
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--text-primary);
 }
 
 .myfarm__map-field-crop {
-  font-size: 13px;
-  color: var(--text-secondary);
+    font-size: 13px;
+    color: var(--text-secondary);
 }
 
-.myfarm__map-field-health {
-  font-size: 32px;
-  font-weight: 800;
-  color: var(--text-primary);
-  letter-spacing: -0.03em;
+.myfarm__map-field-yield-box {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-top: 6px;
+}
+
+.myfarm__map-field-yield-val {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+.myfarm__map-field-profit-val {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--success);
 }
 
 .myfarm__map-field-area {
-  font-size: 12px;
-  color: var(--text-muted);
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.myfarm__map-field-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-muted);
+    padding-top: 8px;
+    border-top: 1px solid var(--border-light);
 }
 
 .myfarm__map-legend {
-  display: flex;
-  gap: 20px;
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border);
+    display: flex;
+    gap: 16px;
 }
 
 .myfarm__legend-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-muted);
 }
 
 .myfarm__legend-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: var(--radius-full);
+    width: 8px;
+    height: 8px;
+    border-radius: var(--radius-full);
 }
 
 .myfarm__legend-dot--healthy {
-  background: var(--accent);
+    background: var(--accent);
 }
 
 .myfarm__legend-dot--attention {
-  background: var(--warning);
+    background: var(--warning);
 }
 
 /* Field List */
 .myfarm__section-title {
-  font-size: 17px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 14px;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 14px;
 }
 
 .myfarm__field-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .myfarm__field-row {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 16px 20px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  cursor: pointer;
-  transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all var(--transition-fast);
 }
 
 .myfarm__field-row:hover {
-  border-color: var(--accent);
-  box-shadow: var(--shadow-sm);
+    border-color: var(--accent);
+    box-shadow: var(--shadow-sm);
 }
 
 .myfarm__field-row-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
 }
 
 .myfarm__field-row-color {
-  width: 4px;
-  height: 36px;
-  border-radius: var(--radius-full);
+    width: 4px;
+    height: 36px;
+    border-radius: var(--radius-full);
 }
 
 .myfarm__field-row-name {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-primary);
-  display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: block;
 }
 
 .myfarm__field-row-crop {
-  font-size: 12px;
-  color: var(--text-muted);
-  display: block;
-  margin-top: 2px;
+    font-size: 12px;
+    color: var(--text-muted);
+    display: block;
+    margin-top: 2px;
 }
 
 .myfarm__field-row-center {
-  min-width: 120px;
+    min-width: 110px;
 }
 
 .myfarm__field-row-right {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
 }
 
 .myfarm__field-row-production {
-  display: flex;
-  align-items: center;
-  gap: 20px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
 }
 
 .myfarm__field-row-stat {
-  display: flex;
-  flex-direction: column;
+    display: flex;
+    flex-direction: column;
+    min-width: 70px;
 }
 
 .myfarm__field-row-stat-label {
-  font-size: 10px;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-weight: 600;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-muted);
 }
 
 .myfarm__field-row-stat-value {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-.myfarm__field-row-details {
-  display: flex;
-  gap: 12px;
-  font-size: 12px;
-  color: var(--text-muted);
-}
-
-.myfarm__field-row-details span {
-  display: flex;
-  align-items: center;
-  gap: 4px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-top: 2px;
 }
 
 .myfarm__field-row-arrow {
-  color: var(--text-muted);
-  flex-shrink: 0;
+    color: var(--text-muted);
 }
 
-@media (max-width: 1024px) {
-  .myfarm__stats {
-    grid-template-columns: repeat(2, 1fr);
-  }
+@media (max-width: 900px) {
+    .myfarm__stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .myfarm__field-row-production {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
 }
 
-@media (max-width: 768px) {
-  .myfarm__stats {
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-  .myfarm__stat {
-    padding: 14px;
-  }
-  .myfarm__stat-value {
-    font-size: 18px;
-  }
-  .myfarm__map-grid {
-    grid-template-rows: 140px 140px;
-  }
-  .myfarm__field-row {
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-  .myfarm__field-row-center {
-    min-width: auto;
-  }
+@media (max-width: 600px) {
+    .myfarm__stats {
+        grid-template-columns: 1fr;
+    }
+    .myfarm__map-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+    }
+    .myfarm__field-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .myfarm__field-row-right {
+        width: 100%;
+        justify-content: space-between;
+    }
 }

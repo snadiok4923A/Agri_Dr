@@ -1,123 +1,164 @@
 .fertilizer-page__title {
-  font-size: 28px;
-  font-weight: 800;
-  letter-spacing: -0.03em;
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
 }
 
 .fertilizer-page__section-title {
-  font-size: 17px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 14px;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 14px;
 }
 
 .fertilizer-page__upcoming-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
 }
 
 .fertilizer-page__upcoming-card {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 18px 20px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+    padding: 18px 22px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.fertilizer-page__upcoming-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .fertilizer-page__upcoming-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-md);
-  background: var(--accent-soft);
-  color: var(--accent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.fertilizer-page__upcoming-info {
-  flex: 1;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    background: var(--accent-soft);
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
 }
 
 .fertilizer-page__upcoming-product {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text-primary);
-  display: block;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: block;
 }
 
 .fertilizer-page__upcoming-detail {
-  font-size: 12px;
-  color: var(--text-muted);
+    font-size: 12px;
+    color: var(--text-muted);
+    display: block;
+    margin-top: 2px;
 }
 
-.fertilizer-page__upcoming-amount {
-  text-align: right;
-  min-width: 100px;
+.fertilizer-page__upcoming-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    padding: 12px 16px;
+    background: var(--bg-elevated);
+    border-radius: var(--radius-md);
 }
 
-.fertilizer-page__upcoming-qty {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text-primary);
-  display: block;
+.fertilizer-page__col-lbl {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    display: block;
 }
 
-.fertilizer-page__upcoming-due {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  color: var(--text-muted);
-  justify-content: flex-end;
+.fertilizer-page__col-val {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
+.fertilizer-page__benefit-banner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: rgba(74, 222, 128, 0.1);
+    border-radius: var(--radius-sm);
+}
+
+.fertilizer-page__benefit-text {
+    font-size: 12px;
+    color: var(--success);
+}
+
+/* History */
 .fertilizer-page__history-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .fertilizer-page__history-row {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 14px 20px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 20px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
 }
 
 .fertilizer-page__history-date {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-muted);
-  min-width: 60px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    min-width: 90px;
 }
 
 .fertilizer-page__history-info {
-  flex: 1;
+    flex: 1;
 }
 
 .fertilizer-page__history-product {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-primary);
-  display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: block;
 }
 
 .fertilizer-page__history-detail {
-  font-size: 12px;
-  color: var(--text-muted);
+    font-size: 12px;
+    color: var(--text-muted);
+    display: block;
+    margin-top: 1px;
+}
+
+.fertilizer-page__history-benefit {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--success);
+    font-weight: 500;
 }
 
 @media (max-width: 768px) {
-  .fertilizer-page__upcoming-card {
-    flex-wrap: wrap;
-    gap: 10px;
-  }
+    .fertilizer-page__upcoming-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    .fertilizer-page__history-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
 }
