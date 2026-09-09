@@ -1,822 +1,639 @@
-import { useLanguage } from "../hooks/useLanguage";
-import {
-    farmData,
-    fields,
-    crops,
-    financeData,
-    weatherData,
-    recommendations,
-    activityData,
-    analyticsData,
-} from "../data/mockData";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion, useReducedMotion } from "framer-motion";
+import { useLanguage } from "../hooks/useLanguage";
+import { farmData, crops, weatherData, analyticsData } from "../data/mockData";
 import {
-    CloudSun,
-    Droplets,
-    AlertTriangle,
-    TrendingUp,
-    TrendingDown,
-    Wind,
     ArrowRight,
-    Wheat,
-    Coins,
-    DollarSign,
-    Sprout,
-    Bug,
-    FlaskConical,
-    ShieldAlert,
-    Sparkles,
     ChevronRight,
+    TrendingUp,
+    Coins,
+    Sprout,
+    Wheat,
+    Sparkles,
 } from "lucide-react";
+import { AreaChart, Area, ResponsiveContainer, XAxis, Tooltip } from "recharts";
 import {
-    LineChart,
-    Line,
-    AreaChart,
-    Area,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    Tooltip,
-    ResponsiveContainer,
-    PieChart,
-    Pie,
-    Cell,
-} from "recharts";
-import StatusBadge from "../components/common/StatusBadge";
+    RicePlantIllustration,
+    WeatherSunCloudIllustration,
+    AgriActionIcon,
+} from "../components/common/AgriIllustrations";
+import AnimatedNumber from "../components/common/AnimatedNumber";
 import "./Dashboard.css";
 
 const getGreeting = (t) => {
     const hour = new Date().getHours();
-    if (hour < 12) return t("dashboard.greeting");
-    if (hour < 17) return t("dashboard.greetingAfternoon");
-    return t("dashboard.greetingEvening");
+    if (hour < 12) return t("dashboard.greeting") || "Good morning";
+    if (hour < 17) return t("dashboard.greetingAfternoon") || "Good afternoon";
+    return t("dashboard.greetingEvening") || "Good evening";
+};
+
+// Reveal sections with a subtle, staggered fade-up (skipped for reduced motion)
+const sectionVariants = {
+    hidden: { opacity: 0, y: 14 },
+    show: (i) => ({
+        opacity: 1,
+        y: 0,
+        transition: {
+            duration: 0.45,
+            delay: i * 0.06,
+            ease: [0.16, 1, 0.3, 1],
+        },
+    }),
 };
 
 export default function Dashboard() {
     const { t } = useLanguage();
     const navigate = useNavigate();
+    const shouldReduceMotion = useReducedMotion();
+
+    // Helper to spread the fade-up reveal props onto a section, in order
+    const reveal = (i) =>
+        shouldReduceMotion
+            ? {}
+            : {
+                  variants: sectionVariants,
+                  initial: "hidden",
+                  animate: "show",
+                  custom: i,
+              };
+
+    // Active variety selection for quick spotlight
+    const [selectedVarietyId, setSelectedVarietyId] = useState(crops[0].id);
+    const selectedVariety =
+        crops.find((c) => c.id === selectedVarietyId) || crops[0];
 
     const totalYield = farmData.expectedYield;
-    const potentialYield = farmData.potentialYield;
     const currentEst = farmData.currentProductionEstimate;
     const yieldPct = Math.round((currentEst / totalYield) * 100);
 
-    const yieldDonutData = [
-        { name: "Achieved", value: yieldPct },
-        { name: "Remaining", value: 100 - yieldPct },
+    // Circular progress calculations (Radius 70, Stroke 10, Box 160)
+    const ringRadius = 66;
+    const ringCircumference = 2 * Math.PI * ringRadius;
+    const ringOffset = ringCircumference - (yieldPct / 100) * ringCircumference;
+
+    // Simple, high-priority action cards
+    const actionItems = [
+        {
+            id: "med",
+            type: "medicine",
+            title: "Leaf Blast Treatment",
+            subtitle: "Spray Tricyclazole in Field B",
+            badge: "Action Needed",
+            path: "/disease",
+        },
+        {
+            id: "fert",
+            type: "fertilizer",
+            title: "Urea Top-Dressing",
+            subtitle: "40 kg required in Field A",
+            badge: "Due Tomorrow",
+            path: "/fertilizer",
+        },
+        {
+            id: "mkt",
+            type: "market",
+            title: "Basmati Price Up +5.1%",
+            subtitle: "₹5,200/Q at Burdwan Mandi",
+            badge: "Sell Premium",
+            path: "/market",
+        },
+        {
+            id: "yield",
+            type: "production",
+            title: "16.1 Ton Target on Track",
+            subtitle: "Close 2.3T gap for +₹89K profit",
+            badge: "+78% Margin",
+            path: "/improve",
+        },
     ];
 
-    const criticalActions = recommendations.slice(0, 4);
-
     return (
-        <div className="page-container dashboard adv-dashboard">
-            {/* Greeting + Weather Advisory Row */}
-            <div className="adv-greeting-row">
-                <div>
-                    <h1 className="adv-greeting-row__text">
+        <div className="page-container dashboard-page">
+            {/* ==================== 1. GREETING + WEATHER ==================== */}
+            <motion.section className="dashboard-greeting-row" {...reveal(0)}>
+                <div className="dashboard-greeting-left">
+                    <span className="dashboard-greeting-tag">
+                        <Wheat size={14} className="dashboard-greeting-icon" />
+                        {farmData.name} · {farmData.totalLand} Acres
+                    </span>
+                    <h1 className="dashboard-greeting-title">
                         {getGreeting(t)}, {farmData.owner}
                     </h1>
-                    <p className="dashboard__greeting-sub">
-                        {farmData.name} · {farmData.location}
-                    </p>
                 </div>
+
+                {/* Compact Weather Widget */}
                 <div
-                    className="adv-card adv-weather-compact"
+                    className="dashboard-weather-compact"
                     onClick={() => navigate("/weather")}
-                    style={{ cursor: "pointer" }}
+                    title="View Weather & Spraying Advisory"
                 >
-                    <div className="adv-weather-compact__main">
-                        <CloudSun
-                            size={20}
-                            className="adv-weather-compact__icon"
-                        />
-                        <div>
-                            <span className="adv-weather-compact__temp">
+                    <WeatherSunCloudIllustration size={38} />
+                    <div className="dashboard-weather-info">
+                        <div className="dashboard-weather-temp-row">
+                            <span className="dashboard-weather-temp">
                                 {weatherData.current.temperature}°
                             </span>
-                            <span className="adv-weather-compact__cond">
+                            <span className="dashboard-weather-cond">
                                 {weatherData.current.condition}
                             </span>
                         </div>
-                    </div>
-                    <div className="adv-weather-compact__row">
-                        <span className="adv-weather-compact__chip">
-                            <Droplets size={10} />{" "}
-                            {weatherData.current.humidity}%
-                        </span>
-                        <span className="adv-weather-compact__chip">
-                            <Wind size={10} /> {weatherData.current.wind} km/h
-                        </span>
+                        <div className="dashboard-weather-meta">
+                            <span>💧 {weatherData.current.humidity}%</span>
+                            <span>💨 {weatherData.current.wind} km/h</span>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </motion.section>
 
-            {/* Priority 1 & 2: Overall Production & Expected Yield Card */}
-            <div className="adv-top-grid adv-top-grid--1">
-                <div className="adv-card adv-production-card">
-                    {/* Donut progress */}
-                    <div className="adv-production-card__left">
-                        <div className="adv-production-card__donut">
-                            <ResponsiveContainer
-                                width="100%"
-                                height="100%"
-                                aspect={1}
-                                minWidth={0}
+            {/* ==================== 2. MAIN RICE PRODUCTION VISUAL ==================== */}
+            <motion.section className="dashboard-hero-section" {...reveal(1)}>
+                <div className="dashboard-hero-card">
+                    {/* Left: Beautiful Agricultural Vector with Circular Progress Ring */}
+                    <div className="dashboard-hero-visual">
+                        <div className="dashboard-ring-container">
+                            <svg
+                                className="dashboard-ring-svg"
+                                width="160"
+                                height="160"
+                                viewBox="0 0 160 160"
                             >
-                                <PieChart>
-                                    <Pie
-                                        data={yieldDonutData}
-                                        cx="50%"
-                                        cy="50%"
-                                        innerRadius="75%"
-                                        outerRadius="100%"
-                                        startAngle={90}
-                                        endAngle={-270}
-                                        dataKey="value"
-                                        stroke="none"
-                                        cornerRadius={6}
-                                    >
-                                        <Cell fill="var(--accent)" />
-                                        <Cell fill="var(--bg-elevated)" />
-                                    </Pie>
-                                </PieChart>
-                            </ResponsiveContainer>
-                            <div className="adv-production-card__donut-center">
-                                <span className="adv-production-card__donut-val">
-                                    {yieldPct}%
-                                </span>
+                                {/* Background Ring */}
+                                <circle
+                                    cx="80"
+                                    cy="80"
+                                    r={ringRadius}
+                                    className="dashboard-ring-bg"
+                                    strokeWidth="9"
+                                />
+                                {/* Progress Ring with Smooth Dasharray */}
+                                <circle
+                                    cx="80"
+                                    cy="80"
+                                    r={ringRadius}
+                                    className="dashboard-ring-fill"
+                                    strokeWidth="9"
+                                    strokeDasharray={ringCircumference}
+                                    strokeDashoffset={ringOffset}
+                                    strokeLinecap="round"
+                                    transform="rotate(-90 80 80)"
+                                />
+                            </svg>
+
+                            {/* Centered Rice Illustration */}
+                            <div className="dashboard-ring-artwork">
+                                <RicePlantIllustration size={105} />
                             </div>
                         </div>
-                        <div
-                            className="adv-production-card__status"
-                            style={{ color: "var(--success)" }}
-                        >
-                            <span
-                                className="adv-production-card__status-dot"
-                                style={{ backgroundColor: "var(--success)" }}
-                            ></span>
-                            {t("common.healthy")}
-                        </div>
-                    </div>
 
-                    {/* Data Comparison */}
-                    <div className="adv-production-card__right">
-                        <div
-                            style={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                            }}
-                        >
-                            <span className="adv-card__label">
-                                {t("dashboard.overallProduction")}
+                        {/* Overall Percentage Badge */}
+                        <div className="dashboard-hero-progress-pill">
+                            <span className="dashboard-hero-pct">
+                                <AnimatedNumber value={yieldPct} />%
                             </span>
-                            <span
-                                style={{
-                                    fontSize: 12,
-                                    color: "var(--text-muted)",
-                                }}
-                            >
-                                {farmData.totalLand} {t("dashboard.acres")} · 4{" "}
-                                {t("dashboard.activeCrops")}
+                            <span className="dashboard-hero-pct-label">
+                                Production Target
                             </span>
                         </div>
+                    </div>
 
-                        <div className="adv-production-card__comparison">
-                            <div className="adv-production-card__column">
-                                <span className="adv-production-card__col-label">
-                                    ESTIMATED PROGRESS
+                    {/* Right: Quick Production Summary */}
+                    <div className="dashboard-hero-details">
+                        <div className="dashboard-hero-badge">
+                            <Sprout size={14} />
+                            <span>
+                                Kharif Season · {farmData.activeCrops} Rice
+                                Varieties
+                            </span>
+                        </div>
+                        <h2 className="dashboard-hero-heading">
+                            <AnimatedNumber value={currentEst} decimals={1} />{" "}
+                            of{" "}
+                            <AnimatedNumber value={totalYield} decimals={1} />{" "}
+                            Tons
+                        </h2>
+
+                        <div className="dashboard-hero-metrics-row">
+                            <div className="dashboard-hero-mini-stat">
+                                <span className="dashboard-hero-stat-label">
+                                    In-Field Now
                                 </span>
-                                <span className="adv-production-card__main-val">
-                                    {currentEst}{" "}
-                                    <span className="adv-production-card__unit">
-                                        {t("dashboard.tons")}
-                                    </span>
-                                </span>
-                                <span className="adv-production-card__sub-val">
-                                    {(currentEst * 1000).toLocaleString()} kg in
-                                    progress
+                                <span className="dashboard-hero-stat-val">
+                                    <AnimatedNumber
+                                        value={currentEst}
+                                        decimals={1}
+                                    />{" "}
+                                    Ton
                                 </span>
                             </div>
-
-                            <div className="adv-production-card__divider"></div>
-
-                            <div className="adv-production-card__column">
-                                <span className="adv-production-card__col-label">
-                                    {t("dashboard.expectedYield")}
+                            <div className="dashboard-hero-stat-div" />
+                            <div className="dashboard-hero-mini-stat">
+                                <span className="dashboard-hero-stat-label">
+                                    Season Target
                                 </span>
-                                <span className="adv-production-card__main-val">
-                                    {totalYield}{" "}
-                                    <span className="adv-production-card__unit">
-                                        {t("dashboard.tons")}
-                                    </span>
-                                </span>
-                                <span className="adv-production-card__sub-val">
-                                    {(totalYield * 1000).toLocaleString()} kg
-                                    target
+                                <span className="dashboard-hero-stat-val">
+                                    <AnimatedNumber
+                                        value={totalYield}
+                                        decimals={1}
+                                    />{" "}
+                                    Ton
                                 </span>
                             </div>
-
-                            <div className="adv-production-card__divider"></div>
-
-                            <div className="adv-production-card__column">
-                                <span className="adv-production-card__col-label">
-                                    {t("dashboard.potentialYield")}
+                            <div className="dashboard-hero-stat-div" />
+                            <div className="dashboard-hero-mini-stat">
+                                <span className="dashboard-hero-stat-label">
+                                    Max Potential
                                 </span>
-                                <span className="adv-production-card__main-val">
-                                    {potentialYield}{" "}
-                                    <span className="adv-production-card__unit">
-                                        {t("dashboard.tons")}
-                                    </span>
-                                </span>
-                                <span className="adv-production-card__sub-val">
-                                    {(potentialYield * 1000).toLocaleString()}{" "}
-                                    kg maximum
+                                <span className="dashboard-hero-stat-val">
+                                    <AnimatedNumber
+                                        value={farmData.potentialYield}
+                                        decimals={1}
+                                    />{" "}
+                                    Ton
                                 </span>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </motion.section>
 
-            {/* Priority 3: Expected Profit & Financial Highlights */}
-            <div className="adv-finance-grid">
+            {/* ==================== 3. PRODUCTION + PROFIT CARDS ==================== */}
+            <motion.section className="dashboard-stats-grid" {...reveal(2)}>
+                {/* Production Card */}
                 <div
-                    className="adv-finance-card"
-                    onClick={() => navigate("/finance")}
-                    style={{ cursor: "pointer" }}
-                >
-                    <div className="adv-finance-card__header">
-                        <span className="adv-finance-card__label">
-                            {t("dashboard.estimatedRevenue")}
-                        </span>
-                        <Coins size={16} color="var(--accent)" />
-                    </div>
-                    <div className="adv-finance-card__value">
-                        ₹{farmData.estimatedRevenue.toLocaleString("en-IN")}
-                    </div>
-                    <div className="adv-finance-card__sub">
-                        <span>Avg ₹3,886 / Quintal</span>
-                    </div>
-                </div>
-
-                <div
-                    className="adv-finance-card"
-                    onClick={() => navigate("/finance")}
-                    style={{ cursor: "pointer" }}
-                >
-                    <div className="adv-finance-card__header">
-                        <span className="adv-finance-card__label">
-                            {t("dashboard.productionCost")}
-                        </span>
-                        <DollarSign size={16} color="var(--warning)" />
-                    </div>
-                    <div className="adv-finance-card__value">
-                        ₹{farmData.estimatedCost.toLocaleString("en-IN")}
-                    </div>
-                    <div className="adv-finance-card__sub">
-                        <span>₹15,813 / Acre average</span>
-                    </div>
-                </div>
-
-                <div
-                    className="adv-finance-card adv-finance-card--highlight"
-                    onClick={() => navigate("/finance")}
-                    style={{ cursor: "pointer" }}
-                >
-                    <div className="adv-finance-card__header">
-                        <span className="adv-finance-card__label">
-                            {t("dashboard.expectedProfit")}
-                        </span>
-                        <span className="adv-finance-card__badge">
-                            +{farmData.profitMargin}% Margin
-                        </span>
-                    </div>
-                    <div
-                        className="adv-finance-card__value"
-                        style={{ color: "var(--success)" }}
-                    >
-                        ₹{farmData.expectedProfit.toLocaleString("en-IN")}
-                    </div>
-                    <div className="adv-finance-card__sub">
-                        <TrendingUp size={12} color="var(--success)" />
-                        <span>Net profit after all inputs</span>
-                    </div>
-                </div>
-
-                <div
-                    className="adv-finance-card"
+                    className="dashboard-stat-card dashboard-stat-card--prod"
                     onClick={() => navigate("/crops")}
-                    style={{ cursor: "pointer" }}
+                    role="button"
+                    tabIndex={0}
                 >
-                    <div className="adv-finance-card__header">
-                        <span className="adv-finance-card__label">
-                            Active Varieties
+                    <div className="dashboard-stat-card__top">
+                        <span className="dashboard-stat-card__label">
+                            Expected Yield
                         </span>
-                        <Wheat size={16} color="var(--accent)" />
+                        <div className="dashboard-stat-card__icon dashboard-stat-card__icon--prod">
+                            <Wheat size={18} />
+                        </div>
                     </div>
-                    <div className="adv-finance-card__value">4 Varieties</div>
-                    <div className="adv-finance-card__sub">
-                        <span>IR-64, Swarna, Basmati, Samba</span>
+                    <div className="dashboard-stat-card__main">
+                        <span className="dashboard-stat-card__number">
+                            <AnimatedNumber value={totalYield} decimals={1} />
+                        </span>
+                        <span className="dashboard-stat-card__unit">Ton</span>
+                    </div>
+                    <div className="dashboard-stat-card__footer">
+                        <span className="dashboard-stat-card__pill dashboard-stat-card__pill--prod">
+                            <TrendingUp size={12} />
+                            <span>
+                                <AnimatedNumber
+                                    value={farmData.potentialYield}
+                                    decimals={1}
+                                />
+                                T Potential
+                            </span>
+                        </span>
+                        <span className="dashboard-stat-card__arrow">
+                            <ArrowRight size={14} />
+                        </span>
                     </div>
                 </div>
-            </div>
 
-            {/* Production & Business Alerts */}
-            <section className="section">
-                <span className="adv-section-label">
-                    Production & Treatment Actions
-                </span>
-                <div className="adv-actions">
-                    {criticalActions.map((action) => (
+                {/* Profit Card */}
+                <div
+                    className="dashboard-stat-card dashboard-stat-card--profit"
+                    onClick={() => navigate("/finance")}
+                    role="button"
+                    tabIndex={0}
+                >
+                    <div className="dashboard-stat-card__top">
+                        <span className="dashboard-stat-card__label">
+                            Expected Net Profit
+                        </span>
+                        <div className="dashboard-stat-card__icon dashboard-stat-card__icon--profit">
+                            <Coins size={18} />
+                        </div>
+                    </div>
+                    <div className="dashboard-stat-card__main">
+                        <span className="dashboard-stat-card__currency">₹</span>
+                        <span className="dashboard-stat-card__number">
+                            <AnimatedNumber value={farmData.expectedProfit} />
+                        </span>
+                    </div>
+                    <div className="dashboard-stat-card__footer">
+                        <span className="dashboard-stat-card__pill dashboard-stat-card__pill--profit">
+                            <Sparkles size={12} />
+                            <span>
+                                +
+                                <AnimatedNumber
+                                    value={farmData.profitMargin}
+                                    decimals={1}
+                                />
+                                % Margin
+                            </span>
+                        </span>
+                        <span className="dashboard-stat-card__arrow">
+                            <ArrowRight size={14} />
+                        </span>
+                    </div>
+                </div>
+            </motion.section>
+
+            {/* ==================== 4. IMPORTANT ACTIONS ==================== */}
+            <motion.section className="dashboard-section" {...reveal(3)}>
+                <div className="dashboard-section-header">
+                    <h3 className="dashboard-section-title">
+                        What Needs Attention?
+                    </h3>
+                </div>
+
+                <div className="dashboard-actions-grid">
+                    {actionItems.map((action) => (
                         <div
                             key={action.id}
-                            className={`adv-action-chip adv-action-chip--${action.category}`}
-                            onClick={() =>
-                                navigate(
-                                    action.title.includes("Medicine")
-                                        ? "/disease"
-                                        : action.title.includes("Fertilizer")
-                                          ? "/fertilizer"
-                                          : "/improve",
-                                )
-                            }
+                            className="dashboard-action-card"
+                            onClick={() => navigate(action.path)}
+                            role="button"
+                            tabIndex={0}
                         >
-                            <div className="adv-action-chip__dot" />
-                            <div>
-                                <span className="adv-action-chip__title">
-                                    {action.title}: {action.field}
-                                </span>
-                                <span className="adv-action-chip__field">
-                                    {action.description} ({action.benefit})
+                            <div
+                                className={`dashboard-action-card__icon dashboard-action-card__icon--${action.type}`}
+                            >
+                                <AgriActionIcon type={action.type} size={22} />
+                            </div>
+                            <div className="dashboard-action-card__content">
+                                <div className="dashboard-action-card__header">
+                                    <span className="dashboard-action-card__title">
+                                        {action.title}
+                                    </span>
+                                    <span
+                                        className={`dashboard-action-card__badge dashboard-action-card__badge--${action.type}`}
+                                    >
+                                        {action.badge}
+                                    </span>
+                                </div>
+                                <span className="dashboard-action-card__subtitle">
+                                    {action.subtitle}
                                 </span>
                             </div>
-                            <ArrowRight
-                                size={14}
-                                className="adv-action-chip__arrow"
+                            <ChevronRight
+                                size={16}
+                                className="dashboard-action-card__arrow"
                             />
                         </div>
                     ))}
                 </div>
-            </section>
+            </motion.section>
 
-            {/* Priority 4 & 5: Production Cost Breakdown + Medicine/Pesticide Requirements */}
-            <div className="adv-mid-grid section">
-                {/* Cost Breakdown */}
-                <div className="adv-card adv-cost-card">
-                    <div
-                        style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                        }}
-                    >
-                        <span className="adv-card__label">
-                            Production Cost Breakdown
-                        </span>
-                        <span
-                            style={{
-                                fontSize: 13,
-                                fontWeight: 700,
-                                color: "var(--text-primary)",
-                            }}
-                        >
-                            Total ₹1,36,000
-                        </span>
-                    </div>
-                    <div className="adv-cost-list">
-                        {financeData.expenses.breakdown.map((item, idx) => {
-                            const pct = Math.round(
-                                (item.amount / financeData.expenses.total) *
-                                    100,
-                            );
-                            return (
-                                <div key={idx} className="adv-cost-item">
-                                    <div className="adv-cost-item__row">
-                                        <span className="adv-cost-item__name">
-                                            {item.category}
-                                        </span>
-                                        <span className="adv-cost-item__amount">
-                                            ₹
-                                            {item.amount.toLocaleString(
-                                                "en-IN",
-                                            )}{" "}
-                                            ({pct}%)
-                                        </span>
-                                    </div>
-                                    <div className="adv-cost-bar">
-                                        <div
-                                            className="adv-cost-bar__fill"
-                                            style={{
-                                                width: `${pct}%`,
-                                                background: item.color,
-                                            }}
-                                        />
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-
-                {/* Medicine / Pesticide Requirements */}
-                <div className="adv-card adv-medicine-widget">
-                    <div
-                        style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                        }}
-                    >
-                        <span className="adv-card__label">
-                            Medicine & Treatment Requirements
-                        </span>
-                        <span
-                            style={{
-                                fontSize: 12,
-                                color: "var(--accent)",
-                                cursor: "pointer",
-                                fontWeight: 600,
-                            }}
-                            onClick={() => navigate("/disease")}
-                        >
-                            View All Treatments →
-                        </span>
-                    </div>
-                    <div className="adv-medicine-list">
-                        {fields.map((f) => (
-                            <div
-                                key={f.id}
-                                className="adv-medicine-item"
-                                onClick={() => navigate("/disease")}
-                                style={{ cursor: "pointer" }}
-                            >
-                                <div className="adv-medicine-item__info">
-                                    <span className="adv-medicine-item__name">
-                                        {f.medicineRequirement.medicine}
-                                    </span>
-                                    <span className="adv-medicine-item__target">
-                                        {f.name} · {f.variety} (
-                                        {f.medicineRequirement.purpose})
-                                    </span>
-                                </div>
-                                <div className="adv-medicine-item__meta">
-                                    <span className="adv-medicine-item__cost">
-                                        ₹{f.medicineRequirement.cost}
-                                    </span>
-                                    <span className="adv-medicine-item__qty">
-                                        Qty: {f.medicineRequirement.quantity}
-                                    </span>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
-
-            {/* Production Trend + Yield Forecast Charts */}
-            <div className="adv-charts-grid section">
-                <div className="adv-card adv-chart-card">
-                    <div
-                        style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                        }}
-                    >
-                        <span className="adv-card__label">
-                            {t("dashboard.productionTrend")} (Apr - Sep)
-                        </span>
-                        <span
-                            style={{ fontSize: 11, color: "var(--text-muted)" }}
-                        >
-                            Estimated Cumulative Production
-                        </span>
-                    </div>
-                    <div className="adv-chart-card__stats">
-                        <span className="adv-chart-card__stat">
-                            <span
-                                className="adv-chart-card__stat-dot"
-                                style={{ background: "var(--accent)" }}
-                            />
-                            Projected Production (Ton)
-                        </span>
-                        <span className="adv-chart-card__stat">
-                            <span
-                                className="adv-chart-card__stat-dot"
-                                style={{ background: "var(--text-muted)" }}
-                            />
-                            Potential (Ton)
-                        </span>
-                    </div>
-                    <ResponsiveContainer width="100%" height={160}>
-                        <AreaChart data={analyticsData.productionTrend}>
-                            <defs>
-                                <linearGradient
-                                    id="advProdGrad"
-                                    x1="0"
-                                    y1="0"
-                                    x2="0"
-                                    y2="1"
-                                >
-                                    <stop
-                                        offset="0%"
-                                        stopColor="var(--accent)"
-                                        stopOpacity={0.25}
-                                    />
-                                    <stop
-                                        offset="100%"
-                                        stopColor="var(--accent)"
-                                        stopOpacity={0}
-                                    />
-                                </linearGradient>
-                            </defs>
-                            <CartesianGrid
-                                stroke="var(--chart-grid)"
-                                strokeDasharray="3 3"
-                            />
-                            <XAxis
-                                dataKey="month"
-                                tick={{
-                                    fontSize: 10,
-                                    fill: "var(--text-muted)",
-                                }}
-                                axisLine={false}
-                                tickLine={false}
-                            />
-                            <YAxis
-                                domain={[0, 20]}
-                                tick={{
-                                    fontSize: 10,
-                                    fill: "var(--text-muted)",
-                                }}
-                                axisLine={false}
-                                tickLine={false}
-                                width={28}
-                            />
-                            <Tooltip
-                                formatter={(val) => [
-                                    `${val} Ton`,
-                                    "Production",
-                                ]}
-                                contentStyle={{
-                                    background: "var(--bg-elevated)",
-                                    border: "1px solid var(--border)",
-                                    borderRadius: "var(--radius-md)",
-                                    fontSize: 11,
-                                }}
-                            />
-                            <Area
-                                type="monotone"
-                                dataKey="production"
-                                stroke="var(--accent)"
-                                fill="url(#advProdGrad)"
-                                strokeWidth={2}
-                                dot={false}
-                            />
-                            <Line
-                                type="monotone"
-                                dataKey="potential"
-                                stroke="var(--text-muted)"
-                                strokeWidth={1.5}
-                                strokeDasharray="4 4"
-                                dot={false}
-                            />
-                        </AreaChart>
-                    </ResponsiveContainer>
-                </div>
-
-                <div className="adv-card adv-chart-card">
-                    <div
-                        style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                        }}
-                    >
-                        <span className="adv-card__label">
-                            {t("dashboard.yieldForecast")} (Expected vs
-                            Potential)
-                        </span>
-                        <span
-                            style={{ fontSize: 11, color: "var(--text-muted)" }}
-                        >
-                            Per-Acre Yield Curve
-                        </span>
-                    </div>
-                    <div className="adv-chart-card__stats">
-                        <span className="adv-chart-card__stat">
-                            <span
-                                className="adv-chart-card__stat-dot"
-                                style={{ background: "var(--accent)" }}
-                            />
-                            Expected: {totalYield}T Total
-                        </span>
-                        <span className="adv-chart-card__stat">
-                            <span
-                                className="adv-chart-card__stat-dot"
-                                style={{ background: "var(--text-muted)" }}
-                            />
-                            Potential: {potentialYield}T Total
-                        </span>
-                    </div>
-                    <ResponsiveContainer width="100%" height={160}>
-                        <LineChart data={analyticsData.yieldTrend}>
-                            <CartesianGrid
-                                stroke="var(--chart-grid)"
-                                strokeDasharray="3 3"
-                            />
-                            <XAxis
-                                dataKey="month"
-                                tick={{
-                                    fontSize: 10,
-                                    fill: "var(--text-muted)",
-                                }}
-                                axisLine={false}
-                                tickLine={false}
-                            />
-                            <YAxis
-                                domain={[2, 5]}
-                                tick={{
-                                    fontSize: 10,
-                                    fill: "var(--text-muted)",
-                                }}
-                                axisLine={false}
-                                tickLine={false}
-                                width={28}
-                            />
-                            <Tooltip
-                                formatter={(val, name) => [
-                                    `${val} Ton/ac`,
-                                    name === "actual"
-                                        ? "Expected"
-                                        : "Potential",
-                                ]}
-                                contentStyle={{
-                                    background: "var(--bg-elevated)",
-                                    border: "1px solid var(--border)",
-                                    borderRadius: "var(--radius-md)",
-                                    fontSize: 11,
-                                }}
-                            />
-                            <Line
-                                type="monotone"
-                                dataKey="actual"
-                                stroke="var(--accent)"
-                                strokeWidth={2}
-                                dot={false}
-                                name="Expected"
-                            />
-                            <Line
-                                type="monotone"
-                                dataKey="potential"
-                                stroke="var(--text-muted)"
-                                strokeWidth={2}
-                                strokeDasharray="5 5"
-                                dot={false}
-                                name="Potential"
-                            />
-                        </LineChart>
-                    </ResponsiveContainer>
-                </div>
-            </div>
-
-            {/* Priority 6: Rice Varieties Performance Section */}
-            <section className="adv-varieties-section section">
-                <div
-                    style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                    }}
-                >
-                    <div>
-                        <span className="adv-section-label">
-                            Rice Variety Performance & Profit
-                        </span>
-                        <p className="dashboard__section-subtitle">
-                            Field-wise expected yield, revenue, production cost,
-                            and net profit
-                        </p>
-                    </div>
-                    <button
-                        className="dashboard__action-btn"
+            {/* ==================== 5. RICE VARIETIES ==================== */}
+            <motion.section className="dashboard-section" {...reveal(4)}>
+                <div className="dashboard-section-header">
+                    <h3 className="dashboard-section-title">Rice Varieties</h3>
+                    <span
+                        className="dashboard-section-link"
                         onClick={() => navigate("/crops")}
                     >
-                        View All Varieties <ArrowRight size={14} />
-                    </button>
+                        All {crops.length} Varieties →
+                    </span>
                 </div>
 
-                <div className="adv-varieties-grid">
-                    {crops.map((crop) => (
-                        <div
-                            key={crop.id}
-                            className="adv-variety-card"
-                            onClick={() => navigate(`/crops/${crop.id}`)}
+                {/* Variety Selection Chips */}
+                <div className="dashboard-variety-chips">
+                    {crops.map((c) => (
+                        <button
+                            key={c.id}
+                            className={`dashboard-variety-chip ${
+                                selectedVarietyId === c.id
+                                    ? "dashboard-variety-chip--active"
+                                    : ""
+                            }`}
+                            onClick={() => setSelectedVarietyId(c.id)}
                         >
-                            <div className="adv-variety-card__header">
-                                <div>
-                                    <h3 className="adv-variety-card__name">
-                                        {crop.variety}
-                                    </h3>
-                                    <span className="adv-variety-card__field">
-                                        {crop.field} · {crop.area} Acres
-                                    </span>
-                                </div>
-                                <StatusBadge
-                                    status={
-                                        crop.variety === "Swarna"
-                                            ? "needs-attention"
-                                            : "optimal"
-                                    }
+                            <Wheat size={14} />
+                            <span>{c.variety}</span>
+                            <span className="dashboard-variety-chip__acre">
+                                {c.area} ac
+                            </span>
+                        </button>
+                    ))}
+                </div>
+
+                {/* Selected Variety Spotlight Card */}
+                <div className="dashboard-variety-spotlight">
+                    <div className="dashboard-variety-spotlight__header">
+                        <div>
+                            <span className="dashboard-variety-spotlight__tag">
+                                {selectedVariety.field} · {selectedVariety.area}{" "}
+                                Acres · {selectedVariety.stage} Stage
+                            </span>
+                            <h4 className="dashboard-variety-spotlight__name">
+                                {selectedVariety.variety} Paddy
+                            </h4>
+                        </div>
+                        <button
+                            className="dashboard-variety-spotlight__btn"
+                            onClick={() =>
+                                navigate(`/crops/${selectedVariety.id}`)
+                            }
+                        >
+                            <span>Details</span>
+                            <ChevronRight size={14} />
+                        </button>
+                    </div>
+
+                    <div className="dashboard-variety-spotlight__metrics">
+                        <div className="dashboard-variety-metric-box">
+                            <span className="dashboard-variety-metric-lbl">
+                                Expected Yield
+                            </span>
+                            <span className="dashboard-variety-metric-val">
+                                <AnimatedNumber
+                                    value={selectedVariety.expectedYield}
+                                    decimals={1}
+                                />{" "}
+                                Ton
+                            </span>
+                        </div>
+                        <div className="dashboard-variety-metric-box">
+                            <span className="dashboard-variety-metric-lbl">
+                                Expected Profit
+                            </span>
+                            <span className="dashboard-variety-metric-val dashboard-variety-metric-val--profit">
+                                ₹
+                                <AnimatedNumber
+                                    value={selectedVariety.expectedProfit}
                                 />
-                            </div>
+                            </span>
+                        </div>
+                        <div className="dashboard-variety-metric-box">
+                            <span className="dashboard-variety-metric-lbl">
+                                Production Cost
+                            </span>
+                            <span className="dashboard-variety-metric-val">
+                                ₹
+                                <AnimatedNumber
+                                    value={selectedVariety.estimatedCost}
+                                />
+                            </span>
+                        </div>
+                        <div className="dashboard-variety-metric-box">
+                            <span className="dashboard-variety-metric-lbl">
+                                Mandi Rate
+                            </span>
+                            <span className="dashboard-variety-metric-val">
+                                ₹{selectedVariety.marketPrice} / Q
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </motion.section>
 
-                            <div className="adv-variety-card__stats">
-                                <div className="adv-variety-card__stat-col">
-                                    <span className="adv-variety-card__stat-label">
-                                        Expected Yield
-                                    </span>
-                                    <span className="adv-variety-card__stat-val">
-                                        {crop.expectedYield} Ton
-                                    </span>
-                                </div>
-                                <div className="adv-variety-card__stat-col">
-                                    <span className="adv-variety-card__stat-label">
-                                        Expected Profit
-                                    </span>
-                                    <span className="adv-variety-card__stat-val adv-variety-card__stat-val--profit">
-                                        ₹
-                                        {crop.expectedProfit.toLocaleString(
-                                            "en-IN",
-                                        )}
-                                    </span>
-                                </div>
-                                <div className="adv-variety-card__stat-col">
-                                    <span className="adv-variety-card__stat-label">
-                                        Est. Revenue
-                                    </span>
-                                    <span className="adv-variety-card__stat-val">
-                                        ₹
-                                        {crop.expectedRevenue.toLocaleString(
-                                            "en-IN",
-                                        )}
-                                    </span>
-                                </div>
-                                <div className="adv-variety-card__stat-col">
-                                    <span className="adv-variety-card__stat-label">
-                                        Est. Cost
-                                    </span>
-                                    <span className="adv-variety-card__stat-val">
-                                        ₹
-                                        {crop.estimatedCost.toLocaleString(
-                                            "en-IN",
-                                        )}
-                                    </span>
-                                </div>
-                            </div>
+            {/* ==================== 6. SIMPLE PRODUCTION INSIGHTS ==================== */}
+            <motion.section className="dashboard-section" {...reveal(5)}>
+                <div className="dashboard-section-header">
+                    <h3 className="dashboard-section-title">
+                        Production & Profit Trends
+                    </h3>
+                    <span
+                        className="dashboard-section-link"
+                        onClick={() => navigate("/insights")}
+                    >
+                        Deep Analytics →
+                    </span>
+                </div>
 
-                            <div className="adv-variety-card__footer">
-                                <span className="adv-variety-card__stage">
-                                    <Sprout size={13} /> {crop.stage} (Day{" "}
-                                    {crop.day}/{crop.totalDays})
+                <div className="dashboard-insights-grid">
+                    {/* Visual Mini Chart: Cumulative Production */}
+                    <div className="dashboard-insight-card">
+                        <div className="dashboard-insight-card__header">
+                            <div>
+                                <span className="dashboard-insight-card__title">
+                                    Season Production Flow
                                 </span>
-                                <span
-                                    style={{
-                                        fontWeight: 600,
-                                        color: "var(--accent)",
+                                <span className="dashboard-insight-card__sub">
+                                    April to September (Tons)
+                                </span>
+                            </div>
+                            <span className="dashboard-insight-card__badge">
+                                16.1T Target
+                            </span>
+                        </div>
+
+                        <div className="dashboard-insight-card__chart">
+                            <ResponsiveContainer width="100%" height={90}>
+                                <AreaChart
+                                    data={analyticsData.productionTrend}
+                                    margin={{
+                                        top: 4,
+                                        right: 4,
+                                        left: 4,
+                                        bottom: 0,
                                     }}
                                 >
-                                    {crop.profitMargin}% Margin
+                                    <defs>
+                                        <linearGradient
+                                            id="agriAreaGrad"
+                                            x1="0"
+                                            y1="0"
+                                            x2="0"
+                                            y2="1"
+                                        >
+                                            <stop
+                                                offset="0%"
+                                                stopColor="var(--accent)"
+                                                stopOpacity={0.25}
+                                            />
+                                            <stop
+                                                offset="100%"
+                                                stopColor="var(--accent)"
+                                                stopOpacity={0}
+                                            />
+                                        </linearGradient>
+                                    </defs>
+                                    <XAxis
+                                        dataKey="month"
+                                        tick={{
+                                            fontSize: 10,
+                                            fill: "var(--text-muted)",
+                                        }}
+                                        axisLine={false}
+                                        tickLine={false}
+                                    />
+                                    <Tooltip
+                                        formatter={(val) => [
+                                            `${val} Ton`,
+                                            "Projected Yield",
+                                        ]}
+                                        contentStyle={{
+                                            background: "var(--bg-surface)",
+                                            border: "1px solid var(--border)",
+                                            borderRadius: "var(--radius-sm)",
+                                            fontSize: 12,
+                                            padding: "4px 8px",
+                                        }}
+                                    />
+                                    <Area
+                                        type="monotone"
+                                        dataKey="production"
+                                        stroke="var(--accent)"
+                                        strokeWidth={2.5}
+                                        fill="url(#agriAreaGrad)"
+                                    />
+                                </AreaChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
+
+                    {/* Variety Profit Breakdown */}
+                    <div className="dashboard-insight-card">
+                        <div className="dashboard-insight-card__header">
+                            <div>
+                                <span className="dashboard-insight-card__title">
+                                    Net Profit by Variety
+                                </span>
+                                <span className="dashboard-insight-card__sub">
+                                    Total: ₹4,89,680 (78.3% Margin)
                                 </span>
                             </div>
+                            <span className="dashboard-insight-card__badge dashboard-insight-card__badge--profit">
+                                Highest: Basmati
+                            </span>
                         </div>
-                    ))}
-                </div>
-            </section>
 
-            {/* Row 7: Activity Log */}
-            <section className="section">
-                <span className="adv-section-label">
-                    Recent Production Activity
-                </span>
-                <div className="adv-activity">
-                    {activityData.slice(0, 5).map((activity) => (
-                        <div key={activity.id} className="adv-activity__item">
-                            <div className="adv-activity__dot" />
-                            <span className="adv-activity__text">
-                                {activity.action}
-                            </span>
-                            <span className="adv-activity__field">
-                                {activity.field}
-                            </span>
-                            <span className="adv-activity__time">
-                                {activity.time}
-                            </span>
+                        <div className="dashboard-profit-bars">
+                            {crops.map((c) => {
+                                const maxProfit = 213200;
+                                const barWidth = Math.round(
+                                    (c.expectedProfit / maxProfit) * 100,
+                                );
+                                return (
+                                    <div
+                                        key={c.id}
+                                        className="dashboard-profit-bar-row"
+                                    >
+                                        <span className="dashboard-profit-bar-name">
+                                            {c.variety}
+                                        </span>
+                                        <div className="dashboard-profit-bar-track">
+                                            <div
+                                                className="dashboard-profit-bar-fill"
+                                                style={{
+                                                    width: `${barWidth}%`,
+                                                }}
+                                            />
+                                        </div>
+                                        <span className="dashboard-profit-bar-val">
+                                            ₹
+                                            {(c.expectedProfit / 1000).toFixed(
+                                                0,
+                                            )}
+                                            k
+                                        </span>
+                                    </div>
+                                );
+                            })}
                         </div>
-                    ))}
+                    </div>
                 </div>
-            </section>
+            </motion.section>
         </div>
     );
 }
