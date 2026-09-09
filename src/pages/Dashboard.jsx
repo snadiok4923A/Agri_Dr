@@ -64,41 +64,79 @@ export default function Dashboard() {
 
       {/* Expected Yield */}
       <div className="adv-top-grid adv-top-grid--1">
-        {/* Expected Yield Donut */}
+        {/* Overall Production Card */}
         {(() => {
           const yieldPct = Math.round((parseFloat(totalYield) / parseFloat(potentialYield)) * 100);
           const yieldDonutData = [
             { name: 'Expected', value: yieldPct },
             { name: 'Remaining', value: 100 - yieldPct },
           ];
+          
+          let statusText = 'On Track';
+          let statusColor = 'var(--success)';
+          if (yieldPct < 60) {
+            statusText = 'Needs Attention';
+            statusColor = 'var(--warning)';
+          } else if (yieldPct < 80) {
+            statusText = 'Good';
+            statusColor = 'var(--accent)';
+          }
+
+          const currentKg = (parseFloat(totalYield) * 1000).toLocaleString();
+          const expectedKg = (parseFloat(potentialYield) * 1000).toLocaleString();
+
           return (
-            <div className="adv-card adv-donut-card">
-              <span className="adv-card__label adv-card__label--center">Expected Yield</span>
-              <div className="adv-donut-card__chart-row">
-                <div className="adv-donut-card__chart">
+            <div className="adv-card adv-production-card">
+              
+              {/* Left Side: Donut */}
+              <div className="adv-production-card__left">
+                <div className="adv-production-card__donut">
                   <ResponsiveContainer width="100%" height="100%" aspect={1} minWidth={0}>
                     <PieChart>
                       <Pie
                         data={yieldDonutData}
                         cx="50%" cy="50%"
-                        innerRadius="38%" outerRadius="52%"
+                        innerRadius="75%" outerRadius="100%"
                         startAngle={90} endAngle={-270}
                         dataKey="value"
                         stroke="none"
+                        cornerRadius={6}
                       >
                         <Cell fill="var(--accent)" />
-                        <Cell fill="var(--border)" />
+                        <Cell fill="var(--bg-elevated)" />
                       </Pie>
                     </PieChart>
                   </ResponsiveContainer>
+                  <div className="adv-production-card__donut-center">
+                    <span className="adv-production-card__donut-val">{yieldPct}%</span>
+                  </div>
                 </div>
-                <div className="adv-donut-card__value-row">
-                  <span className="adv-donut-card__value">{totalYield}</span>
-                  <span className="adv-donut-card__unit">Ton</span>
-                  <span className="adv-donut-card__value-label">Expected</span>
+                <div className="adv-production-card__status" style={{ color: statusColor }}>
+                  <span className="adv-production-card__status-dot" style={{ backgroundColor: statusColor }}></span>
+                  {statusText}
                 </div>
               </div>
-              <span className="adv-donut-card__sub adv-donut-card__sub--accent">Potential {potentialYield} Ton</span>
+
+              {/* Right Side: Data */}
+              <div className="adv-production-card__right">
+                <span className="adv-card__label">Overall Production</span>
+                
+                <div className="adv-production-card__comparison">
+                  <div className="adv-production-card__column">
+                    <span className="adv-production-card__col-label">CURRENT</span>
+                    <span className="adv-production-card__main-val">{totalYield} <span className="adv-production-card__unit">Ton</span></span>
+                    <span className="adv-production-card__sub-val">{currentKg} kg</span>
+                  </div>
+
+                  <div className="adv-production-card__divider"></div>
+
+                  <div className="adv-production-card__column">
+                    <span className="adv-production-card__col-label">EXPECTED</span>
+                    <span className="adv-production-card__main-val">{potentialYield} <span className="adv-production-card__unit">Ton</span></span>
+                    <span className="adv-production-card__sub-val">{expectedKg} kg</span>
+                  </div>
+                </div>
+              </div>
             </div>
           );
         })()}

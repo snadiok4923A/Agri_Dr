@@ -702,90 +702,163 @@
   width: 100%;
 }
 
-/* Donut Card — redesigned: donut + value side by side */
-.adv-donut-card {
+/* Overall Production Card */
+.adv-production-card {
+  flex-direction: row;
+  align-items: center;
+  gap: 32px;
+  padding: 28px 32px;
+}
+
+.adv-production-card__left {
+  display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 18px 14px;
+  gap: 16px;
+  flex: 0 0 30%;
+  max-width: 200px;
 }
 
-.adv-card__label--center {
-  text-align: center;
+.adv-production-card__donut {
+  position: relative;
   width: 100%;
+  aspect-ratio: 1 / 1;
 }
 
-.adv-donut-card__chart-row {
+.adv-production-card__donut-center {
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  width: 100%;
 }
 
-.adv-donut-card__chart {
-  position: relative;
-  width: 100%;
-  max-width: 155px;
-  aspect-ratio: 1 / 1;
-  flex-shrink: 0;
-}
-
-.adv-donut-card__value-row {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0;
-}
-
-.adv-donut-card__value {
-  font-size: 26px;
+.adv-production-card__donut-val {
+  font-size: 36px;
   font-weight: 800;
   color: var(--text-primary);
-  line-height: 1.1;
+  letter-spacing: -0.03em;
 }
 
-.adv-donut-card__unit {
-  font-size: 14px;
-  color: var(--text-muted);
+.adv-production-card__status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
   font-weight: 600;
-  margin-left: 1px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
 }
 
-.adv-donut-card__value-label {
-  font-size: 10px;
+.adv-production-card__status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.adv-production-card__right {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  width: 100%;
+}
+
+.adv-production-card__comparison {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+  background: var(--bg-surface);
+  padding: 24px 32px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-light);
+}
+
+.adv-production-card__column {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.adv-production-card__col-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  margin-bottom: 6px;
+}
+
+.adv-production-card__main-val {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.adv-production-card__unit {
+  font-size: 16px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.adv-production-card__sub-val {
+  font-size: 14px;
   color: var(--text-muted);
   font-weight: 500;
-  letter-spacing: 0.04em;
-  margin-top: 1px;
+  margin-top: 4px;
 }
 
-.adv-donut-card__sub {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--text-secondary);
-  text-align: center;
+.adv-production-card__divider {
+  width: 1px;
+  height: 56px;
+  background: var(--border);
+  margin: 0 24px;
 }
 
-.adv-donut-card__sub--green {
-  color: #16a34a;
+@media (max-width: 1024px) {
+  .adv-production-card {
+    flex-direction: column;
+    gap: 24px;
+    padding: 24px;
+  }
+  
+  .adv-production-card__left {
+    flex: 1;
+    width: 100%;
+    max-width: 180px;
+  }
 }
 
-.adv-donut-card__sub--accent {
-  color: #0891b2;
+@media (max-width: 768px) {
+  .adv-production-card__comparison {
+    flex-direction: row;
+    padding: 20px;
+    gap: 16px;
+  }
+  
+  .adv-production-card__main-val {
+    font-size: 26px;
+  }
+  
+  .adv-production-card__donut-val {
+    font-size: 30px;
+  }
 }
 
-.adv-donut-card__sub-value {
-  font-size: 16px;
-  font-weight: 800;
-}
-
-[data-theme="dark"] .adv-donut-card__sub--green {
-  color: #4ade80;
-}
-
-[data-theme="dark"] .adv-donut-card__sub--accent {
-  color: var(--accent);
+@media (max-width: 480px) {
+  .adv-production-card__comparison {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+  
+  .adv-production-card__divider {
+    width: 100%;
+    height: 1px;
+    margin: 0;
+  }
 }
 
 /* Weather Compact */
