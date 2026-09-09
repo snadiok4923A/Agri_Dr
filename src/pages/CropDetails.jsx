@@ -40,8 +40,8 @@ export default function CropDetails() {
           <span className="crop-details__stat-value">{crop.stage}</span>
         </div>
         <div className="crop-details__stat-card">
-          <span className="crop-details__stat-label">{t('crops.cropHealth')}</span>
-          <span className="crop-details__stat-value crop-details__stat-value--green">{crop.health}%</span>
+          <span className="crop-details__stat-label">Estimated Cost</span>
+          <span className="crop-details__stat-value">₹{(crop.estimatedCost / 1000).toFixed(1)}k</span>
         </div>
         <div className="crop-details__stat-card">
           <span className="crop-details__stat-label">{t('crops.expectedYield')}</span>
@@ -77,24 +77,15 @@ export default function CropDetails() {
         </div>
       </section>
 
-      {/* Growth Factors */}
+      {/* Financial Estimates */}
       <section className="crop-details__factors section">
-        <h2 className="crop-details__section-title">{t('crops.growthFactors')}</h2>
+        <h2 className="crop-details__section-title">Financial Estimates</h2>
         <div className="crop-details__factors-grid">
           <div className="crop-details__factor">
-            <ProgressBar value={crop.factors.water} label={t('crops.water')} />
+            <ProgressBar value={Math.round((crop.estimatedCost / crop.expectedRevenue) * 100)} label="Cost vs Revenue" />
           </div>
           <div className="crop-details__factor">
-            <ProgressBar value={crop.factors.nutrition} label={t('crops.nutrition')} />
-          </div>
-          <div className="crop-details__factor">
-            <ProgressBar value={crop.factors.temperature} label={t('crops.temperature')} />
-          </div>
-          <div className="crop-details__factor">
-            <ProgressBar value={crop.factors.diseaseProtection} label={t('crops.diseaseProtection')} />
-          </div>
-          <div className="crop-details__factor">
-            <ProgressBar value={crop.factors.environment} label={t('crops.environmental')} />
+            <ProgressBar value={Math.round((crop.expectedYield / crop.potentialYield) * 100)} label="Yield Achievement" />
           </div>
         </div>
       </section>
@@ -104,24 +95,24 @@ export default function CropDetails() {
           <h2 className="crop-details__section-title">Detailed Analysis</h2>
           <div className="crop-details__advanced-grid">
             <div className="crop-details__advanced-card">
-              <span className="crop-details__advanced-label">Water Stress Index</span>
-              <span className="crop-details__advanced-value">0.28</span>
-              <span className="crop-details__advanced-note">Low stress — favorable</span>
+              <span className="crop-details__advanced-label">Expected Revenue</span>
+              <span className="crop-details__advanced-value">₹{(crop.expectedRevenue / 1000).toFixed(1)}k</span>
+              <span className="crop-details__advanced-note">Based on current market price</span>
             </div>
             <div className="crop-details__advanced-card">
-              <span className="crop-details__advanced-label">Nutrient Balance</span>
-              <span className="crop-details__advanced-value">81%</span>
-              <span className="crop-details__advanced-note">NPK ratio: 4:2:3</span>
+              <span className="crop-details__advanced-label">Expected Profit</span>
+              <span className="crop-details__advanced-value" style={{ color: 'var(--success)' }}>₹{(crop.expectedProfit / 1000).toFixed(1)}k</span>
+              <span className="crop-details__advanced-note">Margin: {Math.round((crop.expectedProfit / crop.expectedRevenue) * 100)}%</span>
             </div>
             <div className="crop-details__advanced-card">
-              <span className="crop-details__advanced-label">Canopy Coverage</span>
-              <span className="crop-details__advanced-value">72%</span>
-              <span className="crop-details__advanced-note">Above average for stage</span>
+              <span className="crop-details__advanced-label">Potential Yield</span>
+              <span className="crop-details__advanced-value">{crop.potentialYield} Ton</span>
+              <span className="crop-details__advanced-note">Optimal conditions</span>
             </div>
             <div className="crop-details__advanced-card">
-              <span className="crop-details__advanced-label">Growth Rate</span>
-              <span className="crop-details__advanced-value">+2.1%/day</span>
-              <span className="crop-details__advanced-note">Within optimal range</span>
+              <span className="crop-details__advanced-label">Yield Gap</span>
+              <span className="crop-details__advanced-value">{(crop.potentialYield - crop.expectedYield).toFixed(1)} Ton</span>
+              <span className="crop-details__advanced-note">Opportunity for improvement</span>
             </div>
           </div>
         </section>

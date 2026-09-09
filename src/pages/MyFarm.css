@@ -241,27 +241,29 @@
   gap: 16px;
 }
 
-.myfarm__field-row-health {
+.myfarm__field-row-production {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 14px;
+  gap: 20px;
+}
+
+.myfarm__field-row-stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.myfarm__field-row-stat-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   font-weight: 600;
+}
+
+.myfarm__field-row-stat-value {
+  font-size: 14px;
+  font-weight: 700;
   color: var(--text-primary);
-}
-
-.myfarm__field-row-bar {
-  width: 60px;
-  height: 6px;
-  background: var(--border);
-  border-radius: var(--radius-full);
-  overflow: hidden;
-}
-
-.myfarm__field-row-fill {
-  height: 100%;
-  border-radius: var(--radius-full);
-  transition: width 0.8s ease;
 }
 
 .myfarm__field-row-details {

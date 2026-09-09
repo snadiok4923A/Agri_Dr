@@ -1,5 +1,5 @@
 import { useLanguage } from '../hooks/useLanguage';
-import { fields, weatherData, recommendations, activityData } from '../data/mockData';
+import { fields, weatherData, recommendations, activityData, analyticsData } from '../data/mockData';
 import { useNavigate } from 'react-router-dom';
 import {
   CloudSun, Droplets, AlertTriangle, TrendingUp, MapPin,
@@ -21,10 +21,7 @@ const getGreeting = (t) => {
   return t('dashboard.greetingEvening');
 };
 
-const healthTrendData = [
-  { day: 'Mon', health: 78 }, { day: 'Tue', health: 80 }, { day: 'Wed', health: 82 },
-  { day: 'Thu', health: 81 }, { day: 'Fri', health: 84 }, { day: 'Sat', health: 85 }, { day: 'Sun', health: 87 },
-];
+const productionTrendData = analyticsData.productionTrend;
 
 const yieldData = [
   { month: 'Apr', actual: 2.8, potential: 3.2 }, { month: 'May', actual: 3.0, potential: 3.5 },
@@ -40,7 +37,7 @@ export default function Dashboard() {
 
   const totalYield = fields.reduce((sum, f) => sum + (f.cropAge / (f.variety === 'Basmati' ? 130 : f.variety === 'Samba Mahsuri' ? 115 : 120) * (f.variety === 'Basmati' ? 4.1 : f.variety === 'Samba Mahsuri' ? 3.5 : f.variety === 'Swarna' ? 3.2 : 3.8)), 0).toFixed(1);
   const potentialYield = fields.reduce((sum, f) => sum + (f.variety === 'Basmati' ? 4.6 : f.variety === 'Samba Mahsuri' ? 4.1 : f.variety === 'Swarna' ? 4.0 : 4.3), 0).toFixed(1);
-  const warnings = fields.filter(f => f.status === 'needs-attention' || f.soilMoisture < 40);
+  const warnings = fields.filter(f => f.status === 'needs-attention');
 
   return (
     <div className="page-container dashboard adv-dashboard">
@@ -150,7 +147,7 @@ export default function Dashboard() {
             <div key={f.id} className="adv-warning-chip">
               <AlertTriangle size={14} className="adv-warning-chip__icon" />
               <div>
-                <span className="adv-warning-chip__title">{f.soilMoisture < 40 ? 'Low Moisture' : 'Needs Attention'}</span>
+                <span className="adv-warning-chip__title">Medicine Required</span>
                 <span className="adv-warning-chip__field">{f.name} · {f.variety || f.crop}</span>
               </div>
             </div>
@@ -177,15 +174,15 @@ export default function Dashboard() {
       {/* Row 4: Charts — Health Trend + Yield Forecast side by side */}
       <div className="adv-charts-grid section">
         <div className="adv-card adv-chart-card">
-          <span className="adv-card__label">Health Trend</span>
+          <span className="adv-card__label">Production Trend</span>
           <ResponsiveContainer width="100%" height={150}>
-            <AreaChart data={healthTrendData}>
-              <defs><linearGradient id="advHealthGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--accent)" stopOpacity={0.25} /><stop offset="100%" stopColor="var(--accent)" stopOpacity={0} /></linearGradient></defs>
+            <AreaChart data={productionTrendData}>
+              <defs><linearGradient id="advProdGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--accent)" stopOpacity={0.25} /><stop offset="100%" stopColor="var(--accent)" stopOpacity={0} /></linearGradient></defs>
               <CartesianGrid stroke="var(--chart-grid)" strokeDasharray="3 3" />
               <XAxis dataKey="day" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
-              <YAxis domain={[70, 95]} tick={{ fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} width={30} />
+              <YAxis domain={['auto', 'auto']} tick={{ fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} width={30} />
               <Tooltip contentStyle={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', fontSize: 11 }} />
-              <Area type="monotone" dataKey="health" stroke="var(--accent)" fill="url(#advHealthGrad)" strokeWidth={2} dot={false} />
+              <Area type="monotone" dataKey="production" stroke="var(--accent)" fill="url(#advProdGrad)" strokeWidth={2} dot={false} />
             </AreaChart>
           </ResponsiveContainer>
         </div>

@@ -29,7 +29,7 @@ export default function MyFarm() {
           <div className="myfarm__stat-icon" style={{ background: 'var(--success-soft)', color: 'var(--success)' }}><Leaf size={20} /></div>
           <div className="myfarm__stat-content">
             <span className="myfarm__stat-value">{farmData.activeCrops}</span>
-            <span className="myfarm__stat-label">{t('farm.activeCrops')}</span>
+            <span className="myfarm__stat-label">Rice Varieties</span>
           </div>
         </div>
         <div className="myfarm__stat">
@@ -42,8 +42,8 @@ export default function MyFarm() {
         <div className="myfarm__stat">
           <div className="myfarm__stat-icon" style={{ background: 'var(--warning-soft)', color: 'var(--warning)' }}><BarChart3 size={20} /></div>
           <div className="myfarm__stat-content">
-            <span className="myfarm__stat-value">{farmData.farmHealth}<span className="myfarm__stat-unit">/100</span></span>
-            <span className="myfarm__stat-label">{t('farm.farmPerformance')}</span>
+            <span className="myfarm__stat-value">₹{(farmData.expectedProfit / 1000).toFixed(1)}k</span>
+            <span className="myfarm__stat-label">Expected Profit</span>
           </div>
         </div>
       </section>
@@ -57,7 +57,7 @@ export default function MyFarm() {
                   <div className="myfarm__map-field-inner">
                     <span className="myfarm__map-field-name">{field.name}</span>
                     <span className="myfarm__map-field-crop">{field.variety || field.crop}</span>
-                    <span className="myfarm__map-field-health">{field.health}%</span>
+                    <span className="myfarm__map-field-health">₹{(field.expectedRevenue / 1000).toFixed(1)}k</span>
                   </div>
                   <div className="myfarm__map-field-area">{field.area} ac</div>
                 </div>
@@ -73,7 +73,7 @@ export default function MyFarm() {
           {fields.map((field) => (
             <div key={field.id} className="myfarm__field-row" onClick={() => navigate('/crops')}>
               <div className="myfarm__field-row-left">
-                <div className="myfarm__field-row-color" style={{ background: field.health >= 80 ? 'var(--accent)' : 'var(--warning)' }} />
+                <div className="myfarm__field-row-color" style={{ background: field.status === 'needs-attention' ? 'var(--warning)' : 'var(--accent)' }} />
                 <div>
                   <span className="myfarm__field-row-name">{field.name}</span>
                   <span className="myfarm__field-row-crop">{field.variety || field.crop} • {field.area} {t('dashboard.acres')}</span>
@@ -83,14 +83,18 @@ export default function MyFarm() {
                 <StatusBadge status={field.status} />
               </div>
               <div className="myfarm__field-row-right">
-                <div className="myfarm__field-row-health">
-                  <div className="myfarm__field-row-bar">
-                    <div className="myfarm__field-row-fill" style={{ width: `${field.health}%`, background: field.health >= 80 ? 'var(--accent)' : 'var(--warning)' }} />
+                <div className="myfarm__field-row-production">
+                  <div className="myfarm__field-row-stat">
+                    <span className="myfarm__field-row-stat-label">Cost</span>
+                    <span className="myfarm__field-row-stat-value">₹{(field.estimatedCost / 1000).toFixed(1)}k</span>
                   </div>
-                  <span>{field.health}%</span>
+                  <div className="myfarm__field-row-stat">
+                    <span className="myfarm__field-row-stat-label">Profit</span>
+                    <span className="myfarm__field-row-stat-value" style={{ color: 'var(--success)' }}>₹{(field.expectedProfit / 1000).toFixed(1)}k</span>
+                  </div>
                 </div>
                 <div className="myfarm__field-row-details">
-                  <span><Droplets size={12} /> {field.soilMoisture}%</span>
+                  <span>{field.growthStage}</span>
                   <span>{field.cropAge} {t('farm.days')}</span>
                 </div>
                 <ChevronRight size={16} className="myfarm__field-row-arrow" />

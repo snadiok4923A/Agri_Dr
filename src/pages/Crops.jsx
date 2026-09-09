@@ -24,7 +24,7 @@ export default function Crops() {
                   <Leaf size={16} />
                   <span className="crops-page__card-name">{crop.variety || crop.name}</span>
                 </div>
-                <StatusBadge status={crop.health >= 80 ? 'healthy' : 'needs-attention'} />
+                <StatusBadge status={crop.expectedYield >= crop.potentialYield * 0.85 ? 'on-track' : 'needs-attention'} />
               </div>
               <div className="crops-page__card-variety">{crop.variety}</div>
               <div className="crops-page__card-field">{crop.field}</div>
@@ -41,17 +41,17 @@ export default function Crops() {
                 <span className="crops-page__card-stage-label">{t('crops.growthStage')}</span>
                 <span className="crops-page__card-stage-value">{crop.stage}</span>
               </div>
-              <div className="crops-page__card-health">
-                <span className="crops-page__card-health-label">{t('crops.cropHealth')}</span>
-                <span className={`crops-page__card-health-value ${crop.health >= 80 ? 'crops-page__card-health-value--good' : 'crops-page__card-health-value--warn'}`}>{crop.health}%</span>
+              <div className="crops-page__card-stage">
+                <span className="crops-page__card-stage-label">Est. Cost</span>
+                <span className="crops-page__card-stage-value">₹{(crop.estimatedCost / 1000).toFixed(1)}k</span>
               </div>
               <div className="crops-page__card-stage">
-                <span className="crops-page__card-stage-label">Expected Yield</span>
-                <span className="crops-page__card-stage-value">{crop.expectedYield} Ton</span>
+                <span className="crops-page__card-stage-label">Exp. Revenue</span>
+                <span className="crops-page__card-stage-value">₹{(crop.expectedRevenue / 1000).toFixed(1)}k</span>
               </div>
               <div className="crops-page__card-stage">
-                <span className="crops-page__card-stage-label">Potential Yield</span>
-                <span className="crops-page__card-stage-value" style={{ color: 'var(--accent)' }}>{crop.potentialYield} Ton</span>
+                <span className="crops-page__card-stage-label">Exp. Profit</span>
+                <span className="crops-page__card-stage-value" style={{ color: 'var(--success)' }}>₹{(crop.expectedProfit / 1000).toFixed(1)}k</span>
               </div>
               <div className="crops-page__card-footer">
                 <span>{crop.expectedYield} {t('common.ton')} expected</span>
