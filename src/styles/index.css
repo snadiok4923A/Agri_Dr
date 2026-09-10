@@ -229,7 +229,8 @@ body {
    ============================================================ */
 [data-theme="dark"] .dashboard-hero-card,
 [data-theme="dark"] .dashboard-action-card,
-[data-theme="dark"] .dashboard-insight-card {
+[data-theme="dark"] .dashboard-insight-card,
+[data-theme="dark"] .dashboard-diagnosis-card {
     background: var(--glass-bg);
     backdrop-filter: blur(var(--glass-blur)) saturate(140%);
     -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
@@ -252,7 +253,8 @@ body {
 /* Extremely subtle sheen near the top edge of every glass panel */
 [data-theme="dark"] .dashboard-hero-card::after,
 [data-theme="dark"] .dashboard-action-card::after,
-[data-theme="dark"] .dashboard-insight-card::after {
+[data-theme="dark"] .dashboard-insight-card::after,
+[data-theme="dark"] .dashboard-diagnosis-card::after {
     content: "";
     position: absolute;
     inset: 0;
@@ -303,7 +305,8 @@ body {
 @media (max-width: 768px) {
     [data-theme="dark"] .dashboard-hero-card,
     [data-theme="dark"] .dashboard-action-card,
-    [data-theme="dark"] .dashboard-insight-card {
+    [data-theme="dark"] .dashboard-insight-card,
+    [data-theme="dark"] .dashboard-diagnosis-card {
         backdrop-filter: blur(16px) saturate(140%);
         -webkit-backdrop-filter: blur(16px) saturate(140%);
     }

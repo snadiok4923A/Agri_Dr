@@ -1,3 +1,4 @@
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import { useLanguage } from "../hooks/useLanguage";
@@ -9,8 +10,13 @@ import {
 } from "../data/mockData";
 import {
     ChevronRight,
-    Sprout,
     Wheat,
+    Camera,
+    Upload,
+    RotateCcw,
+    ScanLine,
+    Pill,
+    ArrowRight,
 } from "lucide-react";
 import { AreaChart, Area, ResponsiveContainer, XAxis, Tooltip } from "recharts";
 import {
@@ -63,9 +69,39 @@ export default function Dashboard() {
     const yieldPct = Math.round((currentEst / totalYield) * 100);
 
     // Circular progress calculations (Radius 70, Stroke 10, Box 160)
-    const ringRadius = 66;
+    const ringRadius = 48;
     const ringCircumference = 2 * Math.PI * ringRadius;
     const ringOffset = ringCircumference - (yieldPct / 100) * ringCircumference;
+
+    // ---- Crop Diagnosis (photo → AI analysis → treatment) ----
+    const [photo, setPhoto] = useState(null);
+    const [diagStage, setDiagStage] = useState("idle"); // idle | preview | analyzing | result
+    const cameraInputRef = useRef(null);
+    const uploadInputRef = useRef(null);
+    const analyzeTimerRef = useRef(null);
+
+    const handlePick = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+            setPhoto(reader.result);
+            setDiagStage("preview");
+        };
+        reader.readAsDataURL(file);
+        e.target.value = "";
+    };
+
+    const startAnalysis = () => {
+        setDiagStage("analyzing");
+        analyzeTimerRef.current = setTimeout(() => setDiagStage("result"), 2400);
+    };
+
+    const resetDiagnosis = () => {
+        clearTimeout(analyzeTimerRef.current);
+        setPhoto(null);
+        setDiagStage("idle");
+    };
 
     // Simple, high-priority action cards
     const actionItems = [
@@ -143,119 +179,193 @@ export default function Dashboard() {
                 </div>
             </motion.section>
 
-            {/* ==================== 2. MAIN RICE PRODUCTION VISUAL ==================== */}
+            {/* ==================== 2. COMPACT PRODUCTION WIDGET ==================== */}
             <motion.section className="dashboard-hero-section" {...reveal(1)}>
                 <div className="dashboard-hero-card">
-                    {/* Left: Beautiful Agricultural Vector with Circular Progress Ring */}
-                    <div className="dashboard-hero-visual">
-                        <div className="dashboard-ring-container">
-                            <svg
-                                className="dashboard-ring-svg"
-                                width="160"
-                                height="160"
-                                viewBox="0 0 160 160"
-                            >
-                                {/* Background Ring */}
-                                <circle
-                                    cx="80"
-                                    cy="80"
-                                    r={ringRadius}
-                                    className="dashboard-ring-bg"
-                                    strokeWidth="9"
-                                />
-                                {/* Progress Ring with Smooth Dasharray */}
-                                <circle
-                                    cx="80"
-                                    cy="80"
-                                    r={ringRadius}
-                                    className="dashboard-ring-fill"
-                                    strokeWidth="9"
-                                    strokeDasharray={ringCircumference}
-                                    strokeDashoffset={ringOffset}
-                                    strokeLinecap="round"
-                                    transform="rotate(-90 80 80)"
-                                />
-                            </svg>
-
-                            {/* Centered Rice Illustration */}
-                            <div className="dashboard-ring-artwork">
-                                <RicePlantIllustration size={105} />
-                            </div>
-                        </div>
-
-                        {/* Overall Percentage Badge */}
-                        <div className="dashboard-hero-progress-pill">
-                            <span className="dashboard-hero-pct">
-                                <AnimatedNumber value={yieldPct} />%
-                            </span>
-                            <span className="dashboard-hero-pct-label">
-                                Production Target
-                            </span>
+                    {/* Rice visual inside a subtle progress ring */}
+                    <div className="dashboard-ring-container">
+                        <svg
+                            className="dashboard-ring-svg"
+                            width="112"
+                            height="112"
+                            viewBox="0 0 112 112"
+                        >
+                            <circle
+                                cx="56"
+                                cy="56"
+                                r={ringRadius}
+                                className="dashboard-ring-bg"
+                                strokeWidth="7"
+                            />
+                            <circle
+                                cx="56"
+                                cy="56"
+                                r={ringRadius}
+                                className="dashboard-ring-fill"
+                                strokeWidth="7"
+                                strokeDasharray={ringCircumference}
+                                strokeDashoffset={ringOffset}
+                                strokeLinecap="round"
+                                transform="rotate(-90 56 56)"
+                            />
+                        </svg>
+                        <div className="dashboard-ring-artwork">
+                            <RicePlantIllustration size={64} />
                         </div>
                     </div>
 
-                    {/* Right: Quick Production Summary */}
-                    <div className="dashboard-hero-details">
-                        <div className="dashboard-hero-badge">
-                            <Sprout size={14} />
-                            <span>
-                                Kharif Season · {farmData.activeCrops} Rice
-                                Varieties
+                    {/* Expected vs Potential — big numbers only */}
+                    <div className="dashboard-hero-stats">
+                        <div className="dashboard-hero-stat">
+                            <span className="dashboard-hero-stat-num">
+                                <AnimatedNumber value={currentEst} decimals={1} />
+                                <em>T</em>
                             </span>
+                            <span className="dashboard-hero-stat-cap">Expected</span>
                         </div>
-                        <h2 className="dashboard-hero-heading">
-                            <AnimatedNumber value={currentEst} decimals={1} />{" "}
-                            of{" "}
-                            <AnimatedNumber value={totalYield} decimals={1} />{" "}
-                            Tons
-                        </h2>
-
-                        <div className="dashboard-hero-metrics-row">
-                            <div className="dashboard-hero-mini-stat">
-                                <span className="dashboard-hero-stat-label">
-                                    In-Field Now
-                                </span>
-                                <span className="dashboard-hero-stat-val">
-                                    <AnimatedNumber
-                                        value={currentEst}
-                                        decimals={1}
-                                    />{" "}
-                                    Ton
-                                </span>
-                            </div>
-                            <div className="dashboard-hero-stat-div" />
-                            <div className="dashboard-hero-mini-stat">
-                                <span className="dashboard-hero-stat-label">
-                                    Season Target
-                                </span>
-                                <span className="dashboard-hero-stat-val">
-                                    <AnimatedNumber
-                                        value={totalYield}
-                                        decimals={1}
-                                    />{" "}
-                                    Ton
-                                </span>
-                            </div>
-                            <div className="dashboard-hero-stat-div" />
-                            <div className="dashboard-hero-mini-stat">
-                                <span className="dashboard-hero-stat-label">
-                                    Max Potential
-                                </span>
-                                <span className="dashboard-hero-stat-val">
-                                    <AnimatedNumber
-                                        value={farmData.potentialYield}
-                                        decimals={1}
-                                    />{" "}
-                                    Ton
-                                </span>
-                            </div>
+                        <div className="dashboard-hero-stat-sep" />
+                        <div className="dashboard-hero-stat">
+                            <span className="dashboard-hero-stat-num dashboard-hero-stat-num--potential">
+                                <AnimatedNumber value={totalYield} decimals={1} />
+                                <em>T</em>
+                            </span>
+                            <span className="dashboard-hero-stat-cap">Potential</span>
                         </div>
                     </div>
                 </div>
             </motion.section>
 
-            {/* ==================== 3. IMPORTANT ACTIONS ==================== */}
-            <motion.section className="dashboard-section" {...reveal(2)}>
+            {/* ==================== 3. CROP DIAGNOSIS (AI PHOTO) ==================== */}
+            <motion.section className="dashboard-diagnosis-section" {...reveal(2)}>
+                <div className="dashboard-diagnosis-card">
+                    <div className="dashboard-diagnosis-info">
+                        <span className="dashboard-diagnosis-tag">
+                            <ScanLine size={13} />
+                            AI Plant Doctor
+                        </span>
+                        <h3 className="dashboard-diagnosis-title">Crop Diagnosis</h3>
+                        <p className="dashboard-diagnosis-sub">
+                            Snap a photo — AI detects the problem and the treatment
+                        </p>
+
+                        {/* Flow visual: phone → plant → medicine */}
+                        <div className="dashboard-diagnosis-flow" aria-hidden="true">
+                            <span className="dashboard-diagnosis-flow-icon">
+                                <Camera size={16} />
+                            </span>
+                            <span className="dashboard-diagnosis-flow-arrow">→</span>
+                            <span className="dashboard-diagnosis-flow-icon dashboard-diagnosis-flow-icon--plant">
+                                <Wheat size={16} />
+                            </span>
+                            <span className="dashboard-diagnosis-flow-arrow">→</span>
+                            <span className="dashboard-diagnosis-flow-icon">
+                                <Pill size={16} />
+                            </span>
+                        </div>
+
+                        <div className="dashboard-diagnosis-cta">
+                            <button
+                                className="dashboard-diagnosis-btn dashboard-diagnosis-btn--primary"
+                                onClick={() => cameraInputRef.current?.click()}
+                            >
+                                <Camera size={18} />
+                                Take Photo
+                            </button>
+                            <button
+                                className="dashboard-diagnosis-btn"
+                                onClick={() => uploadInputRef.current?.click()}
+                            >
+                                <Upload size={16} />
+                                Upload Photo
+                            </button>
+                        </div>
+
+                        {/* Hidden inputs: camera capture + file upload */}
+                        <input
+                            ref={cameraInputRef}
+                            type="file"
+                            accept="image/*"
+                            capture="environment"
+                            hidden
+                            onChange={handlePick}
+                        />
+                        <input
+                            ref={uploadInputRef}
+                            type="file"
+                            accept="image/*"
+                            hidden
+                            onChange={handlePick}
+                        />
+                    </div>
+
+                    {/* Right panel: preview → scanning → result */}
+                    <div className="dashboard-diagnosis-view">
+                        {diagStage === "idle" && (
+                            <div className="dashboard-diagnosis-empty">
+                                <Wheat size={34} />
+                                <span>Photo of your crop appears here</span>
+                            </div>
+                        )}
+
+                        {(diagStage === "preview" || diagStage === "analyzing") && (
+                            <div className="dashboard-diagnosis-photo">
+                                <img src={photo} alt="Crop for diagnosis" />
+                                {diagStage === "analyzing" && (
+                                    <>
+                                        <div className="dashboard-diagnosis-scanline" />
+                                        <div className="dashboard-diagnosis-status">
+                                            <ScanLine size={14} />
+                                            Analyzing crop…
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        )}
+
+                        {diagStage === "result" && (
+                            <div className="dashboard-diagnosis-result">
+                                <div className="dashboard-diagnosis-result__head">
+                                    <span className="dashboard-diagnosis-result__issue">
+                                        Possible Issue
+                                    </span>
+                                    <span className="dashboard-diagnosis-result__confidence">
+                                        92% match
+                                    </span>
+                                </div>
+                                <span className="dashboard-diagnosis-result__name">
+                                    Leaf Blast
+                                </span>
+                                <div className="dashboard-diagnosis-result__treatment">
+                                    <Pill size={15} />
+                                    <div>
+                                        <span>Recommended Treatment</span>
+                                        <strong>Tricyclazole · 250 g</strong>
+                                    </div>
+                                </div>
+                                <div className="dashboard-diagnosis-result__actions">
+                                    <button
+                                        className="dashboard-diagnosis-btn dashboard-diagnosis-btn--primary"
+                                        onClick={() => navigate("/disease")}
+                                    >
+                                        Full Guidance
+                                        <ArrowRight size={15} />
+                                    </button>
+                                    <button
+                                        className="dashboard-diagnosis-btn"
+                                        onClick={resetDiagnosis}
+                                    >
+                                        <RotateCcw size={14} />
+                                        Retake
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </motion.section>
+
+            {/* ==================== 4. IMPORTANT ACTIONS ==================== */}
+            <motion.section className="dashboard-section" {...reveal(3)}>
                 <div className="dashboard-section-header">
                     <h3 className="dashboard-section-title">
                         What Needs Attention?
@@ -300,8 +410,8 @@ export default function Dashboard() {
                 </div>
             </motion.section>
 
-            {/* ==================== 4. SIMPLE PRODUCTION INSIGHTS ==================== */}
-            <motion.section className="dashboard-section" {...reveal(3)}>
+            {/* ==================== 5. SIMPLE PRODUCTION INSIGHTS ==================== */}
+            <motion.section className="dashboard-section" {...reveal(4)}>
                 <div className="dashboard-section-header">
                     <h3 className="dashboard-section-title">
                         Production & Profit Trends

@@ -112,8 +112,8 @@
 .dashboard-hero-card {
     display: flex;
     align-items: center;
-    gap: 32px;
-    padding: 24px 28px;
+    gap: 20px;
+    padding: 16px 20px;
     background: var(--bg-surface);
     border: 1px solid var(--border);
     border-radius: var(--radius-xl);
@@ -122,21 +122,14 @@
     overflow: hidden;
 }
 
-.dashboard-hero-visual {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
-}
-
 .dashboard-ring-container {
     position: relative;
-    width: 160px;
-    height: 160px;
+    width: 112px;
+    height: 112px;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .dashboard-ring-svg {
@@ -176,7 +169,56 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding-bottom: 6px;
+}
+
+/* Expected vs Potential — the only numbers in the hero */
+.dashboard-hero-stats {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    min-width: 0;
+}
+
+.dashboard-hero-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.dashboard-hero-stat-num {
+    font-size: 30px;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    color: var(--text-primary);
+    line-height: 1;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 3px;
+}
+
+.dashboard-hero-stat-num em {
+    font-style: normal;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-secondary);
+}
+
+.dashboard-hero-stat-num--potential {
+    color: var(--gold);
+}
+
+.dashboard-hero-stat-cap {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.dashboard-hero-stat-sep {
+    width: 1px;
+    height: 30px;
+    background: var(--border-light);
+    flex-shrink: 0;
 }
 
 /* Illustrations never exceed their container */
@@ -234,94 +276,294 @@
     }
 }
 
-.dashboard-hero-progress-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 5px 14px;
-    background: var(--gold-soft);
-    border: 1px solid var(--glass-border);
-    box-shadow: var(--glass-highlight);
-    border-radius: var(--radius-full);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+/* ==================== 3. CROP DIAGNOSIS (AI PHOTO) ==================== */
+.dashboard-diagnosis-section {
+    width: 100%;
 }
 
-.dashboard-hero-pct {
-    font-size: 15px;
-    font-weight: 800;
-    color: var(--gold);
+.dashboard-diagnosis-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 20px;
+    padding: 20px 22px;
+    border-radius: var(--radius-xl);
 }
 
-.dashboard-hero-pct-label {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text-secondary);
-}
-
-.dashboard-hero-details {
-    flex: 1;
-    min-width: 0;
+.dashboard-diagnosis-info {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
+    min-width: 0;
 }
 
-.dashboard-hero-badge {
+.dashboard-diagnosis-tag {
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    width: fit-content;
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: var(--accent);
+    color: var(--leaf);
 }
 
-.dashboard-hero-heading {
-    /* Responsive type: scales with viewport, clamped for readability */
-    font-size: clamp(21px, 5vw, 28px);
+.dashboard-diagnosis-title {
+    font-size: 19px;
     font-weight: 800;
+    letter-spacing: -0.02em;
     color: var(--text-primary);
-    letter-spacing: -0.03em;
     margin: 0;
-    line-height: 1.1;
 }
 
-.dashboard-hero-metrics-row {
+.dashboard-diagnosis-sub {
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* Phone → plant → medicine mini flow */
+.dashboard-diagnosis-flow {
     display: flex;
     align-items: center;
-    flex-wrap: wrap;
-    gap: 10px 16px;
-    padding-top: 10px;
-    margin-top: 6px;
-    border-top: 1px solid var(--border-light);
+    gap: 8px;
+    margin: 2px 0;
 }
 
-.dashboard-hero-mini-stat {
+.dashboard-diagnosis-flow-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-md);
     display: flex;
-    flex-direction: column;
-    gap: 2px;
-    min-width: 0;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
 }
 
-.dashboard-hero-stat-label {
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
+.dashboard-diagnosis-flow-icon--plant {
+    background: var(--leaf-soft);
+    color: var(--leaf);
+}
+
+.dashboard-diagnosis-flow-arrow {
+    font-size: 12px;
     color: var(--text-muted);
 }
 
-.dashboard-hero-stat-val {
-    font-size: 14px;
+.dashboard-diagnosis-cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 4px;
+}
+
+.dashboard-diagnosis-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 18px;
+    border: 1px solid var(--glass-border);
+    border-top-color: rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius-full);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+    font-size: 13px;
     font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition:
+        transform 200ms ease,
+        background 200ms ease,
+        border-color 200ms ease,
+        box-shadow 200ms ease;
+}
+
+.dashboard-diagnosis-btn:hover {
+    transform: translateY(-1px);
+    border-color: rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.dashboard-diagnosis-btn:active {
+    transform: translateY(0);
+}
+
+.dashboard-diagnosis-btn--primary {
+    background: linear-gradient(135deg, var(--leaf), #4faf72);
+    border-color: transparent;
+    color: #06130c;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.35),
+        0 6px 18px rgba(111, 207, 142, 0.25);
+}
+
+.dashboard-diagnosis-btn--primary:hover {
+    background: linear-gradient(135deg, #7fd99c, var(--leaf));
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.4),
+        0 8px 22px rgba(111, 207, 142, 0.32);
+}
+
+/* Right panel: empty state / photo / result */
+.dashboard-diagnosis-view {
+    display: flex;
+    align-items: stretch;
+    min-height: 200px;
+    border-radius: var(--radius-lg);
+}
+
+.dashboard-diagnosis-empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-lg);
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.dashboard-diagnosis-photo {
+    position: relative;
+    flex: 1;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid var(--glass-border);
+}
+
+.dashboard-diagnosis-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* AI scanning effect over the photo */
+.dashboard-diagnosis-scanline {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 34%;
+    background: linear-gradient(
+        180deg,
+        transparent,
+        rgba(111, 207, 142, 0.28),
+        rgba(111, 207, 142, 0.45),
+        rgba(111, 207, 142, 0.28),
+        transparent
+    );
+    animation: diagScan 1.4s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes diagScan {
+    0% {
+        top: -34%;
+    }
+    100% {
+        top: 100%;
+    }
+}
+
+.dashboard-diagnosis-status {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: var(--radius-full);
+    background: rgba(10, 15, 12, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: var(--leaf);
+    font-size: 11.5px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* Result panel */
+.dashboard-diagnosis-result {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px 16px;
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.dashboard-diagnosis-result__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+
+.dashboard-diagnosis-result__issue {
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+}
+
+.dashboard-diagnosis-result__confidence {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--leaf);
+}
+
+.dashboard-diagnosis-result__name {
+    font-size: 24px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+    line-height: 1.1;
+}
+
+.dashboard-diagnosis-result__treatment {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: var(--radius-md);
+    background: var(--gold-soft);
+    color: var(--gold);
+}
+
+.dashboard-diagnosis-result__treatment div {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.dashboard-diagnosis-result__treatment span {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    opacity: 0.8;
+}
+
+.dashboard-diagnosis-result__treatment strong {
+    font-size: 13.5px;
+    font-weight: 800;
     color: var(--text-primary);
 }
 
-.dashboard-hero-stat-div {
-    width: 1px;
-    height: 24px;
-    background: var(--border-light);
+.dashboard-diagnosis-result__actions {
+    display: flex;
+    gap: 8px;
+    margin-top: auto;
+    flex-wrap: wrap;
 }
 
 /* ==================== 4. IMPORTANT ACTIONS ==================== */
@@ -651,17 +893,16 @@
         flex-direction: column;
         align-items: center;
         text-align: center;
-        gap: 20px;
+        gap: 16px;
         padding: 20px;
     }
 
-    .dashboard-hero-details {
-        align-items: center;
+    .dashboard-diagnosis-card {
+        grid-template-columns: minmax(0, 1fr);
     }
 
-    .dashboard-hero-metrics-row {
-        justify-content: center;
-        width: 100%;
+    .dashboard-diagnosis-view {
+        min-height: 180px;
     }
 
     .dashboard-insights-grid {
@@ -675,8 +916,17 @@
     }
 
     .dashboard-ring-container {
-        width: 140px;
-        height: 140px;
+        width: 100px;
+        height: 100px;
+    }
+
+    .dashboard-hero-stat-num {
+        font-size: 26px;
+    }
+
+    .dashboard-diagnosis-cta .dashboard-diagnosis-btn {
+        flex: 1 1 auto;
+        justify-content: center;
     }
 }
 
@@ -691,17 +941,16 @@
         justify-content: space-between;
     }
 
-    /* Dividers don't wrap gracefully — hide them and let stats wrap in pairs */
-    .dashboard-hero-stat-div {
-        display: none;
-    }
-
-    .dashboard-hero-metrics-row {
-        gap: 14px 22px;
-    }
-
     .dashboard-hero-card {
-        padding: 18px 16px;
+        padding: 16px 14px;
+    }
+
+    .dashboard-diagnosis-card {
+        padding: 16px 14px;
+    }
+
+    .dashboard-diagnosis-btn {
+        padding: 12px 16px;
     }
 
     .dashboard-insight-card {
@@ -712,10 +961,17 @@
 /* Very narrow phones (iPhone SE and similar) */
 @media (max-width: 380px) {
     .dashboard-ring-container {
-        width: 120px;
-        height: 120px;
+        width: 88px;
+        height: 88px;
     }
 
+    .dashboard-hero-stat-num {
+        font-size: 23px;
+    }
+
+    .dashboard-hero-stat-sep {
+        height: 24px;
+    }
 }
 
 /* ==================== ACCESSIBILITY: REDUCED MOTION ==================== */
