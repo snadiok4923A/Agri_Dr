@@ -248,21 +248,6 @@ export default function Dashboard() {
                             Snap a photo — AI detects the problem and the treatment
                         </p>
 
-                        {/* Flow visual: phone → plant → medicine */}
-                        <div className="dashboard-diagnosis-flow" aria-hidden="true">
-                            <span className="dashboard-diagnosis-flow-icon">
-                                <Camera size={16} />
-                            </span>
-                            <span className="dashboard-diagnosis-flow-arrow">→</span>
-                            <span className="dashboard-diagnosis-flow-icon dashboard-diagnosis-flow-icon--plant">
-                                <Wheat size={16} />
-                            </span>
-                            <span className="dashboard-diagnosis-flow-arrow">→</span>
-                            <span className="dashboard-diagnosis-flow-icon">
-                                <Pill size={16} />
-                            </span>
-                        </div>
-
                         <div className="dashboard-diagnosis-cta">
                             <button
                                 className="dashboard-diagnosis-btn dashboard-diagnosis-btn--primary"
@@ -298,15 +283,9 @@ export default function Dashboard() {
                         />
                     </div>
 
-                    {/* Right panel: preview → scanning → result */}
-                    <div className="dashboard-diagnosis-view">
-                        {diagStage === "idle" && (
-                            <div className="dashboard-diagnosis-empty">
-                                <Wheat size={34} />
-                                <span>Photo of your crop appears here</span>
-                            </div>
-                        )}
-
+                    {/* Photo / analysis area — appears only once an image is picked */}
+                    {diagStage !== "idle" && (
+                        <div className="dashboard-diagnosis-view">
                         {(diagStage === "preview" || diagStage === "analyzing") && (
                             <div className="dashboard-diagnosis-photo">
                                 <img src={photo} alt="Crop for diagnosis" />
@@ -360,7 +339,8 @@ export default function Dashboard() {
                                 </div>
                             </div>
                         )}
-                    </div>
+                        </div>
+                    )}
                 </div>
             </motion.section>
 
