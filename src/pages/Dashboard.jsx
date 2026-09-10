@@ -1,24 +1,16 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import { useLanguage } from "../hooks/useLanguage";
 import {
     farmData,
     crops,
-    fields,
     weatherData,
     analyticsData,
 } from "../data/mockData";
 import {
-    ArrowRight,
     ChevronRight,
-    TrendingUp,
-    Coins,
     Sprout,
     Wheat,
-    Sparkles,
-    IndianRupee,
-    Pill,
 } from "lucide-react";
 import { AreaChart, Area, ResponsiveContainer, XAxis, Tooltip } from "recharts";
 import {
@@ -66,22 +58,9 @@ export default function Dashboard() {
                   custom: i,
               };
 
-    // Active variety selection for quick spotlight
-    const [selectedVarietyId, setSelectedVarietyId] = useState(crops[0].id);
-    const selectedVariety =
-        crops.find((c) => c.id === selectedVarietyId) || crops[0];
-
     const totalYield = farmData.expectedYield;
     const currentEst = farmData.currentProductionEstimate;
     const yieldPct = Math.round((currentEst / totalYield) * 100);
-
-    // Highest-urgency treatment across fields (drives the medicine card)
-    const urgentField =
-        fields.find((f) => f.medicineRequirement?.urgency === "high") || fields[0];
-    const treatment = urgentField.medicineRequirement;
-    const costShare = Math.round(
-        (farmData.estimatedCost / farmData.estimatedRevenue) * 100,
-    );
 
     // Circular progress calculations (Radius 70, Stroke 10, Box 160)
     const ringRadius = 66;
@@ -167,12 +146,6 @@ export default function Dashboard() {
             {/* ==================== 2. MAIN RICE PRODUCTION VISUAL ==================== */}
             <motion.section className="dashboard-hero-section" {...reveal(1)}>
                 <div className="dashboard-hero-card">
-                    {/* Soft floating pollen particles — atmosphere, not distraction */}
-                    <div className="dashboard-hero-particles" aria-hidden="true">
-                        <span />
-                        <span />
-                        <span />
-                    </div>
                     {/* Left: Beautiful Agricultural Vector with Circular Progress Ring */}
                     <div className="dashboard-hero-visual">
                         <div className="dashboard-ring-container">
@@ -281,159 +254,8 @@ export default function Dashboard() {
                 </div>
             </motion.section>
 
-            {/* ==================== 3. PRODUCTION + PROFIT CARDS ==================== */}
-            <motion.section className="dashboard-stats-grid" {...reveal(2)}>
-                {/* Production Card */}
-                <div
-                    className="dashboard-stat-card dashboard-stat-card--prod"
-                    onClick={() => navigate("/crops")}
-                    role="button"
-                    tabIndex={0}
-                >
-                    <div className="dashboard-stat-card__top">
-                        <span className="dashboard-stat-card__label">
-                            Expected Yield
-                        </span>
-                        <div className="dashboard-stat-card__icon dashboard-stat-card__icon--prod">
-                            <Wheat size={18} />
-                        </div>
-                    </div>
-                    <div className="dashboard-stat-card__main">
-                        <span className="dashboard-stat-card__number">
-                            <AnimatedNumber value={totalYield} decimals={1} />
-                        </span>
-                        <span className="dashboard-stat-card__unit">Ton</span>
-                    </div>
-                    <div className="dashboard-stat-card__footer">
-                        <span className="dashboard-stat-card__pill dashboard-stat-card__pill--prod">
-                            <TrendingUp size={12} />
-                            <span>
-                                <AnimatedNumber
-                                    value={farmData.potentialYield}
-                                    decimals={1}
-                                />
-                                T Potential
-                            </span>
-                        </span>
-                        <span className="dashboard-stat-card__arrow">
-                            <ArrowRight size={14} />
-                        </span>
-                    </div>
-                </div>
-
-                {/* Profit Card */}
-                <div
-                    className="dashboard-stat-card dashboard-stat-card--profit"
-                    onClick={() => navigate("/finance")}
-                    role="button"
-                    tabIndex={0}
-                >
-                    <div className="dashboard-stat-card__top">
-                        <span className="dashboard-stat-card__label">
-                            Expected Net Profit
-                        </span>
-                        <div className="dashboard-stat-card__icon dashboard-stat-card__icon--profit">
-                            <Coins size={18} />
-                        </div>
-                    </div>
-                    <div className="dashboard-stat-card__main">
-                        <span className="dashboard-stat-card__currency">₹</span>
-                        <span className="dashboard-stat-card__number">
-                            <AnimatedNumber value={farmData.expectedProfit} />
-                        </span>
-                    </div>
-                    <div className="dashboard-stat-card__footer">
-                        <span className="dashboard-stat-card__pill dashboard-stat-card__pill--profit">
-                            <Sparkles size={12} />
-                            <span>
-                                +
-                                <AnimatedNumber
-                                    value={farmData.profitMargin}
-                                    decimals={1}
-                                />
-                                % Margin
-                            </span>
-                        </span>
-                        <span className="dashboard-stat-card__arrow">
-                            <ArrowRight size={14} />
-                        </span>
-                    </div>
-                </div>
-
-                {/* Production Cost Card */}
-                <div
-                    className="dashboard-stat-card dashboard-stat-card--cost"
-                    onClick={() => navigate("/finance")}
-                    role="button"
-                    tabIndex={0}
-                >
-                    <div className="dashboard-stat-card__top">
-                        <span className="dashboard-stat-card__label">
-                            Estimated Production Cost
-                        </span>
-                        <div className="dashboard-stat-card__icon dashboard-stat-card__icon--cost">
-                            <IndianRupee size={18} />
-                        </div>
-                    </div>
-                    <div className="dashboard-stat-card__main">
-                        <span className="dashboard-stat-card__currency">₹</span>
-                        <span className="dashboard-stat-card__number">
-                            <AnimatedNumber value={farmData.estimatedCost} />
-                        </span>
-                    </div>
-                    <div className="dashboard-stat-card__footer">
-                        <span className="dashboard-stat-card__pill dashboard-stat-card__pill--cost">
-                            <TrendingUp size={12} style={{ transform: "rotate(180deg)" }} />
-                            <span>
-                                <AnimatedNumber value={costShare} decimals={1} />
-                                % of Revenue
-                            </span>
-                        </span>
-                        <span className="dashboard-stat-card__arrow">
-                            <ArrowRight size={14} />
-                        </span>
-                    </div>
-                </div>
-
-                {/* Treatment / Medicine Card */}
-                <div
-                    className="dashboard-stat-card dashboard-stat-card--medicine"
-                    onClick={() => navigate("/disease")}
-                    role="button"
-                    tabIndex={0}
-                >
-                    <div className="dashboard-stat-card__top">
-                        <span className="dashboard-stat-card__label">
-                            Treatment Required
-                        </span>
-                        <div className="dashboard-stat-card__icon dashboard-stat-card__icon--medicine">
-                            <Pill size={18} />
-                        </div>
-                    </div>
-                    <div className="dashboard-stat-card__main dashboard-stat-card__main--stacked">
-                        <span className="dashboard-stat-card__medicine-name">
-                            {treatment.medicine.split(" ").slice(0, 2).join(" ")}
-                        </span>
-                        <span className="dashboard-stat-card__medicine-qty">
-                            Required: {treatment.quantity}
-                        </span>
-                    </div>
-                    <div className="dashboard-stat-card__footer">
-                        <span className="dashboard-stat-card__pill dashboard-stat-card__pill--medicine">
-                            <Sparkles size={12} />
-                            <span>
-                                {urgentField.name} · {treatment.purpose.split(" ")[0]} Blast
-                            </span>
-                        </span>
-                        <span className="dashboard-stat-card__arrow">
-                            <ArrowRight size={14} />
-                        </span>
-                    </div>
-                </div>
-            </motion.section>
-
-            {/* ==================== 4. IMPORTANT ACTIONS ==================== */}
-            <motion.section className="dashboard-section" {...reveal(3)}>
+            {/* ==================== 3. IMPORTANT ACTIONS ==================== */}
+            <motion.section className="dashboard-section" {...reveal(2)}>
                 <div className="dashboard-section-header">
                     <h3 className="dashboard-section-title">
                         What Needs Attention?
@@ -478,111 +300,8 @@ export default function Dashboard() {
                 </div>
             </motion.section>
 
-            {/* ==================== 5. RICE VARIETIES ==================== */}
-            <motion.section className="dashboard-section" {...reveal(4)}>
-                <div className="dashboard-section-header">
-                    <h3 className="dashboard-section-title">Rice Varieties</h3>
-                    <span
-                        className="dashboard-section-link"
-                        onClick={() => navigate("/crops")}
-                    >
-                        All {crops.length} Varieties →
-                    </span>
-                </div>
-
-                {/* Variety Selection Chips */}
-                <div className="dashboard-variety-chips">
-                    {crops.map((c) => (
-                        <button
-                            key={c.id}
-                            className={`dashboard-variety-chip ${
-                                selectedVarietyId === c.id
-                                    ? "dashboard-variety-chip--active"
-                                    : ""
-                            }`}
-                            onClick={() => setSelectedVarietyId(c.id)}
-                        >
-                            <Wheat size={14} />
-                            <span>{c.variety}</span>
-                            <span className="dashboard-variety-chip__acre">
-                                {c.area} ac
-                            </span>
-                        </button>
-                    ))}
-                </div>
-
-                {/* Selected Variety Spotlight Card */}
-                <div className="dashboard-variety-spotlight">
-                    <div className="dashboard-variety-spotlight__header">
-                        <div>
-                            <span className="dashboard-variety-spotlight__tag">
-                                {selectedVariety.field} · {selectedVariety.area}{" "}
-                                Acres · {selectedVariety.stage} Stage
-                            </span>
-                            <h4 className="dashboard-variety-spotlight__name">
-                                {selectedVariety.variety} Paddy
-                            </h4>
-                        </div>
-                        <button
-                            className="dashboard-variety-spotlight__btn"
-                            onClick={() =>
-                                navigate(`/crops/${selectedVariety.id}`)
-                            }
-                        >
-                            <span>Details</span>
-                            <ChevronRight size={14} />
-                        </button>
-                    </div>
-
-                    <div className="dashboard-variety-spotlight__metrics">
-                        <div className="dashboard-variety-metric-box">
-                            <span className="dashboard-variety-metric-lbl">
-                                Expected Yield
-                            </span>
-                            <span className="dashboard-variety-metric-val">
-                                <AnimatedNumber
-                                    value={selectedVariety.expectedYield}
-                                    decimals={1}
-                                />{" "}
-                                Ton
-                            </span>
-                        </div>
-                        <div className="dashboard-variety-metric-box">
-                            <span className="dashboard-variety-metric-lbl">
-                                Expected Profit
-                            </span>
-                            <span className="dashboard-variety-metric-val dashboard-variety-metric-val--profit">
-                                ₹
-                                <AnimatedNumber
-                                    value={selectedVariety.expectedProfit}
-                                />
-                            </span>
-                        </div>
-                        <div className="dashboard-variety-metric-box">
-                            <span className="dashboard-variety-metric-lbl">
-                                Production Cost
-                            </span>
-                            <span className="dashboard-variety-metric-val">
-                                ₹
-                                <AnimatedNumber
-                                    value={selectedVariety.estimatedCost}
-                                />
-                            </span>
-                        </div>
-                        <div className="dashboard-variety-metric-box">
-                            <span className="dashboard-variety-metric-lbl">
-                                Mandi Rate
-                            </span>
-                            <span className="dashboard-variety-metric-val">
-                                ₹{selectedVariety.marketPrice} / Q
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </motion.section>
-
-            {/* ==================== 6. SIMPLE PRODUCTION INSIGHTS ==================== */}
-            <motion.section className="dashboard-section" {...reveal(5)}>
+            {/* ==================== 4. SIMPLE PRODUCTION INSIGHTS ==================== */}
+            <motion.section className="dashboard-section" {...reveal(3)}>
                 <div className="dashboard-section-header">
                     <h3 className="dashboard-section-title">
                         Production & Profit Trends

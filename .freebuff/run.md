@@ -1,24 +1,22 @@
-# Run Doc — Krisiveda
+# Krisiveda — Run doc
 
-## How to reproduce artifacts
-No build artifacts needed. Dependencies should already be installed (`npm install` if node_modules is missing).
+Vite + React app. Base path: `/Agri_Dr/`.
 
-## How to run the server
-Run from the project root:
-```bash
-npm run dev
-```
+## Reproduce artifacts
+1. No env files needed — all data comes from `src/data/mockData.js`.
+2. Dependencies: `npm install` (lockfile: `package-lock.json`).
+3. No build artifacts required for dev preview.
 
-The Vite dev server starts on port 5173 by default (use the next free port, e.g. 5176, if 5173 is occupied by another project).
-Base path: `/Agri_Dr/` — set in BOTH `vite.config.js` (`base`) and `src/App.jsx` (`BrowserRouter basename`); keep the two in sync.
+## Run the server
+1. Default port 5173. If busy, Vite auto-increments (5174, 5176, …) — check the log for the actual port.
+2. Start detached (PowerShell, from project root):
+   ```
+   powershell -NoProfile -Command "(Start-Process -FilePath 'npm.cmd' -ArgumentList 'run','dev' -RedirectStandardOutput '.freebuff\preview-cb1eb702-d691-4b16-90ea-d22ba5005d24.log' -RedirectStandardError '.freebuff\preview-cb1eb702-d691-4b16-90ea-d22ba5005d24.log.err' -WindowStyle Hidden -PassThru).Id"
+   ```
+   (stdout and stderr must go to different files.)
+3. Confirm: `curl http://[::1]:5173/Agri_Dr/` returns 200, and `netstat -ano | grep 5173` shows the PID.
+4. Register preview with URL `http://[::1]:5173/Agri_Dr/` + the PID from netstat.
+5. Production build check: `npm run build`.
 
-## Current preview
-- **URL**: `http://[::1]:5173/Agri_Dr/`
-- **Port**: 5173
-- **Base path**: `/Agri_Dr/`
-
-## Detach command (Windows PowerShell)
-```powershell
-powershell -NoProfile -Command "(Start-Process -FilePath 'npm.cmd' -ArgumentList 'run','dev' -RedirectStandardOutput '<log>' -RedirectStandardError '<log>.err' -WorkingDirectory '<project-root>' -WindowStyle Hidden -PassThru).Id"
-```
-stdout and stderr must point at DIFFERENT files (PowerShell requirement).
+## Last verified
+- Port 5173, PID 4184, HTTP 200, dashboard rendering (greeting, weather, production hero, 4 metric cards, attention cards, varieties, charts).

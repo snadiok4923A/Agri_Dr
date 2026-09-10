@@ -65,12 +65,14 @@
     --green-900: #090b0a;
     --earth-100: #1c1b1a;
     --earth-200: #141312;
-    /* Glassmorphism tokens (dark) */
-    --glass-bg: rgba(255, 255, 255, 0.04);
-    --glass-bg-strong: rgba(255, 255, 255, 0.06);
+    /* Glassmorphism tokens (dark) — translucent so the aurora glows through */
+    --glass-bg: rgba(20, 25, 22, 0.35);
+    --glass-bg-strong: rgba(30, 35, 30, 0.42);
     --glass-border: rgba(255, 255, 255, 0.08);
-    --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.07);
-    --glass-blur: 18px;
+    --glass-highlight:
+        inset 0 1px 0 rgba(255, 255, 255, 0.07),
+        0 8px 32px rgba(0, 0, 0, 0.25);
+    --glass-blur: 24px;
     --gold: #e8b84b;
     --gold-soft: rgba(232, 184, 75, 0.12);
     --gold-dim: rgba(232, 184, 75, 0.55);
@@ -168,24 +170,23 @@ body {
     inset: 0;
     z-index: -2;
     pointer-events: none;
-    background:
-        radial-gradient(
-            42rem 34rem at 12% -6%,
-            rgba(232, 184, 75, 0.13),
-            transparent 68%
-        ),
-        radial-gradient(
-            46rem 40rem at 96% 8%,
-            rgba(111, 207, 142, 0.1),
+    background:        radial-gradient(
+            48rem 38rem at 10% -8%,
+            rgba(232, 184, 75, 0.17),
             transparent 70%
         ),
         radial-gradient(
-            52rem 44rem at 50% 118%,
-            rgba(18, 53, 36, 0.55),
+            52rem 44rem at 98% 10%,
+            rgba(111, 207, 142, 0.13),
             transparent 72%
         ),
+        radial-gradient(
+            56rem 48rem at 50% 120%,
+            rgba(18, 53, 36, 0.6),
+            transparent 74%
+        ),
         var(--bg-primary);
-    animation: auroraDrift 38s ease-in-out infinite alternate;
+    animation: auroraDrift 22s ease-in-out infinite alternate;
 }
 
 /* Faint vignette to seat the glow — keeps the centre calm for content */
@@ -216,6 +217,101 @@ body {
             -3% -2%,
             46% 96%;
         filter: hue-rotate(6deg);
+    }
+}
+
+/* ============================================================
+   TRUE GLASS PANELS (dark theme)
+   Frosted, translucent surfaces over the aurora — the background
+   glow must stay faintly visible THROUGH each card. Neutral glass
+   with an illuminated rim; color lives only in the background and
+   in small accents (numbers, icons, status pills).
+   ============================================================ */
+[data-theme="dark"] .dashboard-hero-card,
+[data-theme="dark"] .dashboard-action-card,
+[data-theme="dark"] .dashboard-insight-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+    border-color: rgba(255, 255, 255, 0.05);
+    border-top-color: rgba(255, 255, 255, 0.12);
+    border-left-color: rgba(255, 255, 255, 0.08);
+    border-right-color: rgba(255, 255, 255, 0.06);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.06),
+        0 8px 32px rgba(0, 0, 0, 0.25);
+    position: relative;
+    overflow: hidden;
+    transition:
+        transform 280ms ease,
+        background 280ms ease,
+        border-color 280ms ease,
+        box-shadow 280ms ease;
+}
+
+/* Extremely subtle sheen near the top edge of every glass panel */
+[data-theme="dark"] .dashboard-hero-card::after,
+[data-theme="dark"] .dashboard-action-card::after,
+[data-theme="dark"] .dashboard-insight-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent 35%);
+    pointer-events: none;
+}
+
+/* Glass chrome: transparent sidebar, header and mobile nav (dark only) */
+[data-theme="dark"] .sidebar {
+    background: rgba(10, 15, 12, 0.4);
+}
+
+[data-theme="dark"] .header {
+    background: rgba(10, 15, 12, 0.3);
+}
+
+[data-theme="dark"] .mobile-nav {
+    background: rgba(10, 15, 12, 0.4);
+}
+
+/* Lighter, brighter glass on hover — soft lift, no flashy glow */
+[data-theme="dark"] .dashboard-action-card:hover {
+    background: rgba(30, 35, 30, 0.38);
+    border-color: rgba(255, 255, 255, 0.14);
+    border-top-color: rgba(255, 255, 255, 0.16);
+}
+
+/* Small glass elements inside the dashboard: weather pill */
+[data-theme="dark"] .dashboard-weather-compact {
+    background: rgba(20, 25, 22, 0.3);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    border-color: rgba(255, 255, 255, 0.08);
+    border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Nested surfaces inside glass cards go translucent — never opaque blocks */
+[data-theme="dark"] .dashboard-action-card__icon {
+    background: rgba(255, 255, 255, 0.045);
+}
+
+[data-theme="dark"] .dashboard-profit-bar-track {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+/* Gentler blur on small screens — keep the transparency, save the GPU */
+@media (max-width: 768px) {
+    [data-theme="dark"] .dashboard-hero-card,
+    [data-theme="dark"] .dashboard-action-card,
+    [data-theme="dark"] .dashboard-insight-card {
+        backdrop-filter: blur(16px) saturate(140%);
+        -webkit-backdrop-filter: blur(16px) saturate(140%);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    [data-theme="dark"] body::before {
+        animation: none;
     }
 }
 
