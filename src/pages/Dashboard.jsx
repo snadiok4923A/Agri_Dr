@@ -155,32 +155,11 @@ export default function Dashboard() {
                     </h1>
                 </div>
 
-                {/* Compact Weather Widget */}
-                <div
-                    className="dashboard-weather-compact"
-                    onClick={() => navigate("/weather")}
-                    title="View Weather & Spraying Advisory"
-                >
-                    <WeatherSunCloudIllustration size={38} />
-                    <div className="dashboard-weather-info">
-                        <div className="dashboard-weather-temp-row">
-                            <span className="dashboard-weather-temp">
-                                {weatherData.current.temperature}°
-                            </span>
-                            <span className="dashboard-weather-cond">
-                                {weatherData.current.condition}
-                            </span>
-                        </div>
-                        <div className="dashboard-weather-meta">
-                            <span>💧 {weatherData.current.humidity}%</span>
-                            <span>💨 {weatherData.current.wind} km/h</span>
-                        </div>
-                    </div>
-                </div>
             </motion.section>
 
-            {/* ==================== 2. COMPACT PRODUCTION WIDGET ==================== */}
-            <motion.section className="dashboard-hero-section" {...reveal(1)}>
+            {/* ==================== 2. PRODUCTION + WEATHER ROW ==================== */}
+            <motion.section className="dashboard-top-row" {...reveal(1)}>
+                {/* Compact Production Summary (left) */}
                 <div className="dashboard-hero-card">
                     {/* Rice visual inside a subtle progress ring */}
                     <div className="dashboard-ring-container">
@@ -233,6 +212,32 @@ export default function Dashboard() {
                         </div>
                     </div>
                 </div>
+
+                {/* Compact Weather Panel (right) */}
+                <div
+                    className="dashboard-weather-card"
+                    onClick={() => navigate("/weather")}
+                    role="button"
+                    tabIndex={0}
+                    title="View Weather & Spraying Advisory"
+                >
+                    <div className="dashboard-weather-card__top">
+                        <span className="dashboard-weather-card__label">
+                            <WeatherSunCloudIllustration size={30} />
+                            Weather
+                        </span>
+                        <span className="dashboard-weather-card__temp">
+                            {weatherData.current.temperature}°
+                        </span>
+                    </div>
+                    <div className="dashboard-weather-card__cond">
+                        {weatherData.current.condition}
+                    </div>
+                    <div className="dashboard-weather-card__meta">
+                        <span>💧 {weatherData.current.humidity}%</span>
+                        <span>💨 {weatherData.current.wind} km/h</span>
+                    </div>
+                </div>
             </motion.section>
 
             {/* ==================== 3. CROP DIAGNOSIS (AI PHOTO) ==================== */}
@@ -247,6 +252,21 @@ export default function Dashboard() {
                         <p className="dashboard-diagnosis-sub">
                             Snap a photo — AI detects the problem and the treatment
                         </p>
+
+                        {/* Compact 3-step visual workflow: Camera → AI → Treatment */}
+                        <div className="dashboard-diagnosis-flow">
+                            <span className="dashboard-diagnosis-flow__step">
+                                <Camera size={16} />
+                            </span>
+                            <span className="dashboard-diagnosis-flow__arrow" />
+                            <span className="dashboard-diagnosis-flow__step dashboard-diagnosis-flow__step--ai">
+                                <ScanLine size={16} />
+                            </span>
+                            <span className="dashboard-diagnosis-flow__arrow" />
+                            <span className="dashboard-diagnosis-flow__step">
+                                <Pill size={15} />
+                            </span>
+                        </div>
 
                         <div className="dashboard-diagnosis-cta">
                             <button

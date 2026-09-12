@@ -228,6 +228,7 @@ body {
    in small accents (numbers, icons, status pills).
    ============================================================ */
 [data-theme="dark"] .dashboard-hero-card,
+[data-theme="dark"] .dashboard-weather-card,
 [data-theme="dark"] .dashboard-action-card,
 [data-theme="dark"] .dashboard-insight-card,
 [data-theme="dark"] .dashboard-diagnosis-card {
@@ -252,6 +253,7 @@ body {
 
 /* Extremely subtle sheen near the top edge of every glass panel */
 [data-theme="dark"] .dashboard-hero-card::after,
+[data-theme="dark"] .dashboard-weather-card::after,
 [data-theme="dark"] .dashboard-action-card::after,
 [data-theme="dark"] .dashboard-insight-card::after,
 [data-theme="dark"] .dashboard-diagnosis-card::after {
@@ -281,15 +283,6 @@ body {
     background: rgba(30, 35, 30, 0.38);
     border-color: rgba(255, 255, 255, 0.14);
     border-top-color: rgba(255, 255, 255, 0.16);
-}
-
-/* Small glass elements inside the dashboard: weather pill */
-[data-theme="dark"] .dashboard-weather-compact {
-    background: rgba(20, 25, 22, 0.3);
-    backdrop-filter: blur(16px) saturate(140%);
-    -webkit-backdrop-filter: blur(16px) saturate(140%);
-    border-color: rgba(255, 255, 255, 0.08);
-    border-top-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Nested surfaces inside glass cards go translucent — never opaque blocks */
