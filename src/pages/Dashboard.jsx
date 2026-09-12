@@ -221,10 +221,10 @@ export default function Dashboard() {
                     tabIndex={0}
                     title="View Weather & Spraying Advisory"
                 >
-                    <div className="dashboard-weather-card__top">
-                        <span className="dashboard-weather-card__label">
-                            <WeatherSunCloudIllustration size={30} />
-                            Weather
+                    <span className="dashboard-weather-card__label">Weather</span>
+                    <div className="dashboard-weather-card__main">
+                        <span className="dashboard-weather-card__icon">
+                            <WeatherSunCloudIllustration size={40} />
                         </span>
                         <span className="dashboard-weather-card__temp">
                             {weatherData.current.temperature}°
@@ -234,8 +234,14 @@ export default function Dashboard() {
                         {weatherData.current.condition}
                     </div>
                     <div className="dashboard-weather-card__meta">
-                        <span>💧 {weatherData.current.humidity}%</span>
-                        <span>💨 {weatherData.current.wind} km/h</span>
+                        <span className="dashboard-weather-card__meta-item">
+                            <span className="dashboard-weather-card__meta-ico">💧</span>
+                            {weatherData.current.humidity}%
+                        </span>
+                        <span className="dashboard-weather-card__meta-item">
+                            <span className="dashboard-weather-card__meta-ico">💨</span>
+                            {weatherData.current.wind} km/h
+                        </span>
                     </div>
                 </div>
             </motion.section>

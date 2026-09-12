@@ -55,7 +55,8 @@
 .dashboard-top-row {
     width: 100%;
     display: grid;
-    grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+    grid-template-columns: minmax(0, auto) minmax(0, auto);
+    justify-content: flex-start;
     gap: 16px;
     align-items: stretch;
 }
@@ -172,15 +173,17 @@
     flex-shrink: 0;
 }
 
-/* Compact weather panel (right of production) */
+/* Compact weather panel (right of production) — hierarchy:
+   "Weather" heading → icon + temp row → condition → humidity/wind */
 .dashboard-weather-card {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    gap: 8px;
+    gap: 10px;
     padding: 16px 18px;
     min-width: 0;
-    max-width: 620px;
+    width: 100%;
+    max-width: 300px;
     background: var(--bg-surface);
     border: 1px solid var(--border);
     border-radius: var(--radius-xl);
@@ -195,34 +198,38 @@
     border-color: var(--leaf);
 }
 
-.dashboard-weather-card__top {
+/* "Weather" — top heading */
+.dashboard-weather-card__label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    line-height: 1;
+}
+
+/* Icon + temperature row below the heading */
+.dashboard-weather-card__main {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 10px;
-    flex-wrap: wrap;
+    gap: 12px;
 }
 
-.dashboard-weather-card__label {
+.dashboard-weather-card__icon {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--text-secondary);
-    white-space: nowrap;
+    justify-content: center;
+    line-height: 0;
 }
 
 .dashboard-weather-card__temp {
-    font-size: 26px;
+    font-size: 28px;
     font-weight: 900;
     letter-spacing: -0.02em;
     color: var(--text-primary);
     line-height: 1;
-}
-
-.dashboard-weather-card__cond {
-    font-size: 12px;
+    flex-shrink: 0;
+}.dashboard-weather-card__cond {
+    font-size: 14px;
     font-weight: 600;
     color: var(--text-secondary);
     white-space: nowrap;
@@ -232,11 +239,29 @@
 
 .dashboard-weather-card__meta {
     display: flex;
+    align-items: center;
+    justify-content: space-between;
     gap: 14px;
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 500;
     color: var(--text-muted);
     flex-wrap: wrap;
+}
+
+.dashboard-weather-card__meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+}
+
+.dashboard-weather-card__meta-ico {
+    font-size: 16px;
+    line-height: 1;
+}
+
+.dashboard-weather-card__meta-ico::selection {
+    background: transparent;
 }
 
 /* Illustrations never exceed their container */
@@ -936,12 +961,35 @@
     }
 
     .dashboard-weather-card {
-        padding: 13px 12px;
-        gap: 6px;
+        padding: 16px 14px;
+        gap: 14px;
+        justify-content: space-evenly;
+    }
+
+    .dashboard-weather-card__label {
+        font-size: 14px;
+    }
+
+    .dashboard-weather-card__icon svg {
+        width: 40px;
+        height: 40px;
+    }
+
+    .dashboard-weather-card__temp {
+        font-size: 32px;
+    }
+
+    .dashboard-weather-card__cond {
+        font-size: 14.5px;
     }
 
     .dashboard-weather-card__meta {
-        gap: 8px;
+        gap: 18px;
+        font-size: 15px;
+    }
+
+    .dashboard-weather-card__meta-ico {
+        font-size: 17px;
     }
 
     .dashboard-actions-grid {
@@ -969,11 +1017,34 @@
     }
 
     .dashboard-weather-card {
-        padding: 12px 10px;
+        padding: 14px 12px;
+        gap: 12px;
+    }
+
+    .dashboard-weather-card__label {
+        font-size: 13.5px;
+    }
+
+    .dashboard-weather-card__icon svg {
+        width: 36px;
+        height: 36px;
     }
 
     .dashboard-weather-card__temp {
-        font-size: 23px;
+        font-size: 30px;
+    }
+
+    .dashboard-weather-card__cond {
+        font-size: 14px;
+    }
+
+    .dashboard-weather-card__meta {
+        gap: 12px;
+        font-size: 15px;
+    }
+
+    .dashboard-weather-card__meta-ico {
+        font-size: 16px;
     }
 
     .dashboard-diagnosis-card {
@@ -991,26 +1062,58 @@
 
 /* Very narrow phones (iPhone SE and similar) */
 @media (max-width: 380px) {
+    .dashboard-hero-card {
+        gap: 8px;
+        padding: 12px 8px;
+    }
+
+    .dashboard-hero-stats {
+        gap: 12px;
+    }
+
     .dashboard-ring-container {
-        width: 88px;
-        height: 88px;
+        width: 80px;
+        height: 80px;
     }
 
     .dashboard-hero-stat-num {
-        font-size: 23px;
+        font-size: 20px;
     }
 
     .dashboard-hero-stat-sep {
-        height: 24px;
+        height: 20px;
     }
 
-    .dashboard-weather-card__label svg {
-        width: 24px;
-        height: 24px;
+    .dashboard-weather-card {
+        padding: 12px 10px;
+        gap: 10px;
+        justify-content: center;
+    }
+
+    .dashboard-weather-card__label {
+        font-size: 12.5px;
+    }
+
+    .dashboard-weather-card__icon svg {
+        width: 30px;
+        height: 30px;
     }
 
     .dashboard-weather-card__temp {
-        font-size: 21px;
+        font-size: 26px;
+    }
+
+    .dashboard-weather-card__cond {
+        font-size: 13px;
+    }
+
+    .dashboard-weather-card__meta {
+        gap: 10px;
+        font-size: 14px;
+    }
+
+    .dashboard-weather-card__meta-ico {
+        font-size: 15px;
     }
 }
 
