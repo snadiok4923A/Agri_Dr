@@ -1,24 +1,35 @@
-# Krisiveda — Dev Server Run Doc
+# Krisiveda — How to Run (Preview)
 
-Vite + React app. Base path `/Agri_Dr/`.
+Vite + React dev server for the Krisiveda (Agri_de) project.
 
-## Reproduce artifacts
-- Dependencies are already installed in `node_modules/`. To restore: `npm install` (package-lock.json pins versions).
-- No `.env.local` or other secret env files are needed to run the app.
+## How to reproduce the artifacts
 
-## Run the dev server (Windows, detached)
-1. Check whether port 5173 is free. **Important:** 5173 may be occupied by an unrelated local project (`T A N T R A V E D A`) — if so, use 5174:
-   `netstat -ano | findstr :5173`
-2. Start detached with PowerShell (stdout and stderr MUST go to different files):
+1. **Dependencies** — install once with npm:
    ```
-   powershell -NoProfile -Command "(Start-Process -FilePath 'npm.cmd' -ArgumentList 'run','dev','--','--port','5174','--strictPort' -RedirectStandardOutput '.freebuff/preview-cb1eb702-d691-4b16-90ea-d22ba5005d24.log' -RedirectStandardError '.freebuff/preview-cb1eb702-d691-4b16-90ea-d22ba5005d24.log.err' -WindowStyle Hidden -PassThru).Id"
+   npm install
    ```
-   (If 5173 is genuinely free, you can omit the `--port 5174 --strictPort` args.)
-3. Verify it answers before registering the preview:
-   `curl -s -o /dev/null -w "%{http_code}" http://[::1]:5174/Agri_Dr/` → expect `200`
-4. Confirm the pid survived: `powershell -NoProfile -Command "Get-Process -Id <pid>"`
-5. Preview URL: `http://[::1]:5174/Agri_Dr/` (base path `/Agri_Dr/` is required — the bare root returns 404 by design).
+   (`node_modules` is normally already present in this checkout.)
 
-## Notes
-- The Start-Process command can exceed the 30s tool timeout while still succeeding — always re-verify with curl + netstat afterwards.
-- Production build check: `npm run build`.
+2. **Env files** — none required. This project has no `.env` files; all data is local mock data (`src/data/`).
+
+## How to run the server
+
+```
+npm run dev
+```
+
+- Default port: **5173** (Vite default). Base path is `/Agri_Dr/` — open `http://localhost:5173/Agri_Dr/` (the bare root returns 404 by design of the base path).
+- If 5173 is occupied by another local project, start on the next free port instead:
+  ```
+  npm run dev -- --port 5174 --strictPort
+  ```
+- Detached start (Windows, used by the preview):
+  ```
+  powershell -NoProfile -Command "(Start-Process -FilePath 'npm.cmd' -ArgumentList 'run','dev','--','--port','5174','--strictPort' -RedirectStandardOutput '<log>' -RedirectStandardError '<log>.err' -WindowStyle Hidden -PassThru).Id"
+  ```
+  stdout and stderr must go to different files.
+
+## Verify
+
+- `curl -s -o /dev/null -w "%{http_code}" http://[::1]:PORT/Agri_Dr/` should return `200`.
+- Build check: `npm run build`.

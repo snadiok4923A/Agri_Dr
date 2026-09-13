@@ -113,15 +113,16 @@ export default function MyFarm() {
 
             {/* Farm Map with Variety Production & Revenue */}
             <section className="myfarm__map section">
-                <div className="myfarm__map-container">
-                    <div
-                        style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            marginBottom: 14,
-                        }}
-                    >
+                <div className="myfarm__map-container">                        <div
+                            style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                flexWrap: "wrap",
+                                gap: 8,
+                                marginBottom: 14,
+                            }}
+                        >
                         <div>
                             <h2
                                 className="myfarm__section-title"
@@ -156,12 +157,6 @@ export default function MyFarm() {
                             <div
                                 key={field.id}
                                 className={`myfarm__map-field myfarm__map-field--${field.status === "needs-attention" ? "needs-attention" : "healthy"}`}
-                                style={{
-                                    gridColumn:
-                                        field.coordinates.x > 40 ? "2" : "1",
-                                    gridRow:
-                                        field.coordinates.y > 40 ? "2" : "1",
-                                }}
                                 onClick={() =>
                                     navigate(`/crops/${field.cropId}`)
                                 }

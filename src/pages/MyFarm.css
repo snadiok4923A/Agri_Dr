@@ -67,13 +67,20 @@
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     padding: 24px;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
 }
 
 .myfarm__map-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     grid-template-rows: 170px 170px;
     gap: 14px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .myfarm__map-field {
@@ -87,6 +94,9 @@
     cursor: pointer;
     transition: all var(--transition-fast);
     background: var(--bg-elevated);
+    min-width: 0;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 .myfarm__map-field:hover {
@@ -113,11 +123,18 @@
     font-size: 17px;
     font-weight: 800;
     color: var(--text-primary);
+    overflow-wrap: anywhere;
+    min-width: 0;
 }
 
 .myfarm__map-field-crop {
     font-size: 13px;
     color: var(--text-secondary);
+    overflow-wrap: anywhere;
+}
+
+.myfarm__map-field-crop strong {
+    overflow-wrap: anywhere;
 }
 
 .myfarm__map-field-yield-box {
@@ -125,6 +142,8 @@
     align-items: baseline;
     gap: 12px;
     margin-top: 6px;
+    flex-wrap: wrap;
+    min-width: 0;
 }
 
 .myfarm__map-field-yield-val {
@@ -294,9 +313,40 @@
     .myfarm__stats {
         grid-template-columns: 1fr;
     }
+    .myfarm__map-container {
+        padding: 14px;
+    }
     .myfarm__map-grid {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-rows: repeat(2, minmax(0, auto));
+        gap: 10px;
+    }
+    .myfarm__map-field {
+        padding: 12px 10px;
+    }
+    .myfarm__map-field-name {
+        font-size: 14px;
+    }
+    .myfarm__map-field-crop {
+        font-size: 11.5px;
+    }
+    .myfarm__map-field-yield-val {
+        font-size: 16px;
+    }
+    .myfarm__map-field-profit-val {
+        font-size: 11.5px;
+    }
+    .myfarm__map-field-area {
+        font-size: 10.5px;
+    }
+    .myfarm__map-field-bottom {
+        font-size: 10px;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+    .myfarm__map-field-bottom > span {
+        min-width: 0;
+        overflow-wrap: anywhere;
     }
     .myfarm__field-row {
         flex-direction: column;
