@@ -1012,53 +1012,6 @@ export const analyticsData = {
     ],
 };
 
-// ==================== CROP PROTECTION DATA (FOR PROTECTION PAGE) ====================
-export const cropProtectionData = {
-    yieldProtectedPercent: 92,
-    yieldAtRiskTon: 1.3,
-    protectedYieldTon: 16.1,
-    totalTreatmentCost: 2050,
-    valueProtected: 48000,
-    breakdown: [
-        {
-            factor: "Blast Fungal Management",
-            score: 85,
-            medicine: "Tricyclazole 75% WP",
-            status: "Action in Progress",
-            field: "Field B",
-        },
-        {
-            factor: "BPH Insect Protection",
-            score: 95,
-            medicine: "Imidacloprid 17.8 SL",
-            status: "Preventive Active",
-            field: "Field A",
-        },
-        {
-            factor: "Nutrient Deficiency Shield",
-            score: 90,
-            medicine: "Urea + DAP Regimen",
-            status: "Scheduled",
-            field: "Field A & B",
-        },
-        {
-            factor: "Sheath Blight Resistance",
-            score: 94,
-            medicine: "Hexaconazole Prophylactic",
-            status: "Safeguarded",
-            field: "Field C",
-        },
-    ],
-    trend: [
-        { month: "Apr", protectedYield: 2.1, potentialYield: 2.5 },
-        { month: "May", protectedYield: 6.2, potentialYield: 7.2 },
-        { month: "Jun", protectedYield: 10.8, potentialYield: 12.5 },
-        { month: "Jul", protectedYield: 13.5, potentialYield: 15.4 },
-        { month: "Aug", protectedYield: 14.9, potentialYield: 17.1 },
-        { month: "Sep", protectedYield: 16.1, potentialYield: 18.4 },
-    ],
-};
-
 // ==================== RECOMMENDATIONS (ACTIONABLE ALERTS) ====================
 export const recommendations = [
     {

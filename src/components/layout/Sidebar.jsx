@@ -1,7 +1,7 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { useLanguage } from '../../hooks/useLanguage';
 import {
-  LayoutDashboard, Tractor, Leaf, HeartPulse, TrendingUp,
+  LayoutDashboard, Tractor, Leaf, TrendingUp,
   BarChart3, Stethoscope, CloudSun, FlaskConical, Droplets,
   Bug, Beaker, Wallet, Store, Settings, User, ChevronLeft, ChevronRight, Sprout,
 } from 'lucide-react';
@@ -12,7 +12,6 @@ const navItems = [
   { path: '/', icon: LayoutDashboard, labelKey: 'nav.overview' },
   { path: '/farm', icon: Tractor, labelKey: 'nav.myFarm' },
   { path: '/crops', icon: Leaf, labelKey: 'nav.crops' },
-  { path: '/health', icon: HeartPulse, labelKey: 'nav.health' },
   { path: '/improve', icon: TrendingUp, labelKey: 'nav.improve' },
   { path: '/insights', icon: BarChart3, labelKey: 'nav.insights' },
   { path: '/ai-doctor', icon: Stethoscope, labelKey: 'nav.aiDoctor' },

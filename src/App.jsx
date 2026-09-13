@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './hooks/useTheme';
 import { LanguageProvider } from './hooks/useLanguage';
 import Layout from './components/layout/Layout';
@@ -6,7 +6,6 @@ import Dashboard from './pages/Dashboard';
 import MyFarm from './pages/MyFarm';
 import Crops from './pages/Crops';
 import CropDetails from './pages/CropDetails';
-import Health from './pages/Health';
 import AIDoctor from './pages/AIDoctor';
 import Weather from './pages/Weather';
 import Soil from './pages/Soil';
@@ -30,7 +29,6 @@ export default function App() {
                 <Route path="farm" element={<MyFarm />} />
                 <Route path="crops" element={<Crops />} />
                 <Route path="crops/:id" element={<CropDetails />} />
-                <Route path="health" element={<Health />} />
                 <Route path="ai-doctor" element={<AIDoctor />} />
                 <Route path="weather" element={<Weather />} />
                 <Route path="soil" element={<Soil />} />
@@ -43,6 +41,8 @@ export default function App() {
                 <Route path="improve" element={<Improve />} />
                 <Route path="settings" element={<Settings />} />
               </Route>
+              {/* Removed pages (e.g. /health) and unknown paths land on the dashboard */}
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </BrowserRouter>
       </LanguageProvider>
