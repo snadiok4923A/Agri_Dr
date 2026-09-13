@@ -234,7 +234,8 @@ body {
 [data-theme="dark"] .dashboard-diagnosis-card,
 [data-theme="dark"] .improve-page__hero-card,
 [data-theme="dark"] .improve-page__goal-chip,
-[data-theme="dark"] .improve-page__action-card {
+[data-theme="dark"] .improve-page__action-card,
+[data-theme="dark"] .crops-page__card {
     background: var(--glass-bg);
     backdrop-filter: blur(var(--glass-blur)) saturate(140%);
     -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
@@ -262,7 +263,8 @@ body {
 [data-theme="dark"] .dashboard-diagnosis-card::after,
 [data-theme="dark"] .improve-page__hero-card::after,
 [data-theme="dark"] .improve-page__goal-chip::after,
-[data-theme="dark"] .improve-page__action-card::after {
+[data-theme="dark"] .improve-page__action-card::after,
+[data-theme="dark"] .crops-page__card::after {
     content: "";
     position: absolute;
     inset: 0;
@@ -300,6 +302,21 @@ body {
     background: rgba(255, 255, 255, 0.06);
 }
 
+/* Modal gets its own glass tier — scrollable (y) without losing the frost */
+[data-theme="dark"] .crops-page__modal {
+    background: var(--glass-bg);
+    backdrop-filter: blur(28px) saturate(150%);
+    -webkit-backdrop-filter: blur(28px) saturate(150%);
+    overflow: hidden auto;
+}
+
+@media (max-width: 768px) {
+    [data-theme="dark"] .crops-page__modal {
+        backdrop-filter: blur(20px) saturate(140%);
+        -webkit-backdrop-filter: blur(20px) saturate(140%);
+    }
+}
+
 /* Gentler blur on small screens — keep the transparency, save the GPU */
 @media (max-width: 768px) {
     [data-theme="dark"] .dashboard-hero-card,
@@ -308,7 +325,8 @@ body {
     [data-theme="dark"] .dashboard-diagnosis-card,
     [data-theme="dark"] .improve-page__hero-card,
     [data-theme="dark"] .improve-page__goal-chip,
-    [data-theme="dark"] .improve-page__action-card {
+    [data-theme="dark"] .improve-page__action-card,
+    [data-theme="dark"] .crops-page__card {
         backdrop-filter: blur(16px) saturate(140%);
         -webkit-backdrop-filter: blur(16px) saturate(140%);
     }
