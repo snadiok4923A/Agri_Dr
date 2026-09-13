@@ -1,223 +1,315 @@
+import { useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { useLanguage } from "../hooks/useLanguage";
-import { farmData, recommendations } from "../data/mockData";
+import { farmData, fields, recommendations } from "../data/mockData";
 import {
-    Droplets,
-    FlaskConical,
-    Bug,
+    Sparkles,
+    Wheat,
+    IndianRupee,
+    ShieldCheck,
     Sprout,
-    ArrowRight,
     TrendingUp,
-    Coins,
-    DollarSign,
+    TrendingDown,
+    Bug,
+    FlaskConical,
+    Activity,
+    ArrowRight,
 } from "lucide-react";
-import StatusBadge from "../components/common/StatusBadge";
+import AnimatedNumber from "../components/common/AnimatedNumber";
 import "./Improve.css";
 
-const improvements = [
-    {
-        id: 1,
-        title: "Targeted Fungicide Treatment",
-        field: "Field B · Swarna",
-        impact: "critical",
+// Staggered fade-up reveal (same pattern as the Dashboard)
+const sectionVariants = {
+    hidden: { opacity: 0, y: 14 },
+    show: (i) => ({
+        opacity: 1,
+        y: 0,
+        transition: { duration: 0.45, delay: i * 0.09, ease: "easeOut" },
+    }),
+};
+
+/*
+ * Compact display forms derived from the REAL recommendation data in
+ * mockData.js. When a future AI/API replaces `recommendations`, extend
+ * this map (or read these fields from the API response) — nothing else
+ * in the page needs to change.
+ */
+const ACTION_META = {
+    1: {
         icon: Bug,
-        benefit: "+0.50 Ton yield saved (₹16,700 value)",
-        color: "var(--danger)",
+        short: "Leaf Blast Treatment",
+        value: "+0.50T",
+        tone: "danger",
+        urgency: "Action Now",
+        tags: ["protection", "yield"],
     },
-    {
-        id: 2,
-        title: "Split-Dose Urea Top Dressing",
-        field: "Field A · IR-64",
-        impact: "high",
+    2: {
+        icon: TrendingDown,
+        short: "Production Recovery",
+        value: "+0.50T",
+        tone: "danger",
+        urgency: "Action Now",
+        tags: ["production", "yield"],
+    },
+    3: {
         icon: FlaskConical,
-        benefit: "+0.25 Ton yield boost (₹8,550 profit)",
-        color: "var(--accent)",
+        short: "Urea Top-Dressing",
+        value: "+0.25T",
+        tone: "leaf",
+        urgency: "This Week",
+        tags: ["growth", "production", "yield"],
     },
-    {
-        id: 3,
-        title: "Panicle Potash Nutrition",
-        field: "Field C · Basmati",
-        impact: "high",
-        icon: Sprout,
-        benefit: "+0.20 Ton grain filling (₹10,400 profit)",
-        color: "var(--success)",
+    4: {
+        icon: TrendingUp,
+        short: "Better Price Window",
+        value: "+₹18K",
+        tone: "gold",
+        urgency: "Good Time",
+        tags: ["profit"],
     },
-    {
-        id: 4,
-        title: "Stage-Based Water Depth Regimen",
-        field: "Field A & D",
-        impact: "medium",
-        icon: Droplets,
-        benefit: "+0.30 Ton root aeration (₹10,260 profit)",
-        color: "var(--info)",
+    5: {
+        icon: Activity,
+        short: "DAP Subsidy",
+        value: "+₹1.2K",
+        tone: "info",
+        urgency: "Save Now",
+        tags: ["profit"],
     },
-];
+};
+
+const URGENCY_TONE = {
+    critical: "danger",
+    important: "warning",
+    recommended: "gold",
+    optimization: "info",
+};
 
 export default function Improve() {
     const { t } = useLanguage();
-    const yieldGap = (farmData.potentialYield - farmData.expectedYield).toFixed(
-        1,
-    );
-    const potentialProfitGain = Math.round(yieldGap * 38000); // avg price ~₹3,800/Q
+    const shouldReduceMotion = useReducedMotion();
+    const [goal, setGoal] = useState("all");
+
+    const reveal = (i) =>
+        shouldReduceMotion
+            ? {}
+            : {
+                  variants: sectionVariants,
+                  initial: "hidden",
+                  animate: "show",
+                  custom: i,
+              };
+
+    const expected = farmData.expectedYield; // 16.1T
+    const potential = farmData.potentialYield; // 18.4T
+    const yieldGap = +(potential - expected).toFixed(1);
+    const pct = Math.round((expected / potential) * 100);
+    const potentialProfitGain = Math.round(yieldGap * 38000); // avg ~₹3,800/Q
+    const criticalCount = recommendations.filter(
+        (r) => r.category === "critical",
+    ).length;
+
+    // Visual improvement goals — small values derived from real farm data
+    const goals = [
+        { id: "all", label: "All", icon: Sparkles, value: null },
+        {
+            id: "production",
+            label: "Production",
+            icon: Wheat,
+            value: `${expected}T`,
+        },
+        {
+            id: "profit",
+            label: "Profit",
+            icon: IndianRupee,
+            value: `₹${(farmData.expectedProfit / 100000).toFixed(1)}L`,
+        },
+        {
+            id: "protection",
+            label: "Crop Protection",
+            icon: ShieldCheck,
+            value: `${criticalCount} alerts`,
+        },
+        {
+            id: "growth",
+            label: "Growth",
+            icon: Sprout,
+            value: `${fields.length} fields`,
+        },
+        { id: "yield", label: "Yield", icon: TrendingUp, value: `${pct}%` },
+    ];
+
+    const visibleRecs =
+        goal === "all"
+            ? recommendations
+            : recommendations.filter((rec) =>
+                  (ACTION_META[rec.id]?.tags || []).includes(goal),
+              );
 
     return (
         <div className="page-container improve-page">
-            <section className="improve-page__header section">
-                <div>
-                    <h1 className="improve-page__title">{t("nav.improve")}</h1>
-                    <p className="dashboard__section-subtitle">
-                        Bridge the yield gap across 8.6 acres to capture up to ₹
-                        {potentialProfitGain.toLocaleString("en-IN")} in
-                        additional rice profit
-                    </p>
-                </div>
+            {/* Header */}
+            <section className="improve-page__header section" {...reveal(0)}>
+                <h1 className="improve-page__title">{t("nav.improve")}</h1>
+                <p className="improve-page__subtitle">
+                    AI finds the fastest way from {expected}T to {potential}T
+                </p>
             </section>
 
-            {/* Yield Gap Hero Card */}
-            <section className="improve-page__yield section">
-                <div className="improve-page__yield-card">
-                    <div className="improve-page__yield-item">
-                        <span className="improve-page__yield-label">
-                            Current Expected Production
-                        </span>
-                        <span className="improve-page__yield-value">
-                            {farmData.expectedYield} {t("common.ton")}
-                        </span>
-                        <span
-                            style={{ fontSize: 11, color: "var(--text-muted)" }}
-                        >
-                            ₹{farmData.expectedProfit.toLocaleString("en-IN")}{" "}
-                            Profit
-                        </span>
-                    </div>
+            {/* 1. AI Yield Summary Hero */}
+            <section className="improve-page__hero section" {...reveal(1)}>
+                <div className="improve-page__hero-card">
+                    <span className="improve-page__ai-pill">
+                        <Sparkles size={13} />
+                        AI Insight
+                    </span>
 
-                    <div className="improve-page__yield-gap">
-                        <div className="improve-page__yield-gap-bar">
+                    <p className="improve-page__hero-line">
+                        You&rsquo;re at{" "}
+                        <strong>
+                            <AnimatedNumber
+                                value={expected}
+                                decimals={1}
+                            />
+                            T
+                        </strong>{" "}
+                        — AI can help you reach{" "}
+                        <strong className="improve-page__hero-line--gold">
+                            <AnimatedNumber value={potential} decimals={1} />T
+                        </strong>
+                    </p>
+
+                    <div className="improve-page__track">
+                        <span className="improve-page__track-end">
+                            <span className="improve-page__track-num">
+                                {expected}T
+                            </span>
+                            <span className="improve-page__track-cap">
+                                Current
+                            </span>
+                        </span>
+
+                        <div
+                            className="improve-page__track-bar"
+                            role="img"
+                            aria-label={`Current yield ${expected} ton of ${potential} ton potential`}
+                        >
                             <div
-                                className="improve-page__yield-gap-fill"
-                                style={{
-                                    width: `${(farmData.expectedYield / farmData.potentialYield) * 100}%`,
-                                }}
+                                className="improve-page__track-fill"
+                                style={{ "--fill": `${pct}%` }}
+                            />
+                            <div
+                                className="improve-page__track-knob"
+                                style={{ left: `${pct}%` }}
                             />
                         </div>
-                        <span className="improve-page__yield-gap-text">
-                            Yield Gap: <strong>{yieldGap} Ton</strong> ·
-                            Potential Profit Gain:{" "}
-                            <strong>
-                                +₹{potentialProfitGain.toLocaleString("en-IN")}
-                            </strong>
+
+                        <span className="improve-page__track-end improve-page__track-end--potential">
+                            <span className="improve-page__track-num">
+                                {potential}T
+                            </span>
+                            <span className="improve-page__track-cap">
+                                Potential
+                            </span>
                         </span>
                     </div>
 
-                    <div className="improve-page__yield-item improve-page__yield-item--potential">
-                        <span className="improve-page__yield-label">
-                            Maximum Potential Production
+                    <div className="improve-page__gains">
+                        <span className="improve-page__gain improve-page__gain--leaf">
+                            +{yieldGap}T possible
                         </span>
-                        <span className="improve-page__yield-value">
-                            {farmData.potentialYield} {t("common.ton")}
-                        </span>
-                        <span style={{ fontSize: 11, color: "var(--accent)" }}>
-                            Full Agronomic Optimization
+                        <span className="improve-page__gain improve-page__gain--gold">
+                            +₹{potentialProfitGain.toLocaleString("en-IN")}{" "}
+                            possible
                         </span>
                     </div>
                 </div>
             </section>
 
-            {/* High-Impact Actions to Close Yield Gap */}
-            <section className="improve-page__list section">
+            {/* 2. What do you want to improve? */}
+            <section className="improve-page__goals section" {...reveal(2)}>
                 <h2 className="improve-page__section-title">
-                    Agronomic Actions to Close the Yield Gap
+                    What do you want to improve?
                 </h2>
-                <div className="improve-page__improvement-grid">
-                    {improvements.map((imp) => (
-                        <div
-                            key={imp.id}
-                            className="improve-page__improvement-card"
+                <div className="improve-page__goal-grid">
+                    {goals.map((g) => (
+                        <button
+                            key={g.id}
+                            type="button"
+                            className={`improve-page__goal-chip${
+                                goal === g.id
+                                    ? " improve-page__goal-chip--active"
+                                    : ""
+                            }`}
+                            onClick={() => setGoal(g.id)}
+                            aria-pressed={goal === g.id}
                         >
-                            <div
-                                className="improve-page__improvement-icon"
-                                style={{
-                                    background: `${imp.color}15`,
-                                    color: imp.color,
-                                }}
-                            >
-                                <imp.icon size={20} />
-                            </div>
-                            <div className="improve-page__improvement-content">
-                                <div
-                                    style={{
-                                        display: "flex",
-                                        justifyContent: "space-between",
-                                        alignItems: "center",
-                                    }}
-                                >
-                                    <h3 className="improve-page__improvement-title">
-                                        {imp.title}
-                                    </h3>
-                                    <StatusBadge status={imp.impact} />
-                                </div>
-                                <span
-                                    style={{
-                                        fontSize: 12,
-                                        color: "var(--text-muted)",
-                                        display: "block",
-                                        margin: "2px 0 6px",
-                                    }}
-                                >
-                                    {imp.field}
+                            <span className={`improve-page__goal-icon improve-page__goal-icon--${g.id}`}>
+                                <g.icon size={22} strokeWidth={1.8} />
+                            </span>
+                            <span className="improve-page__goal-label">
+                                {g.label}
+                            </span>
+                            {g.value && (
+                                <span className="improve-page__goal-value">
+                                    {g.value}
                                 </span>
-                                <span className="improve-page__improvement-benefit">
-                                    {imp.benefit}
-                                </span>
-                            </div>
-                        </div>
+                            )}
+                        </button>
                     ))}
                 </div>
             </section>
 
-            {/* Active System Recommendations */}
-            <section className="improve-page__recommendations section">
+            {/* 3. AI Recommended Actions */}
+            <section className="improve-page__actions section" {...reveal(3)}>
                 <h2 className="improve-page__section-title">
-                    Active Field Recommendations
+                    Recommended Actions
                 </h2>
-                <div className="improve-page__rec-list">
-                    {recommendations.map((rec) => (
-                        <div key={rec.id} className="improve-page__rec-card">
-                            <div className="improve-page__rec-header">
-                                <StatusBadge
-                                    status={
-                                        rec.category === "critical"
-                                            ? "critical"
-                                            : rec.category === "important"
-                                              ? "needs-attention"
-                                              : "optimal"
-                                    }
-                                />
-                                <span className="improve-page__rec-field">
-                                    {rec.field}
-                                </span>
-                            </div>
-                            <h3 className="improve-page__rec-title">
-                                {rec.title}
-                            </h3>
-                            <p className="improve-page__rec-desc">
-                                {rec.description}
-                            </p>
-                            <div className="improve-page__rec-footer">
-                                <span className="improve-page__rec-benefit">
-                                    Benefit: {rec.benefit}
-                                </span>
+                <div className="improve-page__action-grid">
+                    {visibleRecs.map((rec) => {
+                        const meta = ACTION_META[rec.id] || {};
+                        const Icon = meta.icon || Sparkles;
+                        const urgencyTone =
+                            URGENCY_TONE[rec.category] || "info";
+                        return (
+                            <div
+                                key={rec.id}
+                                className="improve-page__action-card"
+                            >
                                 <span
-                                    style={{
-                                        fontSize: 11,
-                                        fontWeight: 600,
-                                        color: "var(--text-primary)",
-                                    }}
+                                    className={`improve-page__action-icon improve-page__action-icon--${meta.tone || "info"}`}
                                 >
-                                    Cost: {rec.estimatedCost}
+                                    <Icon size={22} strokeWidth={1.8} />
+                                </span>
+
+                                <div className="improve-page__action-body">
+                                    <h3 className="improve-page__action-title">
+                                        {meta.short || rec.title}
+                                    </h3>
+                                    <span className="improve-page__action-field">
+                                        {rec.field?.split("·")[0].trim()}
+                                    </span>
+                                </div>
+
+                                <div className="improve-page__action-side">
+                                    <span className="improve-page__action-value">
+                                        {meta.value}
+                                    </span>
+                                    <span
+                                        className={`improve-page__action-pill improve-page__action-pill--${urgencyTone}`}
+                                    >
+                                        {meta.urgency}
+                                    </span>
+                                </div>
+
+                                <span
+                                    className="improve-page__action-arrow"
+                                    aria-hidden="true"
+                                >
+                                    <ArrowRight size={16} />
                                 </span>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </section>
         </div>

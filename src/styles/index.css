@@ -231,7 +231,10 @@ body {
 [data-theme="dark"] .dashboard-weather-card,
 [data-theme="dark"] .dashboard-action-card,
 [data-theme="dark"] .dashboard-insight-card,
-[data-theme="dark"] .dashboard-diagnosis-card {
+[data-theme="dark"] .dashboard-diagnosis-card,
+[data-theme="dark"] .improve-page__hero-card,
+[data-theme="dark"] .improve-page__goal-chip,
+[data-theme="dark"] .improve-page__action-card {
     background: var(--glass-bg);
     backdrop-filter: blur(var(--glass-blur)) saturate(140%);
     -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
@@ -256,7 +259,10 @@ body {
 [data-theme="dark"] .dashboard-weather-card::after,
 [data-theme="dark"] .dashboard-action-card::after,
 [data-theme="dark"] .dashboard-insight-card::after,
-[data-theme="dark"] .dashboard-diagnosis-card::after {
+[data-theme="dark"] .dashboard-diagnosis-card::after,
+[data-theme="dark"] .improve-page__hero-card::after,
+[data-theme="dark"] .improve-page__goal-chip::after,
+[data-theme="dark"] .improve-page__action-card::after {
     content: "";
     position: absolute;
     inset: 0;
@@ -299,7 +305,10 @@ body {
     [data-theme="dark"] .dashboard-hero-card,
     [data-theme="dark"] .dashboard-action-card,
     [data-theme="dark"] .dashboard-insight-card,
-    [data-theme="dark"] .dashboard-diagnosis-card {
+    [data-theme="dark"] .dashboard-diagnosis-card,
+    [data-theme="dark"] .improve-page__hero-card,
+    [data-theme="dark"] .improve-page__goal-chip,
+    [data-theme="dark"] .improve-page__action-card {
         backdrop-filter: blur(16px) saturate(140%);
         -webkit-backdrop-filter: blur(16px) saturate(140%);
     }
