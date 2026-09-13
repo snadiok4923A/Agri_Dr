@@ -99,6 +99,20 @@
   height: 76px;
 }
 
+/* Custom rice illustration from /crop.svg — fills the icon container */
+.crops-page__card-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  border-radius: inherit;
+}
+
+.crops-page__card-icon--lg .crops-page__card-logo {
+  width: 64px;
+  height: 64px;
+}
+
 .crops-page__status {
   padding: 4px 10px;
   border-radius: var(--radius-full);
@@ -126,6 +140,16 @@
 .crops-page__status--muted {
   color: var(--text-muted);
   background: rgba(255, 255, 255, 0.05);
+}
+
+.crops-page__status--violet {
+  color: #b7a3e0;
+  background: rgba(151, 122, 209, 0.12);
+}
+
+.crops-page__status--danger {
+  color: #e08a8a;
+  background: rgba(214, 89, 89, 0.12);
 }
 
 .crops-page__card-names {
@@ -185,6 +209,7 @@
 .crops-page__card-money {
   display: flex;
   flex-direction: column;
+  margin-top: auto;
 }
 
 .crops-page__money-row {
@@ -192,7 +217,7 @@
   justify-content: space-between;
   align-items: baseline;
   gap: 8px;
-  padding: 5px 0;
+  padding: 6.5px 0;
 }
 
 .crops-page__money-row + .crops-page__money-row {
@@ -224,14 +249,6 @@
   font-size: 10px;
   color: var(--text-muted);
   font-weight: 500;
-}
-
-/* --- Input meters --- */
-.crops-page__card-inputs {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  margin-top: auto;
 }
 
 .crops-page__meter {
@@ -544,45 +561,50 @@
   box-shadow: 0 4px 18px rgba(111, 207, 142, 0.12);
 }
 
-/* ==================== Paddy icon animation ==================== */
+/* ==================== Paddy plant icon ==================== */
+/* Gentle sway matching the app's RicePlantIllustration animation language.
+   Origins are in the 48-unit viewBox space: leaves attach at the stem (x=24). */
+.paddy-icon .agri-sway-left {
+  transform-origin: 24px 38px;
+  animation: crops-paddy-sway 5s ease-in-out infinite;
+}
+
+.paddy-icon .agri-sway-right {
+  transform-origin: 24px 34px;
+  animation: crops-paddy-sway-opposite 4.5s ease-in-out infinite;
+}
+
 .paddy-icon__head {
-  transform-origin: 24px 12px;
-  animation: paddy-sway 5s ease-in-out infinite;
+  transform-origin: 24px 20px;
+  animation: crops-paddy-sway 6.5s ease-in-out infinite;
 }
 
-.paddy-icon__leaf--left {
-  transform-origin: 24px 33px;
-  animation: paddy-leaf 5s ease-in-out infinite;
-}
-
-.paddy-icon__leaf--right {
-  transform-origin: 24px 29px;
-  animation: paddy-leaf 5s ease-in-out infinite reverse;
-}
-
-@keyframes paddy-sway {
+@keyframes crops-paddy-sway {
   0%,
   100% {
-    transform: rotate(-2.5deg);
+    transform: rotate(0deg);
   }
   50% {
-    transform: rotate(2.5deg);
+    transform: rotate(-2.5deg) translateY(-1px);
   }
 }
 
-@keyframes paddy-leaf {
+@keyframes crops-paddy-sway-opposite {
   0%,
   100% {
-    transform: rotate(-1.5deg);
+    transform: rotate(0deg);
   }
   50% {
-    transform: rotate(1.5deg);
+    transform: rotate(2.5deg) translateY(-1px);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .paddy-icon__head,
-  .paddy-icon__leaf,
+  .paddy-icon .agri-sway-left,
+  .paddy-icon .agri-sway-left-sub,
+  .paddy-icon .agri-sway-right,
+  .paddy-icon .agri-sway-right-sub,
   .crops-page__ask-ai svg {
     animation: none;
   }

@@ -17,6 +17,10 @@
  *    derived from the source's qualitative statements (e.g. PR 126
  *    "matures quickly, saving water and time"; the most-farmed group is
  *    "resilient to diseases"; Pokkali is saltwater-tolerant).
+ *  - `variant` picks the illustration's grain design (PaddyIcon) so each
+ *    variety visually matches its real grain character.
+ *  - `status` / `statusTone` are NEVER hand-assigned — they are derived
+ *    from the data below by deriveBadge() at export time.
  *  - `tags` drive the filter chips: premium | profit | demand | quick.
  *    "Low Input" is computed from the input levels at render time.
  */
@@ -42,15 +46,14 @@ const BASMATI_INPUTS = { water: "Medium", fertilizer: "Medium", pesticide: "Low"
 const COMMON_INPUTS = { water: "High", fertilizer: "Medium", pesticide: "Low" };
 const NICHE_INPUTS = { water: "Medium", fertilizer: "Low", pesticide: "Low" };
 
-export const riceVarieties = [
+const RAW_VARIETIES = [
     // ==================== BASMATI (aromatic long-grain) ====================
     {
         id: "pusa-1121",
         name: "Pusa 1121",
         group: "basmati",
         tone: "gold",
-        status: "Trending",
-        statusTone: "gold",
+        variant: "basmati",
         ...BASMATI_ECON,
         inputs: BASMATI_INPUTS,
         region: "Punjab · Haryana · W. UP · Uttarakhand",
@@ -69,8 +72,7 @@ export const riceVarieties = [
         name: "Pusa 1509",
         group: "basmati",
         tone: "gold",
-        status: "High Profit",
-        statusTone: "leaf",
+        variant: "basmati",
         ...BASMATI_ECON,
         inputs: BASMATI_INPUTS,
         region: "Punjab · Haryana · W. UP · Uttarakhand",
@@ -89,8 +91,7 @@ export const riceVarieties = [
         name: "Pusa 1718",
         group: "basmati",
         tone: "gold",
-        status: "Premium",
-        statusTone: "gold",
+        variant: "basmati",
         ...BASMATI_ECON,
         inputs: BASMATI_INPUTS,
         region: "Punjab · Haryana · W. UP · Uttarakhand",
@@ -109,8 +110,7 @@ export const riceVarieties = [
         name: "Traditional Basmati",
         group: "basmati",
         tone: "gold",
-        status: "Premium",
-        statusTone: "gold",
+        variant: "basmati",
         ...BASMATI_ECON,
         inputs: BASMATI_INPUTS,
         region: "Punjab · Haryana · W. UP · Uttarakhand",
@@ -131,8 +131,7 @@ export const riceVarieties = [
         name: "Sona Masuri",
         group: "common",
         tone: "leaf",
-        status: "High Demand",
-        statusTone: "info",
+        variant: "white",
         ...COMMON_ECON,
         inputs: COMMON_INPUTS,
         region: "South India",
@@ -151,8 +150,7 @@ export const riceVarieties = [
         name: "Ponni",
         group: "common",
         tone: "leaf",
-        status: "Good",
-        statusTone: "muted",
+        variant: "white",
         ...COMMON_ECON,
         inputs: COMMON_INPUTS,
         region: "South India",
@@ -171,8 +169,7 @@ export const riceVarieties = [
         name: "IR64",
         group: "common",
         tone: "leaf",
-        status: "Best Value",
-        statusTone: "leaf",
+        variant: "common",
         ...COMMON_ECON,
         inputs: COMMON_INPUTS,
         region: "Nationwide",
@@ -192,8 +189,7 @@ export const riceVarieties = [
         aka: "MTU 7029",
         group: "common",
         tone: "leaf",
-        status: "High Demand",
-        statusTone: "info",
+        variant: "golden",
         ...COMMON_ECON,
         inputs: COMMON_INPUTS,
         region: "Eastern & Southern India",
@@ -213,8 +209,7 @@ export const riceVarieties = [
         aka: "Samba Mahsuri",
         group: "common",
         tone: "leaf",
-        status: "Good",
-        statusTone: "muted",
+        variant: "fine",
         ...COMMON_ECON,
         inputs: COMMON_INPUTS,
         region: "Andhra Pradesh · Telangana",
@@ -233,8 +228,7 @@ export const riceVarieties = [
         name: "PR 126",
         group: "common",
         tone: "leaf",
-        status: "Quick Harvest",
-        statusTone: "info",
+        variant: "common",
         ...COMMON_ECON,
         inputs: { water: "Low", fertilizer: "Medium", pesticide: "Low" },
         region: "Punjab",
@@ -256,8 +250,7 @@ export const riceVarieties = [
         aka: "Chak Hao",
         group: "specialty",
         tone: "teal",
-        status: "High Profit",
-        statusTone: "leaf",
+        variant: "black",
         price: { label: "₹15–30K", per: "/Q", note: "milled" },
         yieldQ: { label: "10–12", per: "Q/acre" },
         cost: null,
@@ -281,8 +274,7 @@ export const riceVarieties = [
         aka: "Matta",
         group: "specialty",
         tone: "teal",
-        status: "Niche",
-        statusTone: "muted",
+        variant: "red",
         price: null,
         yieldQ: null,
         cost: null,
@@ -305,8 +297,7 @@ export const riceVarieties = [
         name: "Gobindobhog",
         group: "specialty",
         tone: "gold",
-        status: "High Demand",
-        statusTone: "info",
+        variant: "whiteGold",
         price: { label: "₹3.4–4.1K", per: "/Q", note: "GI premium (est.)" },
         yieldQ: null,
         cost: null,
@@ -330,8 +321,7 @@ export const riceVarieties = [
         aka: "Buddha's rice",
         group: "specialty",
         tone: "teal",
-        status: "Premium",
-        statusTone: "gold",
+        variant: "darkHusk",
         price: { label: "₹3.4–4.1K", per: "/Q", note: "GI premium (est.)" },
         yieldQ: null,
         cost: null,
@@ -354,8 +344,7 @@ export const riceVarieties = [
         name: "Joha",
         group: "specialty",
         tone: "teal",
-        status: "Niche",
-        statusTone: "muted",
+        variant: "paleGold",
         price: null,
         yieldQ: null,
         cost: null,
@@ -378,8 +367,7 @@ export const riceVarieties = [
         name: "Navara",
         group: "specialty",
         tone: "teal",
-        status: "Medicinal",
-        statusTone: "muted",
+        variant: "navara",
         price: null,
         yieldQ: null,
         cost: null,
@@ -402,8 +390,7 @@ export const riceVarieties = [
         name: "Pokkali",
         group: "specialty",
         tone: "teal",
-        status: "Rare",
-        statusTone: "muted",
+        variant: "pokkali",
         price: null,
         yieldQ: null,
         cost: null,
@@ -422,6 +409,63 @@ export const riceVarieties = [
         tags: [],
     },
 ];
+
+/* ================================================================
+ * BADGE DERIVATION — computed from the data above, never hand-set.
+ * Priority: farm-calendar facts → economics → demand → niche status.
+ * ================================================================ */
+
+/* Largest number in a label, normalized to ₹K ("₹3,500–4,500+" → 4.5,
+ * "₹60–80K+" → 80, "≈₹2,300" → 2.3). Returns 0 when absent. */
+function upperNum(label) {
+    if (!label) return 0;
+    const nums = (String(label).match(/\d[\d,.]*/g) || [])
+        .map((n) => parseFloat(n.replace(/,/g, "")))
+        .filter((n) => !Number.isNaN(n));
+    if (!nums.length) return 0;
+    const max = Math.max(...nums);
+    return max > 500 ? max / 1000 : max; // ₹ → ₹K
+}
+
+function deriveBadge(v) {
+    const priceK = upperNum(v.price?.label); // ₹K / quintal
+    const profitK = upperNum(v.profit?.label); // ₹K / acre
+    const demand = (v.market?.demand || "").toLowerCase();
+    const gi =
+        /GI/i.test(v.price?.note || "") ||
+        /above common/i.test(v.market?.pricePos || "");
+
+    if (v.duration?.label === "Short" || v.tags?.includes("quick"))
+        return "Quick Harvest"; // early maturity dominates the calendar
+    if (profitK >= 55) return "High Profit"; // black-rice class economics
+    if (gi) return "Premium"; // GI-tagged, commands above-common price
+    if (priceK >= 3.4 && demand.includes("export") && demand.includes("high"))
+        return "Trending"; // export-grade premium price + strong demand
+    if (priceK >= 3.4) return "Premium"; // premium price, calmer demand
+    if (profitK >= 40) return "High Profit";
+    if (demand.startsWith("very high"))
+        return "Best Value"; // max volume at MSP economics
+    if (demand.startsWith("high")) return "High Demand";
+    if (v.group === "specialty") return "Niche"; // no economics, limited market
+    return "Good";
+}
+
+const BADGE_TONE = {
+    "High Profit": "leaf",
+    "Best Value": "leaf",
+    Trending: "gold",
+    Premium: "gold",
+    "High Demand": "info",
+    "Quick Harvest": "info",
+    Good: "muted",
+    Niche: "violet",
+    "Low Margin": "danger",
+};
+
+export const riceVarieties = RAW_VARIETIES.map((v) => {
+    const status = deriveBadge(v);
+    return { ...v, status, statusTone: BADGE_TONE[status] || "muted" };
+});
 
 // Filter chips — "Low Input" is derived from input levels, not tags
 export const cropFilters = [

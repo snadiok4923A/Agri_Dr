@@ -13,8 +13,10 @@ import {
     MapPin,
     Sprout,
 } from "lucide-react";
-import PaddyIcon from "../components/common/PaddyIcon";
 import "./Crops.css";
+
+/* Custom rice illustration from the public folder (base-path aware) */
+const RICE_LOGO = `${import.meta.env.BASE_URL}crop.svg`;
 
 /* ---------------- helpers ---------------- */
 
@@ -128,7 +130,7 @@ export default function Crops() {
                     >
                         <div className="crops-page__card-top">
                             <span className={`crops-page__card-icon crops-page__card-icon--${v.tone}`}>
-                                <PaddyIcon tone={v.tone} shape={v.group === "basmati" ? "slender" : v.group === "specialty" ? "curved" : "full"} />
+                                <img className="crops-page__card-logo" src={RICE_LOGO} alt="" loading="lazy" />
                             </span>
                             <span className={`crops-page__status crops-page__status--${v.statusTone}`}>
                                 {v.status}
@@ -172,12 +174,6 @@ export default function Crops() {
                             </div>
                         </div>
 
-                        {/* Input meters */}
-                        <div className="crops-page__card-inputs">
-                            <InputMeter icon={Droplets} label="Water" level={v.inputs.water} />
-                            <InputMeter icon={FlaskConical} label="Fertilizer" level={v.inputs.fertilizer} />
-                            <InputMeter icon={Bug} label="Pesticide" level={v.inputs.pesticide} />
-                        </div>
                     </button>
                 ))}
             </div>
@@ -212,11 +208,7 @@ export default function Crops() {
                         {/* Modal header */}
                         <div className="crops-page__modal-head">
                             <span className={`crops-page__card-icon crops-page__card-icon--${selected.tone} crops-page__card-icon--lg`}>
-                                <PaddyIcon
-                                    tone={selected.tone}
-                                    shape={selected.group === "basmati" ? "slender" : selected.group === "specialty" ? "curved" : "full"}
-                                    size={56}
-                                />
+                                <img className="crops-page__card-logo" src={RICE_LOGO} alt="" />
                             </span>
                             <div>
                                 <h3 className="crops-page__modal-name">
