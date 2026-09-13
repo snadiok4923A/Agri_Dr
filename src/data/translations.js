@@ -54,7 +54,6 @@ export const translations = {
             estimatedRevenue: "Estimated Revenue",
             estimatedCost: "Estimated Cost",
             farmPerformance: "Field-wise Rice Production",
-            fieldList: "Rice Fields Breakdown",
             selectField:
                 "Select a field to view variety production and profit details",
             area: "Area",
@@ -294,7 +293,6 @@ export const translations = {
             estimatedRevenue: "প্রত্যাশিত আয়",
             estimatedCost: "আনুমানিক খরচ",
             farmPerformance: "জমিভিত্তিক ধান উৎপাদন",
-            fieldList: "জমির বিবরণ ও লাভ",
             selectField: "জাতভিত্তিক বিস্তারিত দেখতে জমি নির্বাচন করুন",
             area: "আয়তন",
             cropAge: "ফসলের বয়স",
@@ -534,7 +532,6 @@ export const translations = {
             estimatedRevenue: "अनुमानित आय",
             estimatedCost: "अनुमानित लागत",
             farmPerformance: "खेत-वार धान उत्पादन",
-            fieldList: "खेतों का विवरण व मुनाफा",
             selectField: "विवरण देखने के लिए खेत चुनें",
             area: "क्षेत्रफल",
             cropAge: "फसल की आयु",
