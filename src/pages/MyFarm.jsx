@@ -1,15 +1,7 @@
 import { useLanguage } from "../hooks/useLanguage";
 import { farmData, fields } from "../data/mockData";
 import { useNavigate } from "react-router-dom";
-import {
-    MapPin,
-    Wheat,
-    TrendingUp,
-    Coins,
-    DollarSign,
-    ChevronRight,
-    Sprout,
-} from "lucide-react";
+import { MapPin, Wheat, TrendingUp, Coins } from "lucide-react";
 import StatusBadge from "../components/common/StatusBadge";
 import "./MyFarm.css";
 
@@ -113,16 +105,17 @@ export default function MyFarm() {
 
             {/* Farm Map with Variety Production & Revenue */}
             <section className="myfarm__map section">
-                <div className="myfarm__map-container">                        <div
-                            style={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                                flexWrap: "wrap",
-                                gap: 8,
-                                marginBottom: 14,
-                            }}
-                        >
+                <div className="myfarm__map-container">
+                    <div
+                        style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            flexWrap: "wrap",
+                            gap: 8,
+                            marginBottom: 14,
+                        }}
+                    >
                         <div>
                             <h2
                                 className="myfarm__section-title"
@@ -203,103 +196,6 @@ export default function MyFarm() {
                             </div>
                         ))}
                     </div>
-                </div>
-            </section>
-
-            {/* Field List: Detailed Financial & Production Breakdown */}
-            <section className="myfarm__fields section">
-                <h2 className="myfarm__section-title">{t("farm.fieldList")}</h2>
-                <div className="myfarm__field-list">
-                    {fields.map((field) => (
-                        <div
-                            key={field.id}
-                            className="myfarm__field-row"
-                            onClick={() => navigate(`/crops/${field.cropId}`)}
-                        >
-                            <div className="myfarm__field-row-left">
-                                <div
-                                    className="myfarm__field-row-color"
-                                    style={{
-                                        background:
-                                            field.status === "needs-attention"
-                                                ? "var(--warning)"
-                                                : "var(--accent)",
-                                    }}
-                                />
-                                <div>
-                                    <span className="myfarm__field-row-name">
-                                        {field.name} — {field.variety}
-                                    </span>
-                                    <span className="myfarm__field-row-crop">
-                                        {field.area} {t("dashboard.acres")} ·{" "}
-                                        {field.growthStage} (Day {field.cropAge}
-                                        )
-                                    </span>
-                                </div>
-                            </div>
-
-                            <div className="myfarm__field-row-center">
-                                <StatusBadge status={field.status} />
-                            </div>
-
-                            <div className="myfarm__field-row-right">
-                                <div className="myfarm__field-row-production">
-                                    <div className="myfarm__field-row-stat">
-                                        <span className="myfarm__field-row-stat-label">
-                                            Expected Yield
-                                        </span>
-                                        <span className="myfarm__field-row-stat-value">
-                                            {field.expectedYield} Ton
-                                        </span>
-                                    </div>
-                                    <div className="myfarm__field-row-stat">
-                                        <span className="myfarm__field-row-stat-label">
-                                            Est. Cost
-                                        </span>
-                                        <span className="myfarm__field-row-stat-value">
-                                            ₹
-                                            {(
-                                                field.estimatedCost / 1000
-                                            ).toFixed(1)}
-                                            k
-                                        </span>
-                                    </div>
-                                    <div className="myfarm__field-row-stat">
-                                        <span className="myfarm__field-row-stat-label">
-                                            Exp. Revenue
-                                        </span>
-                                        <span className="myfarm__field-row-stat-value">
-                                            ₹
-                                            {(
-                                                field.expectedRevenue / 1000
-                                            ).toFixed(1)}
-                                            k
-                                        </span>
-                                    </div>
-                                    <div className="myfarm__field-row-stat">
-                                        <span className="myfarm__field-row-stat-label">
-                                            Exp. Profit
-                                        </span>
-                                        <span
-                                            className="myfarm__field-row-stat-value"
-                                            style={{ color: "var(--success)" }}
-                                        >
-                                            ₹
-                                            {(
-                                                field.expectedProfit / 1000
-                                            ).toFixed(1)}
-                                            k
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <ChevronRight
-                                    size={16}
-                                    className="myfarm__field-row-arrow"
-                                />
-                            </div>
-                        </div>
-                    ))}
                 </div>
             </section>
         </div>

@@ -200,7 +200,7 @@
     background: var(--warning);
 }
 
-/* Field List */
+/* Section titles (Farm Layout map header) */
 .myfarm__section-title {
     font-size: 17px;
     font-weight: 700;
@@ -208,104 +208,9 @@
     margin-bottom: 14px;
 }
 
-.myfarm__field-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.myfarm__field-row {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 16px 20px;
-    background: var(--bg-surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    cursor: pointer;
-    transition: all var(--transition-fast);
-}
-
-.myfarm__field-row:hover {
-    border-color: var(--accent);
-    box-shadow: var(--shadow-sm);
-}
-
-.myfarm__field-row-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex: 1;
-}
-
-.myfarm__field-row-color {
-    width: 4px;
-    height: 36px;
-    border-radius: var(--radius-full);
-}
-
-.myfarm__field-row-name {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text-primary);
-    display: block;
-}
-
-.myfarm__field-row-crop {
-    font-size: 12px;
-    color: var(--text-muted);
-    display: block;
-    margin-top: 2px;
-}
-
-.myfarm__field-row-center {
-    min-width: 110px;
-}
-
-.myfarm__field-row-right {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-
-.myfarm__field-row-production {
-    display: flex;
-    align-items: center;
-    gap: 24px;
-}
-
-.myfarm__field-row-stat {
-    display: flex;
-    flex-direction: column;
-    min-width: 70px;
-}
-
-.myfarm__field-row-stat-label {
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    color: var(--text-muted);
-}
-
-.myfarm__field-row-stat-value {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-top: 2px;
-}
-
-.myfarm__field-row-arrow {
-    color: var(--text-muted);
-}
-
 @media (max-width: 900px) {
     .myfarm__stats {
         grid-template-columns: repeat(2, 1fr);
-    }
-    .myfarm__field-row-production {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
     }
 }
 
@@ -347,13 +252,5 @@
     .myfarm__map-field-bottom > span {
         min-width: 0;
         overflow-wrap: anywhere;
-    }
-    .myfarm__field-row {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    .myfarm__field-row-right {
-        width: 100%;
-        justify-content: space-between;
     }
 }
