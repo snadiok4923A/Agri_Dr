@@ -144,6 +144,7 @@ export default function Crops() {
 
                         {/* Price — dominant number */}
                         <div className="crops-page__card-price">
+                            <span className="crops-page__price-kicker">PRICE</span>
                             <span className="crops-page__price-val">
                                 {v.price ? v.price.label : "—"}
                             </span>

@@ -184,6 +184,53 @@
   flex-wrap: wrap;
 }
 
+/* Tiny muted kicker above the price value — a slow golden shimmer sweeps
+   across the letters themselves (background-clip: text, no extra element). */
+.crops-page__price-kicker {
+  flex-basis: 100%;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  background: linear-gradient(
+    90deg,
+    var(--text-muted) 0%,
+    var(--text-muted) 42%,
+    #e8b84b 50%,
+    var(--text-muted) 58%,
+    var(--text-muted) 100%
+  );
+  background-size: 250% 100%;
+  background-position: 120% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  opacity: 0.85;
+  line-height: 1;
+  margin-bottom: 1px;
+  animation: crops-price-text-shimmer 5.5s linear infinite;
+}
+
+@keyframes crops-price-text-shimmer {
+  0% {
+    background-position: 120% 0;
+  }
+  100% {
+    background-position: -120% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .crops-page__price-kicker {
+    animation: none;
+    background: none;
+    -webkit-background-clip: initial;
+    background-clip: initial;
+    -webkit-text-fill-color: var(--text-muted);
+    color: var(--text-muted);
+  }
+}
+
 .crops-page__price-val {
   font-size: 21px;
   font-weight: 800;
@@ -217,7 +264,7 @@
   justify-content: space-between;
   align-items: baseline;
   gap: 8px;
-  padding: 6.5px 0;
+  padding: 5px 0;
 }
 
 .crops-page__money-row + .crops-page__money-row {
