@@ -36,48 +36,6 @@
   color: var(--text-primary);
 }
 
-.header__center {
-  flex: 1;
-  max-width: 400px;
-  margin: 0 24px;
-}
-
-.header__search {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
-  border-radius: var(--radius-full);
-  /* Compact glass pill */
-  background: var(--glass-bg-strong);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-highlight);
-  transition: all var(--transition-fast);
-}
-
-.header__search--focused {
-  border-color: var(--leaf);
-  box-shadow: 0 0 0 3px var(--leaf-soft);
-}
-
-.header__search svg {
-  color: var(--text-muted);
-  flex-shrink: 0;
-}
-
-.header__search input {
-  flex: 1;
-  border: none;
-  background: none;
-  outline: none;
-  font-size: 13px;
-  color: var(--text-primary);
-}
-
-.header__search input::placeholder {
-  color: var(--text-muted);
-}
-
 .header__right {
   display: flex;
   align-items: center;
@@ -199,10 +157,6 @@
 @media (max-width: 768px) {
   .header {
     padding: 0 16px;
-  }
-
-  .header__center {
-    display: none;
   }
 
   .header__lang-btn span {

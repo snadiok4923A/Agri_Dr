@@ -1,6 +1,6 @@
 import { useLanguage } from '../../hooks/useLanguage';
 import { useTheme } from '../../hooks/useTheme';
-import { Search, Bell, Sun, Moon, ChevronDown, Globe, Menu } from 'lucide-react';
+import { Bell, Sun, Moon, ChevronDown, Globe, Menu } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import './Header.css';
 
@@ -8,7 +8,6 @@ export default function Header({ onMenuToggle }) {
   const { language, changeLanguage, languages, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
   const [langOpen, setLangOpen] = useState(false);
-  const [searchFocused, setSearchFocused] = useState(false);
   const langRef = useRef(null);
 
   const currentLang = languages.find(l => l.code === language);
@@ -29,18 +28,6 @@ export default function Header({ onMenuToggle }) {
         <button className="header__menu-btn" onClick={onMenuToggle} aria-label="Toggle menu">
           <Menu size={20} />
         </button>
-      </div>
-
-      <div className="header__center">
-        <div className={`header__search ${searchFocused ? 'header__search--focused' : ''}`}>
-          <Search size={16} />
-          <input
-            type="text"
-            placeholder="Search..."
-            onFocus={() => setSearchFocused(true)}
-            onBlur={() => setSearchFocused(false)}
-          />
-        </div>
       </div>
 
       <div className="header__right">
