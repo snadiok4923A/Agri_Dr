@@ -1,8 +1,9 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useLanguage } from "../hooks/useLanguage";
 import {
     Camera,
     Mic,
+    Plus,
     Send,
     Volume2,
     Bot,
@@ -73,7 +74,21 @@ export default function AIDoctor() {
     const [listening, setListening] = useState(false);
     const [scanning, setScanning] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [plusOpen, setPlusOpen] = useState(false);
     const messagesEndRef = useRef(null);
+    const chatbarRef = useRef(null);
+
+    // Close the "+" actions menu when clicking outside the chat bar
+    useEffect(() => {
+        if (!plusOpen) return;
+        const onPointerDown = (e) => {
+            if (chatbarRef.current && !chatbarRef.current.contains(e.target)) {
+                setPlusOpen(false);
+            }
+        };
+        document.addEventListener("pointerdown", onPointerDown);
+        return () => document.removeEventListener("pointerdown", onPointerDown);
+    }, [plusOpen]);
 
     const scrollToBottom = () =>
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -328,58 +343,79 @@ export default function AIDoctor() {
                         )}
                         <div ref={messagesEndRef} />
                     </div>
-                    <div className="ai-doctor__input-area">
-                        {listening && (
-                            <div className="ai-doctor__listening">
-                                <div className="ai-doctor__listening-pulse" />
-                                <span>{t("ai.listening")}</span>
-                            </div>
-                        )}
-                        {scanning && (
-                            <div className="ai-doctor__scanning">
-                                <div className="ai-doctor__scanning-animation" />
-                                <span>
-                                    Analyzing rice crop image & diagnosing
-                                    symptoms...
-                                </span>
-                            </div>
-                        )}
-                        <div className="ai-doctor__input-row">
-                            <button
-                                className="ai-doctor__input-action"
-                                onClick={handlePhoto}
-                                title={t("ai.takePhoto")}
-                            >
-                                <Camera size={18} />
-                            </button>
-                            <button
-                                className={`ai-doctor__input-action ${listening ? "ai-doctor__input-action--active" : ""}`}
-                                onClick={handleVoice}
-                                title={t("ai.askByVoice")}
-                            >
-                                <Mic size={18} />
-                            </button>
-                            <input
-                                type="text"
-                                value={input}
-                                onChange={(e) => setInput(e.target.value)}
-                                onKeyDown={(e) =>
-                                    e.key === "Enter" && sendMessage(input)
-                                }
-                                placeholder={t("ai.typeQuestion")}
-                                className="ai-doctor__input"
-                            />
-                            <button
-                                className="ai-doctor__send"
-                                onClick={() => sendMessage(input)}
-                                disabled={!input.trim()}
-                            >
-                                <Send size={18} />
-                            </button>
-                        </div>
-                    </div>
                 </div>
             )}
+
+            {/* Floating glass chat bar — always visible, hero & chat states */}
+            <div className="ai-doctor__chatbar-anchor">
+                {listening && (
+                    <div className="ai-doctor__listening">
+                        <div className="ai-doctor__listening-pulse" />
+                        <span>{t("ai.listening")}</span>
+                    </div>
+                )}
+                {scanning && (
+                    <div className="ai-doctor__scanning">
+                        <div className="ai-doctor__scanning-animation" />
+                        <span>
+                            Analyzing rice crop image & diagnosing symptoms...
+                        </span>
+                    </div>
+                )}
+                <div className="ai-doctor__chatbar" ref={chatbarRef}>
+                    <div className="ai-doctor__plus-wrap">
+                        <button
+                            className="ai-doctor__plus"
+                            onClick={() => setPlusOpen(!plusOpen)}
+                            aria-expanded={plusOpen}
+                            aria-label="More actions"
+                            title="More actions"
+                        >
+                            <Plus size={19} />
+                        </button>
+                        {plusOpen && (
+                            <div className="ai-doctor__plus-menu">
+                                <button
+                                    className="ai-doctor__plus-item"
+                                    onClick={() => {
+                                        setPlusOpen(false);
+                                        handlePhoto();
+                                    }}
+                                >
+                                    <Camera size={16} />
+                                    <span>{t("ai.takePhoto")}</span>
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                    <input
+                        type="text"
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        onKeyDown={(e) =>
+                            e.key === "Enter" && sendMessage(input)
+                        }
+                        placeholder="Ask anything"
+                        className="ai-doctor__chatbar-input"
+                    />
+                    <button
+                        className={`ai-doctor__chatbar-mic ${listening ? "ai-doctor__chatbar-mic--active" : ""}`}
+                        onClick={handleVoice}
+                        title={t("ai.askByVoice")}
+                        aria-label={t("ai.askByVoice")}
+                    >
+                        <Mic size={18} />
+                    </button>
+                    <button
+                        className="ai-doctor__chatbar-send"
+                        onClick={() => sendMessage(input)}
+                        disabled={!input.trim()}
+                        aria-label="Send"
+                    >
+                        <Send size={16} />
+                    </button>
+                </div>
+            </div>
         </div>
     );
 }

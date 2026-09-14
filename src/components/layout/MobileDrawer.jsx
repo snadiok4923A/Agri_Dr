@@ -66,11 +66,8 @@ export default function MobileDrawer({ open, onClose }) {
                         ))}
                     </div>
 
-                    <div className="mobile-drawer__divider" />
-
                     <div className="mobile-drawer__section">
-                        <div className="mobile-drawer__section-label">Tools</div>
-                        {subItems.map((item) => (
+                        {[...subItems, ...bottomItems].map((item) => (
                             <NavLink
                                 key={item.path}
                                 to={item.path}
@@ -78,22 +75,6 @@ export default function MobileDrawer({ open, onClose }) {
                                 onClick={onClose}
                             >
                                 <item.icon size={18} />
-                                <span>{t(item.labelKey)}</span>
-                            </NavLink>
-                        ))}
-                    </div>
-
-                    <div className="mobile-drawer__divider" />
-
-                    <div className="mobile-drawer__section">
-                        {bottomItems.map((item) => (
-                            <NavLink
-                                key={item.path}
-                                to={item.path}
-                                className={linkClass}
-                                onClick={onClose}
-                            >
-                                <item.icon size={20} />
                                 <span>{t(item.labelKey)}</span>
                             </NavLink>
                         ))}
