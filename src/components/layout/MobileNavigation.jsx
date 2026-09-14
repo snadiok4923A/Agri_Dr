@@ -1,14 +1,14 @@
 import { NavLink } from 'react-router-dom';
 import { useLanguage } from '../../hooks/useLanguage';
-import { Home, Tractor, Stethoscope, BarChart3, MoreHorizontal } from 'lucide-react';
+import { Home, Tractor, Stethoscope, TrendingUp, BarChart3 } from 'lucide-react';
 import './MobileNavigation.css';
 
 const mobileNavItems = [
   { path: '/', icon: Home, labelKey: 'nav.overview' },
   { path: '/farm', icon: Tractor, labelKey: 'nav.myFarm' },
   { path: '/ai-doctor', icon: Stethoscope, labelKey: 'nav.aiDoctor' },
+  { path: '/improve', icon: TrendingUp, labelKey: 'nav.improve' },
   { path: '/insights', icon: BarChart3, labelKey: 'nav.insights' },
-  { path: '/settings', icon: MoreHorizontal, labelKey: 'nav.settings' },
 ];
 
 export default function MobileNavigation() {

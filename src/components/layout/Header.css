@@ -190,13 +190,15 @@
   margin-left: 4px;
 }
 
+@media (max-width: 1024px) {
+  .header__menu-btn {
+    display: flex;
+  }
+}
+
 @media (max-width: 768px) {
   .header {
     padding: 0 16px;
-  }
-
-  .header__menu-btn {
-    display: flex;
   }
 
   .header__center {
