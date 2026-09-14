@@ -2,7 +2,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { useLanguage } from '../../hooks/useLanguage';
 import {
   LayoutDashboard, Tractor, Leaf, TrendingUp,
-  BarChart3, Stethoscope, CloudSun, FlaskConical, Droplets,
+  BarChart3, Stethoscope, FlaskConical,
   Bug, Beaker, Wallet, Store, Settings, User, ChevronLeft, ChevronRight, Sprout,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -19,9 +19,7 @@ export const navItems = [
 ];
 
 export const subItems = [
-  { path: '/weather', icon: CloudSun, labelKey: 'nav.weather' },
   { path: '/soil', icon: FlaskConical, labelKey: 'nav.soil' },
-  { path: '/irrigation', icon: Droplets, labelKey: 'nav.irrigation' },
   { path: '/disease', icon: Bug, labelKey: 'nav.disease' },
   { path: '/fertilizer', icon: Beaker, labelKey: 'nav.fertilizer' },
   { path: '/finance', icon: Wallet, labelKey: 'nav.finance' },

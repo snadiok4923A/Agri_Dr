@@ -38,15 +38,13 @@
 }
 
 .status-badge--needs-attention,
-.status-badge--moderate,
-.status-badge--needs-irrigation {
+.status-badge--moderate {
   background: var(--warning-soft);
   color: var(--warning);
 }
 
 .status-badge--needs-attention .status-badge__dot,
-.status-badge--moderate .status-badge__dot,
-.status-badge--needs-irrigation .status-badge__dot {
+.status-badge--moderate .status-badge__dot {
   background: var(--warning);
 }
 

@@ -484,95 +484,6 @@ export const soilData = {
     },
 };
 
-// ==================== IRRIGATION & WATER SCHEDULE (AGRONOMIC) ====================
-export const irrigationData = {
-    thisWeekHours: 24,
-    pumpingCostThisWeek: 1770,
-    costSavings: 420,
-    weatherAdvisory:
-        "Rain forecasted for Tuesday afternoon (18mm). Skip scheduled irrigation on Fields A & B to save ~₹540 in electricity cost.",
-    fields: [
-        {
-            fieldId: "f1",
-            name: "Field A",
-            variety: "IR-64",
-            stage: "Tillering",
-            waterCondition: "Shallow Standing Water (2-3 cm)",
-            recommendation:
-                "Maintain shallow submergence. Skip Tuesday due to rain.",
-            pumpingHoursRequired: 6,
-            estimatedPumpingCost: 450,
-            status: "optimal",
-        },
-        {
-            fieldId: "f2",
-            name: "Field B",
-            variety: "Swarna",
-            stage: "Vegetative",
-            waterCondition: "Saturated Soil",
-            recommendation: "Drain excess water if rainfall exceeds 25mm.",
-            pumpingHoursRequired: 4,
-            estimatedPumpingCost: 300,
-            status: "needs-attention",
-        },
-        {
-            fieldId: "f3",
-            name: "Field C",
-            variety: "Basmati",
-            stage: "Panicle Initiation",
-            waterCondition: "Continuous 4 cm standing water",
-            recommendation:
-                "Critical reproductive stage. Maintain steady water layer.",
-            pumpingHoursRequired: 8,
-            estimatedPumpingCost: 600,
-            status: "optimal",
-        },
-        {
-            fieldId: "f4",
-            name: "Field D",
-            variety: "Samba Mahsuri",
-            stage: "Tillering",
-            waterCondition: "Shallow Standing Water (2-3 cm)",
-            recommendation:
-                "Keep water layer shallow to stimulate tiller formation.",
-            pumpingHoursRequired: 6,
-            estimatedPumpingCost: 420,
-            status: "optimal",
-        },
-    ],
-    weeklyPumpingHours: [
-        { day: "Mon", hours: 5, cost: 375 },
-        { day: "Tue", hours: 0, cost: 0 },
-        { day: "Wed", hours: 4, cost: 300 },
-        { day: "Thu", hours: 6, cost: 450 },
-        { day: "Fri", hours: 3, cost: 225 },
-        { day: "Sat", hours: 4, cost: 300 },
-        { day: "Sun", hours: 2, cost: 150 },
-    ],
-    stageRequirements: [
-        {
-            stage: "Seedling / Nursery",
-            depth: "Saturated soil",
-            note: "Avoid submergence",
-        },
-        {
-            stage: "Tillering",
-            depth: "2 - 3 cm shallow water",
-            note: "Promotes root branching and tillers",
-        },
-        {
-            stage: "Panicle Initiation to Flowering",
-            depth: "4 - 5 cm standing water",
-            note: "Most critical stage; never allow drought",
-        },
-        {
-            stage: "Ripening / Grain Filling",
-            depth: "Saturated to moist",
-            note: "Drain field 10 days before harvest",
-        },
-    ],
-};
-
 // ==================== DISEASE & MEDICINE DATA ====================
 export const diseaseData = [
     {
@@ -1272,18 +1183,6 @@ export const askAgricultureAI = (question, fieldContext) => {
     );
 };
 
-export const getWeatherData = () => {
-    return new Promise((resolve) =>
-        setTimeout(() => resolve(weatherData), 300),
-    );
-};
-
 export const getSoilData = () => {
     return new Promise((resolve) => setTimeout(() => resolve(soilData), 300));
-};
-
-export const getIrrigationStatus = () => {
-    return new Promise((resolve) =>
-        setTimeout(() => resolve(irrigationData), 300),
-    );
 };

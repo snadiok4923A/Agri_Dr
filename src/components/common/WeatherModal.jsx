@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import {
     X,
     CloudSun,
@@ -9,7 +8,6 @@ import {
     Thermometer,
     CloudRain,
     ShieldAlert,
-    ArrowRight,
 } from "lucide-react";
 import { weatherData, farmData } from "../../data/mockData";
 import { WeatherSunCloudIllustration } from "./AgriIllustrations";
@@ -27,8 +25,6 @@ const dayIcon = (icon) => {
  * Opens over the dashboard (no navigation, no side panel).
  */
 export default function WeatherModal({ open, onClose }) {
-    const navigate = useNavigate();
-
     useEffect(() => {
         if (!open) return;
         const onKey = (e) => {
@@ -124,14 +120,7 @@ export default function WeatherModal({ open, onClose }) {
                         <strong>Spraying Advisory</strong>
                         <span>{impact.sprayAdvisory}</span>
                     </div>
-                    <button
-                        className="wmodal__advisory-link"
-                        onClick={() => navigate("/weather")}
-                        title="Open Weather Advisory"
-                    >
-                        <ArrowRight size={14} />
-                    </button>
-    </div>
+                </div>
 
                 {/* ===== 5. 7-Day Forecast ===== */}
                 <div className="wmodal__forecast">

@@ -6,7 +6,6 @@ export default function StatusBadge({ status, size = 'sm', className = '' }) {
     'needs-attention': 'Needs Attention',
     critical: 'Critical',
     optimal: 'Optimal',
-    'needs-irrigation': 'Needs Irrigation',
     moderate: 'Moderate',
     low: 'Low',
     high: 'High',

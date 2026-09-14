@@ -7,9 +7,7 @@ import MyFarm from './pages/MyFarm';
 import Crops from './pages/Crops';
 import CropDetails from './pages/CropDetails';
 import AIDoctor from './pages/AIDoctor';
-import Weather from './pages/Weather';
 import Soil from './pages/Soil';
-import Irrigation from './pages/Irrigation';
 import Disease from './pages/Disease';
 import Fertilizer from './pages/Fertilizer';
 import Finance from './pages/Finance';
@@ -30,9 +28,7 @@ export default function App() {
                 <Route path="crops" element={<Crops />} />
                 <Route path="crops/:id" element={<CropDetails />} />
                 <Route path="ai-doctor" element={<AIDoctor />} />
-                <Route path="weather" element={<Weather />} />
                 <Route path="soil" element={<Soil />} />
-                <Route path="irrigation" element={<Irrigation />} />
                 <Route path="disease" element={<Disease />} />
                 <Route path="fertilizer" element={<Fertilizer />} />
                 <Route path="finance" element={<Finance />} />
