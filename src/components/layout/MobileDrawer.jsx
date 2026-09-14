@@ -3,15 +3,21 @@ import { useLanguage } from '../../hooks/useLanguage';
 import { X } from 'lucide-react';
 import { Sprout } from 'lucide-react';
 import { navItems, subItems, bottomItems } from './Sidebar';
+import { mobileNavItems } from './MobileNavigation';
 import './MobileDrawer.css';
 
 /**
  * Left-side slide-out navigation drawer (≤1024px).
- * Mirrors the desktop sidebar exactly — same nav arrays, same active style —
- * rendered as a premium frosted-glass panel over a dimmed, blurred page.
+ * Shows everything EXCEPT the five items already reachable from the
+ * mobile bottom navigation bar (Overview, My Farm, AI Doctor, Improve
+ * Yield, Insights) — so no destination is listed twice on mobile.
  */
+const bottomNavPaths = new Set(mobileNavItems.map((item) => item.path));
+
 export default function MobileDrawer({ open, onClose }) {
     const { t } = useLanguage();
+
+    const drawerNavItems = navItems.filter((item) => !bottomNavPaths.has(item.path));
 
     const linkClass = ({ isActive }) =>
         `mobile-drawer__link ${isActive ? 'mobile-drawer__link--active' : ''}`;
@@ -46,7 +52,7 @@ export default function MobileDrawer({ open, onClose }) {
 
                 <nav className="mobile-drawer__nav">
                     <div className="mobile-drawer__section">
-                        {navItems.map((item) => (
+                        {drawerNavItems.map((item) => (
                             <NavLink
                                 key={item.path}
                                 to={item.path}

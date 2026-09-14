@@ -3,7 +3,8 @@ import { useLanguage } from '../../hooks/useLanguage';
 import { Home, Tractor, Stethoscope, TrendingUp, BarChart3 } from 'lucide-react';
 import './MobileNavigation.css';
 
-const mobileNavItems = [
+// Exported so MobileDrawer can exclude these paths from the slide-out menu
+export const mobileNavItems = [
   { path: '/', icon: Home, labelKey: 'nav.overview' },
   { path: '/farm', icon: Tractor, labelKey: 'nav.myFarm' },
   { path: '/ai-doctor', icon: Stethoscope, labelKey: 'nav.aiDoctor' },
