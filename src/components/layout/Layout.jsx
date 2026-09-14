@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import MobileNavigation from './MobileNavigation';
+import MobileDrawer from './MobileDrawer';
 import './Layout.css';
 
 export default function Layout() {
@@ -18,9 +19,10 @@ export default function Layout() {
         </main>
       </div>
       <MobileNavigation />
-      {mobileMenuOpen && (
-        <div className="layout__overlay" onClick={() => setMobileMenuOpen(false)} />
-      )}
+      <MobileDrawer
+        open={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+      />
     </div>
   );
 }

@@ -29,10 +29,6 @@ export default function Header({ onMenuToggle }) {
         <button className="header__menu-btn" onClick={onMenuToggle} aria-label="Toggle menu">
           <Menu size={20} />
         </button>
-        <div className="header__farm-selector">
-          <span className="header__farm-name">Green Valley Farm</span>
-          <ChevronDown size={14} />
-        </div>
       </div>
 
       <div className="header__center">

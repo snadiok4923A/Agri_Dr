@@ -8,7 +8,8 @@ import {
 import { useState } from 'react';
 import './Sidebar.css';
 
-const navItems = [
+// Shared with MobileDrawer so both navigations always stay in sync
+export const navItems = [
   { path: '/', icon: LayoutDashboard, labelKey: 'nav.overview' },
   { path: '/farm', icon: Tractor, labelKey: 'nav.myFarm' },
   { path: '/crops', icon: Leaf, labelKey: 'nav.crops' },
@@ -17,7 +18,7 @@ const navItems = [
   { path: '/ai-doctor', icon: Stethoscope, labelKey: 'nav.aiDoctor' },
 ];
 
-const subItems = [
+export const subItems = [
   { path: '/weather', icon: CloudSun, labelKey: 'nav.weather' },
   { path: '/soil', icon: FlaskConical, labelKey: 'nav.soil' },
   { path: '/irrigation', icon: Droplets, labelKey: 'nav.irrigation' },
@@ -27,7 +28,7 @@ const subItems = [
   { path: '/market', icon: Store, labelKey: 'nav.market' },
 ];
 
-const bottomItems = [
+export const bottomItems = [
   { path: '/settings', icon: Settings, labelKey: 'nav.settings' },
 ];
 

@@ -36,26 +36,6 @@
   color: var(--text-primary);
 }
 
-.header__farm-selector {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.header__farm-selector:hover {
-  background: var(--bg-hover);
-}
-
-.header__farm-name {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
 .header__center {
   flex: 1;
   max-width: 400px;
@@ -220,10 +200,6 @@
   }
 
   .header__center {
-    display: none;
-  }
-
-  .header__farm-name {
     display: none;
   }
 
