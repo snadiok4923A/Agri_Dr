@@ -25,6 +25,7 @@ import {
     AgriActionIcon,
 } from "../components/common/AgriIllustrations";
 import AnimatedNumber from "../components/common/AnimatedNumber";
+import WeatherModal from "../components/common/WeatherModal";
 import "./Dashboard.css";
 
 const getGreeting = (t) => {
@@ -79,6 +80,9 @@ export default function Dashboard() {
     const cameraInputRef = useRef(null);
     const uploadInputRef = useRef(null);
     const analyzeTimerRef = useRef(null);
+
+    // Weather card → centered glass modal (not navigation)
+    const [weatherOpen, setWeatherOpen] = useState(false);
 
     const handlePick = (e) => {
         const file = e.target.files?.[0];
@@ -216,10 +220,10 @@ export default function Dashboard() {
                 {/* Compact Weather Panel (right) */}
                 <div
                     className="dashboard-weather-card"
-                    onClick={() => navigate("/weather")}
+                    onClick={() => setWeatherOpen(true)}
                     role="button"
                     tabIndex={0}
-                    title="View Weather & Spraying Advisory"
+                    title="View Current Weather"
                 >
                     <span className="dashboard-weather-card__label">Weather</span>
                     <div className="dashboard-weather-card__main">
@@ -245,6 +249,12 @@ export default function Dashboard() {
                     </div>
                 </div>
             </motion.section>
+
+            {/* Weather detail modal (opens over the dashboard) */}
+            <WeatherModal
+                open={weatherOpen}
+                onClose={() => setWeatherOpen(false)}
+            />
 
             {/* ==================== 3. CROP DIAGNOSIS (AI PHOTO) ==================== */}
             <motion.section className="dashboard-diagnosis-section" {...reveal(2)}>

@@ -327,6 +327,7 @@ export const weatherData = {
         humidity: 78,
         rainProbability: 62,
         wind: 12,
+        visibility: 8,
         condition: "Partly Cloudy",
         icon: "cloud-sun",
     },
