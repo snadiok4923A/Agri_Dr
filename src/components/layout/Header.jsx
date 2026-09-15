@@ -1,12 +1,14 @@
 import { useLanguage } from '../../hooks/useLanguage';
 import { useTheme } from '../../hooks/useTheme';
-import { Bell, Sun, Moon, ChevronDown, Globe, Menu } from 'lucide-react';
+import { Bell, Sun, Moon, ChevronDown, Globe, Menu, Mic } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
+import { useVoiceMode } from '../../hooks/useVoiceMode';
 import './Header.css';
 
 export default function Header({ onMenuToggle }) {
   const { language, changeLanguage, languages, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
+  const { active: voiceActive, stop: stopVoiceMode } = useVoiceMode();
   const [langOpen, setLangOpen] = useState(false);
   const langRef = useRef(null);
 
@@ -31,6 +33,18 @@ export default function Header({ onMenuToggle }) {
       </div>
 
       <div className="header__right">
+        {/* Persistent Voice Mode indicator — click to stop */}
+        {voiceActive && (
+          <button
+            className="header__voice-btn"
+            onClick={stopVoiceMode}
+            aria-label="Stop Voice Mode"
+            title="Voice Mode active — click to stop"
+          >
+            <Mic size={15} />
+            <span className="header__voice-dot" />
+          </button>
+        )}
         <div className="header__lang" ref={langRef}>
           <button
             className="header__lang-btn"

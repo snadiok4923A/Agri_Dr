@@ -51,7 +51,9 @@
 }
 
 /* ==================== 2. PRODUCTION + WEATHER ROW ==================== */
-/* Compact production summary on the left, weather fills the rest */
+/* Compact production summary on the left, weather fills the rest.
+   Voice Mode + Market are separate sections placed into the right-hand
+   empty areas via CSS grid areas (see .dashboard-page below). */
 .dashboard-top-row {
     width: 100%;
     display: grid;
@@ -59,6 +61,50 @@
     justify-content: flex-start;
     gap: 16px;
     align-items: stretch;
+}
+
+/* =====================================================================
+   DESKTOP GRID AREAS — Voice Mode fills the space beside Weather,
+   Market fills the space beside Crop Diagnosis. On ≤900px every section
+   becomes a normal full-width row in DOM order (the mobile spec order).
+   ===================================================================== */
+@media (min-width: 901px) {
+    .dashboard-page {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(220px, 300px);
+        grid-template-areas:
+            "greeting greeting"
+            "top     voice"
+            "diag    market"
+            "actions actions"
+            "insights insights";
+        align-items: start;
+    }
+
+    .dashboard-page > .dashboard-greeting-row { grid-area: greeting; }
+    .dashboard-page > .dashboard-top-row      { grid-area: top; }
+    .dashboard-page > .dashboard-voice-row    { grid-area: voice; }
+    .dashboard-page > .dashboard-diagnosis-section { grid-area: diag; }
+    .dashboard-page > .dashboard-market-row   { grid-area: market; }
+    .dashboard-page > .dashboard-section:nth-of-type(1) { grid-area: actions; }
+    .dashboard-page > .dashboard-section:nth-of-type(2) { grid-area: insights; }
+
+    .dashboard-voice-row,
+    .dashboard-market-row {
+        display: flex;
+        min-width: 0;
+    }
+
+    .dashboard-voice-row .feature-card,
+    .dashboard-market-row .feature-card {
+        flex: 1;
+        align-self: start;
+    }
+
+    /* Market card stays compact in its side column */
+    .dashboard-market-row {
+        max-width: 300px;
+    }
 }
 
 .dashboard-hero-card {
@@ -317,6 +363,36 @@
         transform: scale(1.05);
         opacity: 1;
     }
+}
+
+/* ==================== MOBILE REORDER (≤900px) ====================
+   Natural flow: Greeting → Production+Weather → Crop Diagnosis →
+   Voice Mode → Market → What Needs Attention? → remaining sections */
+@media (max-width: 900px) {
+    .dashboard-page {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .dashboard-voice-row,
+    .dashboard-market-row {
+        display: flex;
+        min-width: 0;
+        width: 100%;
+        max-width: none;
+    }
+
+    .dashboard-voice-row .feature-card,
+    .dashboard-market-row .feature-card {
+        flex: 1;
+        align-self: stretch;
+    }
+
+    .dashboard-diagnosis-section { order: 3; }
+    .dashboard-voice-row         { order: 4; }
+    .dashboard-market-row        { order: 5; }
+
+    .dashboard-page > .dashboard-section { order: 6; }
 }
 
 /* ==================== 3. CROP DIAGNOSIS (AI PHOTO) ==================== */

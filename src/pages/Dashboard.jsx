@@ -26,6 +26,9 @@ import {
 } from "../components/common/AgriIllustrations";
 import AnimatedNumber from "../components/common/AnimatedNumber";
 import WeatherModal from "../components/common/WeatherModal";
+import VoiceModeCard from "../components/dashboard/VoiceModeCard";
+import MarketCard from "../components/dashboard/MarketCard";
+import { useVoiceModeStopOnUnmount } from "../hooks/useVoiceMode";
 import "./Dashboard.css";
 
 const getGreeting = (t) => {
@@ -53,6 +56,9 @@ export default function Dashboard() {
     const { t } = useLanguage();
     const navigate = useNavigate();
     const shouldReduceMotion = useReducedMotion();
+
+    // Voice Mode must not survive navigation to another page
+    useVoiceModeStopOnUnmount();
 
     // Helper to spread the fade-up reveal props onto a section, in order
     const reveal = (i) =>
@@ -250,6 +256,13 @@ export default function Dashboard() {
                 </div>
             </motion.section>
 
+            {/* ==================== 2b. VOICE MODE CARD ==================== */}
+            {/* Desktop: placed in the empty area beside the Weather card (grid areas).
+                Mobile: flows naturally after Crop Diagnosis. */}
+            <motion.section className="dashboard-voice-row" {...reveal(2)}>
+                <VoiceModeCard />
+            </motion.section>
+
             {/* Weather detail modal (opens over the dashboard) */}
             <WeatherModal
                 open={weatherOpen}
@@ -337,7 +350,7 @@ export default function Dashboard() {
                             </div>
                         )}
 
-                        {diagStage === "result" && (
+                {diagStage === "result" && (
                             <div className="dashboard-diagnosis-result">
                                 <div className="dashboard-diagnosis-result__head">
                                     <span className="dashboard-diagnosis-result__issue">
@@ -378,6 +391,13 @@ export default function Dashboard() {
                         </div>
                     )}
                 </div>
+            </motion.section>
+
+            {/* ==================== 3b. MARKET CARD ==================== */}
+            {/* Desktop: fills the space beside Crop Diagnosis (grid areas).
+                Mobile: flows after Voice Mode, before "What Needs Attention?" */}
+            <motion.section className="dashboard-market-row" {...reveal(3)}>
+                <MarketCard />
             </motion.section>
 
             {/* ==================== 4. IMPORTANT ACTIONS ==================== */}

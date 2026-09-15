@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './hooks/useTheme';
 import { LanguageProvider } from './hooks/useLanguage';
+import { VoiceModeProvider } from './hooks/useVoiceMode';
 import Layout from './components/layout/Layout';
 import Dashboard from './pages/Dashboard';
 import MyFarm from './pages/MyFarm';
@@ -20,6 +21,7 @@ export default function App() {
   return (
     <ThemeProvider>
       <LanguageProvider>
+        <VoiceModeProvider>
           <BrowserRouter basename="/Agri_Dr">
             <Routes>
               <Route path="/" element={<Layout />}>
@@ -41,6 +43,7 @@ export default function App() {
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </BrowserRouter>
+        </VoiceModeProvider>
       </LanguageProvider>
     </ThemeProvider>
   );
