@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import { useLanguage } from "../hooks/useLanguage";
+import useMediaQuery from "../hooks/useMediaQuery";
 import {
     farmData,
     crops,
@@ -58,6 +59,9 @@ const sectionVariants = {
 export default function Dashboard() {
     const { t } = useLanguage();
     const navigate = useNavigate();
+    // Mobile breakpoint — switches Voice Mode + Market into the side-by-side
+    // pair below Crop Diagnosis without touching the desktop grid pairing.
+    const isMobile = useMediaQuery("(max-width: 900px)");
     const shouldReduceMotion = useReducedMotion();
 
     // Voice Mode must not survive navigation to another page
@@ -156,9 +160,10 @@ export default function Dashboard() {
 
     return (
         <div className="page-container dashboard-page">
-            {/* Top cluster: greeting, production+weather, voice, diagnosis, market.
-                Desktop: two content-sized rows (right cards sit beside the
-                content). Mobile: rows stack as flex columns with gaps. */}
+            {/* Desktop: two content-sized rows pair the right cards beside the
+                main content ([Production+Weather | Voice], [Diagnosis | Market]).
+                Mobile: single column — Voice Mode and Market pair up side-by-side
+                after Crop Diagnosis. */}
             {/* ==================== 1. GREETING + WEATHER ==================== */}
             <motion.section className="dashboard-greeting-row" {...reveal(0)}>
                 <div className="dashboard-greeting-left">
@@ -173,8 +178,9 @@ export default function Dashboard() {
 
             </motion.section>
 
-            {/* Desktop rows: [Production + Weather | Voice] and [Diagnosis | Market].
-                Mobile: rows dissolve (display: contents) so cards flow in spec order. */}
+            {/* Desktop row 1: [Production + Weather | Voice Mode]. On mobile
+                this wrapper is a plain pass-through (single child) — Voice Mode
+                renders separately below, inside the mobile pair. */}
             <div className="dashboard-desktop-row">
             {/* ==================== 2. PRODUCTION + WEATHER ROW ==================== */}
             <motion.section className="dashboard-top-row" {...reveal(1)}>
@@ -272,12 +278,13 @@ export default function Dashboard() {
                 </div>
             </motion.section>
 
-            {/* ==================== 2b. VOICE MODE CARD ==================== */}
-            {/* Desktop: placed in the empty area beside the Weather card (grid areas).
-                Mobile: flows naturally after Crop Diagnosis. */}
-            <motion.section className="dashboard-voice-row" {...reveal(2)}>
-                <VoiceModeCard />
-            </motion.section>
+            {/* Voice Mode: desktop — beside the Weather card (inside row 1);
+                mobile — rendered inside the pair below, after Crop Diagnosis. */}
+            {!isMobile && (
+                <motion.section className="dashboard-voice-row" {...reveal(2)}>
+                    <VoiceModeCard />
+                </motion.section>
+            )}
             </div>
 
             {/* Weather detail modal (opens over the dashboard) */}
@@ -286,6 +293,9 @@ export default function Dashboard() {
                 onClose={() => setWeatherOpen(false)}
             />
 
+            {/* Desktop row 2: [Crop Diagnosis | Market]. On mobile this wrapper
+                is a plain pass-through (single child) — Market renders
+                separately below, inside the mobile pair. */}
             <div className="dashboard-desktop-row">
             {/* ==================== 3. CROP DIAGNOSIS (AI PHOTO) ==================== */}
             <motion.section className="dashboard-diagnosis-section" {...reveal(2)}>
@@ -411,13 +421,27 @@ export default function Dashboard() {
                 </div>
             </motion.section>
 
-            {/* ==================== 3b. MARKET CARD ==================== */}
-            {/* Desktop: fills the space beside Crop Diagnosis (grid areas).
-                Mobile: flows after Voice Mode, before "What Needs Attention?" */}
-            <motion.section className="dashboard-market-row" {...reveal(3)}>
-                <MarketCard />
-            </motion.section>
+            {/* Market: desktop — beside Crop Diagnosis (inside row 2); mobile —
+                rendered inside the pair below. */}
+            {!isMobile && (
+                <motion.section className="dashboard-market-row" {...reveal(3)}>
+                    <MarketCard />
+                </motion.section>
+            )}
             </div>
+
+            {/* Mobile-only pair: Voice Mode + Market side-by-side after Crop
+                Diagnosis, before "What Needs Attention?" */}
+            {isMobile && (
+                <div className="dashboard-mobile-pair">
+                    <motion.section className="dashboard-voice-row" {...reveal(2)}>
+                        <VoiceModeCard />
+                    </motion.section>
+                    <motion.section className="dashboard-market-row" {...reveal(3)}>
+                        <MarketCard />
+                    </motion.section>
+                </div>
+            )}
 
             {/* ==================== 4. IMPORTANT ACTIONS ==================== */}
             <motion.section

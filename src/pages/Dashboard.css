@@ -454,11 +454,11 @@
     }
 }
 
-/* ==================== MOBILE REORDER (≤900px) ====================
-   Flow (DOM order, no reordering tricks): Greeting → Production+Weather →
-   Voice Mode → Crop Diagnosis → Market → What Needs Attention? → rest.
-   Wrappers are real flex columns with a 14px gap so cards keep breathing
-   room (display: contents is NOT reliably flattened in all webviews). */
+/* ==================== MOBILE FLOW (≤900px) ====================
+   Flow (DOM order): Greeting → Production+Weather → Crop Diagnosis →
+   [Voice Mode | Market] pair → What Needs Attention? → rest. The pair is
+   a real 2-col grid (equal widths + heights); everything else stacks in a
+   14px rhythm. Desktop keeps its named-area grid above. */
 @media (max-width: 900px) {
     .dashboard-page {
         display: flex;
@@ -466,16 +466,15 @@
         gap: 14px;
     }
 
-    /* Real flex columns: uniform 14px rhythm inside each row group */
-    .dashboard-desktop-row {
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-    }
-
-    /* Slightly larger break before the first full section */
-    .dashboard-section--actions {
-        margin-top: 10px;
+    /* Voice Mode + Market side-by-side: equal 1fr columns, equal heights
+       (stretch), small consistent gap, rounded corners come from the cards */
+    .dashboard-mobile-pair {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 10px;
+        align-items: stretch;
+        width: 100%;
+        min-width: 0;
     }
 
     .dashboard-voice-row,
@@ -490,6 +489,19 @@
     .dashboard-market-row .feature-card {
         flex: 1;
         align-self: stretch;
+        width: 100%;
+    }
+
+    /* Inside the narrow pair the head trend pill is redundant (the ▲ change
+       already sits beside the price) and would truncate the crop name —
+       drop it so the card reads Basmati / ₹5,200 /Q / ▲ 5.1% */
+    .dashboard-mobile-pair .feature-card__trend {
+        display: none;
+    }
+
+    /* Slightly larger break before the first full section */
+    .dashboard-section--actions {
+        margin-top: 10px;
     }
 }
 
@@ -1119,10 +1131,10 @@
 }
 
 @media (max-width: 680px) {
-    /* Both cards stay side-by-side: production stacks its ring above the stats
-       so the pair fits narrow screens without ever stacking the columns */
+    /* Both cards stay side-by-side with identical widths: the pair shares
+       the row equally and never stacks the columns */
     .dashboard-top-row {
-        grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
         gap: 10px;
     }
 
@@ -1138,6 +1150,7 @@
     .dashboard-weather-card {
         padding: 16px 14px;
         gap: 10px;
+        max-width: none; /* fill its 1fr track so both cards measure equal */
     }
 
     .dashboard-weather-card__icon svg {

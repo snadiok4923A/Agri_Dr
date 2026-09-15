@@ -232,13 +232,6 @@
     color: #ef4444;
 }
 
-.feature-card__spark {
-    width: 86px;
-    height: 32px;
-    flex-shrink: 0;
-    overflow: visible;
-}
-
 .feature-card__more {
     display: inline-flex;
     align-items: center;
@@ -263,9 +256,6 @@
         font-size: 20px;
     }
 
-    .feature-card__spark {
-        width: 72px;
-    }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -4,10 +4,10 @@ import { marketData } from "../../data/mockData";
 import "./DashboardFeatureCards.css";
 
 /**
- * Market card — one crop's price movement at a glance, sourced from the
- * existing marketData (Pusa Basmati 1121: the top-profit variety). Green +
- * rising vector when the price is up, red when down. Compact sparkline built
- * from the existing monthly priceHistory — no chart library, just a polyline.
+ * Market card — one crop's price at a glance, sourced from the existing
+ * marketData (Pusa Basmati 1121: the top-profit variety). Compact info card:
+ * crop name, price, change pill and a "Market Intelligence" link. Green
+ * accents when the price is up, red when down.
  */
 export default function MarketCard() {
     const navigate = useNavigate();
@@ -17,9 +17,6 @@ export default function MarketCard() {
     ) || marketData.crops[0];
 
     const up = crop.trend !== "down";
-    const points = crop.priceHistory
-        .map((p, i) => `${(i / (crop.priceHistory.length - 1)) * 100},${30 - ((p.price - Math.min(...crop.priceHistory.map((x) => x.price))) / Math.max(1, Math.max(...crop.priceHistory.map((x) => x.price)) - Math.min(...crop.priceHistory.map((x) => x.price)))) * 26}`)
-        .join(" ");
 
     return (
         <div
@@ -61,24 +58,6 @@ export default function MarketCard() {
                         {up ? "▲" : "▼"} {Math.abs(crop.change).toFixed(1)}%
                     </span>
                 </div>
-
-                {/* Minimal vector trend line over the last 6 months */}
-                <svg
-                    className="feature-card__spark"
-                    viewBox="0 0 100 32"
-                    preserveAspectRatio="none"
-                    aria-hidden="true"
-                >
-                    <polyline
-                        points={points}
-                        fill="none"
-                        stroke={up ? "var(--leaf)" : "var(--danger)"}
-                        strokeWidth="2.4"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        vectorEffect="non-scaling-stroke"
-                    />
-                </svg>
             </div>
 
             <span className="feature-card__more">
