@@ -20,7 +20,6 @@ import {
 } from "lucide-react";
 import { AreaChart, Area, ResponsiveContainer, XAxis, Tooltip } from "recharts";
 import {
-    RicePlantIllustration,
     WeatherSunCloudIllustration,
     AgriActionIcon,
 } from "../components/common/AgriIllustrations";
@@ -30,6 +29,10 @@ import VoiceModeCard from "../components/dashboard/VoiceModeCard";
 import MarketCard from "../components/dashboard/MarketCard";
 import { useVoiceModeStopOnUnmount } from "../hooks/useVoiceMode";
 import "./Dashboard.css";
+
+// Large plant logo for the Expected/Potential hero card — public asset,
+// base-path aware so it resolves identically on localhost and GitHub Pages.
+const PLANT_LOGO = `${import.meta.env.BASE_URL}plant.svg`;
 
 const getGreeting = (t) => {
     const hour = new Date().getHours();
@@ -199,7 +202,12 @@ export default function Dashboard() {
                             />
                         </svg>
                         <div className="dashboard-ring-artwork">
-                            <RicePlantIllustration size={64} />
+                            <img
+                                src={PLANT_LOGO}
+                                alt=""
+                                className="dashboard-ring-artwork-img"
+                                draggable={false}
+                            />
                         </div>
                     </div>
 
