@@ -288,8 +288,8 @@
   padding: 11px 12px;
   /* Semi-transparent dark glass, matching the app's glass system */
   background: color-mix(in srgb, var(--bg-surface) 72%, transparent);
-  backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
   border: 1px solid var(--glass-border);
   border-radius: 20px;
   box-shadow:
@@ -337,8 +337,8 @@
   min-width: 190px;
   padding: 6px;
   background: color-mix(in srgb, var(--bg-surface) 88%, transparent);
-  backdrop-filter: blur(var(--glass-blur)) saturate(1.3);
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.3);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.3);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
@@ -444,8 +444,8 @@
 .ai-doctor__listening,
 .ai-doctor__scanning {
   background: color-mix(in srgb, var(--bg-surface) 72%, transparent);
-  backdrop-filter: blur(var(--glass-blur)) saturate(1.3);
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.3);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.3);
   border: 1px solid var(--glass-border);
   border-radius: 14px;
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.3);

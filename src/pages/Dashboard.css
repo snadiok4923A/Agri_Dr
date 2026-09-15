@@ -71,7 +71,7 @@
 @media (min-width: 901px) {
     .dashboard-page {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(220px, 300px);
+        grid-template-columns: minmax(0, 1fr) minmax(230px, 310px);
         grid-template-areas:
             "greeting greeting"
             "top     voice"
@@ -79,6 +79,8 @@
             "actions actions"
             "insights insights";
         align-items: start;
+        max-width: 1240px;
+        margin: 0 auto;
     }
 
     .dashboard-page > .dashboard-greeting-row { grid-area: greeting; }
@@ -86,8 +88,8 @@
     .dashboard-page > .dashboard-voice-row    { grid-area: voice; }
     .dashboard-page > .dashboard-diagnosis-section { grid-area: diag; }
     .dashboard-page > .dashboard-market-row   { grid-area: market; }
-    .dashboard-page > .dashboard-section:nth-of-type(1) { grid-area: actions; }
-    .dashboard-page > .dashboard-section:nth-of-type(2) { grid-area: insights; }
+    .dashboard-page > .dashboard-section--actions  { grid-area: actions; }
+    .dashboard-page > .dashboard-section--insights { grid-area: insights; }
 
     .dashboard-voice-row,
     .dashboard-market-row {
@@ -101,9 +103,23 @@
         align-self: start;
     }
 
-    /* Market card stays compact in its side column */
-    .dashboard-market-row {
-        max-width: 300px;
+    /* Right column hugs the main content: the weather column becomes 1fr so
+       the top row always fills its track — no dead middle gap before the
+       Voice column. The card caps at 520px and right-aligns in its track. */
+    .dashboard-page .dashboard-top-row {
+        grid-template-columns: minmax(0, auto) minmax(auto, 1fr);
+    }
+
+    .dashboard-page .dashboard-weather-card {
+        max-width: 520px;
+        margin-left: auto;
+    }
+
+    /* Crop Diagnosis fills its track so row 2 also reaches the Market
+       column, keeping a normal column gap at every width (higher
+       specificity beats the base max-width regardless of file order) */
+    .dashboard-page .dashboard-diagnosis-card {
+        max-width: none;
     }
 }
 
@@ -611,8 +627,8 @@
     padding: 5px 12px;
     border-radius: var(--radius-full);
     background: rgba(10, 15, 12, 0.7);
-    backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
     color: var(--leaf);
     font-size: 11.5px;
     font-weight: 700;

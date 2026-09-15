@@ -237,8 +237,8 @@ body {
 [data-theme="dark"] .improve-page__action-card,
 [data-theme="dark"] .crops-page__card {
     background: var(--glass-bg);
-    backdrop-filter: blur(var(--glass-blur)) saturate(140%);
     -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+    backdrop-filter: blur(var(--glass-blur)) saturate(140%);
     border-color: rgba(255, 255, 255, 0.05);
     border-top-color: rgba(255, 255, 255, 0.12);
     border-left-color: rgba(255, 255, 255, 0.08);
@@ -305,15 +305,15 @@ body {
 /* Modal gets its own glass tier — scrollable (y) without losing the frost */
 [data-theme="dark"] .crops-page__modal {
     background: var(--glass-bg);
-    backdrop-filter: blur(28px) saturate(150%);
     -webkit-backdrop-filter: blur(28px) saturate(150%);
+    backdrop-filter: blur(28px) saturate(150%);
     overflow: hidden auto;
 }
 
 @media (max-width: 768px) {
     [data-theme="dark"] .crops-page__modal {
-        backdrop-filter: blur(20px) saturate(140%);
         -webkit-backdrop-filter: blur(20px) saturate(140%);
+        backdrop-filter: blur(20px) saturate(140%);
     }
 }
 
@@ -327,8 +327,8 @@ body {
     [data-theme="dark"] .improve-page__goal-chip,
     [data-theme="dark"] .improve-page__action-card,
     [data-theme="dark"] .crops-page__card {
-        backdrop-filter: blur(16px) saturate(140%);
         -webkit-backdrop-filter: blur(16px) saturate(140%);
+        backdrop-filter: blur(16px) saturate(140%);
     }
 }
 

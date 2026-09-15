@@ -10,8 +10,8 @@
   /* Light touch: the dashboard must stay recognizable behind the glass,
      just softly blurred and slightly darkened. */
   background: rgba(4, 8, 6, 0.42);
-  backdrop-filter: blur(9px) saturate(115%);
   -webkit-backdrop-filter: blur(9px) saturate(115%);
+  backdrop-filter: blur(9px) saturate(115%);
   animation: wmodal-overlay-in 220ms ease both;
 }
 
@@ -38,8 +38,8 @@
   /* True transparent glass: deep kolapata-green tint at low opacity —
      the blurred background glows through the panel. */
   background: rgba(10, 25, 18, 0.4);
-  backdrop-filter: blur(24px) saturate(140%);
   -webkit-backdrop-filter: blur(24px) saturate(140%);
+  backdrop-filter: blur(24px) saturate(140%);
   border: 1px solid rgba(255, 255, 255, 0.09);
   border-top-color: rgba(255, 255, 255, 0.18);
   border-left-color: rgba(255, 255, 255, 0.1);

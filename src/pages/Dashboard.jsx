@@ -401,7 +401,10 @@ export default function Dashboard() {
             </motion.section>
 
             {/* ==================== 4. IMPORTANT ACTIONS ==================== */}
-            <motion.section className="dashboard-section" {...reveal(3)}>
+            <motion.section
+                className="dashboard-section dashboard-section--actions"
+                {...reveal(3)}
+            >
                 <div className="dashboard-section-header">
                     <h3 className="dashboard-section-title">
                         What Needs Attention?
@@ -447,7 +450,10 @@ export default function Dashboard() {
             </motion.section>
 
             {/* ==================== 5. SIMPLE PRODUCTION INSIGHTS ==================== */}
-            <motion.section className="dashboard-section" {...reveal(4)}>
+            <motion.section
+                className="dashboard-section dashboard-section--insights"
+                {...reveal(4)}
+            >
                 <div className="dashboard-section-header">
                     <h3 className="dashboard-section-title">
                         Production & Profit Trends
