@@ -1,5 +1,6 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { useLanguage } from '../../hooks/useLanguage';
+import { demoUser } from '../../data/mockData';
 import {
   LayoutDashboard, Tractor, Leaf, TrendingUp,
   BarChart3, Stethoscope, FlaskConical,
@@ -102,8 +103,8 @@ export default function Sidebar() {
           </div>
           {!collapsed && (
             <div className="sidebar__user-info">
-              <span className="sidebar__user-name">Rajesh Kumar</span>
-              <span className="sidebar__user-role">Farmer</span>
+              <span className="sidebar__user-name">{demoUser.name}</span>
+              <span className="sidebar__user-role">{demoUser.role}</span>
             </div>
           )}
         </div>

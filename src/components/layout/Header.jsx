@@ -3,6 +3,7 @@ import { useTheme } from '../../hooks/useTheme';
 import { Bell, Sun, Moon, ChevronDown, Globe, Menu, Mic } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { useVoiceMode } from '../../hooks/useVoiceMode';
+import { demoUser } from '../../data/mockData';
 import './Header.css';
 
 export default function Header({ onMenuToggle }) {
@@ -79,8 +80,8 @@ export default function Header({ onMenuToggle }) {
           <span className="header__notification-dot" />
         </button>
 
-        <div className="header__avatar">
-          <span>RK</span>
+        <div className="header__avatar" title={demoUser.name}>
+          <span>{demoUser.initials}</span>
         </div>
       </div>
     </header>

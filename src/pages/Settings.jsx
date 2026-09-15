@@ -1,5 +1,6 @@
 import { useLanguage } from '../hooks/useLanguage';
 import { useTheme } from '../hooks/useTheme';
+import { demoUser } from '../data/mockData';
 import { Settings as SettingsIcon, Globe, Palette } from 'lucide-react';
 import './Settings.css';
 
@@ -28,7 +29,7 @@ export default function Settings() {
           <div className="settings-page__section-content">
             <div className="settings-page__field">
               <label className="settings-page__label">Name</label>
-              <input className="settings-page__input" defaultValue="Rajesh Kumar" />
+              <input className="settings-page__input" defaultValue={demoUser.name} />
             </div>
             <div className="settings-page__field">
               <label className="settings-page__label">Farm Name</label>

@@ -1,7 +1,16 @@
+// ==================== DEMO USER (single source of truth) ====================
+// Every UI surface that shows the user's name derives it from here so all
+// parts of the website stay synchronized.
+export const demoUser = {
+    name: "Anantā Maurya",
+    initials: "AM",
+    role: "Farmer",
+};
+
 // ==================== FARM DATA ====================
 export const farmData = {
     name: "Green Valley Rice Farm",
-    owner: "Rajesh Kumar",
+    owner: demoUser.name,
     totalLand: 8.6,
     activeCrops: 4,
     expectedYield: 16.1,
