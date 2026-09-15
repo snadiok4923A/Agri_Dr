@@ -179,3 +179,98 @@ export function AgriActionIcon({ type, size = 24 }) {
     </svg>
   );
 }
+
+/* Dynamic weather illustration — picks a polished gradient icon for the
+   current condition: sunny, cloudy, partly cloudy (default) or rainy.
+   Used by the dashboard Weather card so the art always matches the data. */
+export function WeatherConditionIllustration({ condition = '', size = 44, className = '' }) {
+  const c = String(condition).toLowerCase();
+  const kind =
+    c.includes('rain') || c.includes('drizzle') || c.includes('shower') ? 'rain'
+    : c.includes('sun') && !c.includes('part') ? 'sun'
+    : c.includes('cloud') && !c.includes('part') && !c.includes('sun') ? 'cloud'
+    : 'partly';
+
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 64 64"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={`agri-weather-vector ${className}`}
+      aria-hidden="true"
+    >
+      <defs>
+        <linearGradient id="wciSun" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#FBBF24" />
+          <stop offset="100%" stopColor="#F59E0B" />
+        </linearGradient>
+        <linearGradient id="wciCloud" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.95" />
+          <stop offset="100%" stopColor="#E2E8F0" stopOpacity="0.9" />
+        </linearGradient>
+        <linearGradient id="wciRain" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#38BDF8" />
+          <stop offset="100%" stopColor="#0EA5E9" />
+        </linearGradient>
+      </defs>
+
+      {kind === 'sun' && (
+        <g>
+          <circle cx="32" cy="32" r="15" fill="url(#wciSun)" className="agri-sun-pulse" />
+          <g stroke="#F59E0B" strokeWidth="3" strokeLinecap="round" opacity="0.85">
+            <line x1="32" y1="7" x2="32" y2="13" />
+            <line x1="32" y1="51" x2="32" y2="57" />
+            <line x1="7" y1="32" x2="13" y2="32" />
+            <line x1="51" y1="32" x2="57" y2="32" />
+            <line x1="14.4" y1="14.4" x2="18.6" y2="18.6" />
+            <line x1="45.4" y1="45.4" x2="49.6" y2="49.6" />
+            <line x1="14.4" y1="49.6" x2="18.6" y2="45.4" />
+            <line x1="45.4" y1="18.6" x2="49.6" y2="14.4" />
+          </g>
+        </g>
+      )}
+
+      {kind === 'cloud' && (
+        <path
+          d="M18 48 H46 C52 48 56 43.5 56 38 C56 33 52.2 29.2 47.6 29 C46.8 22.4 41.2 17 34 17 C28 17 23 20.8 21.2 26 C15.4 26.6 11 31.4 11 37 C11 43 15.5 48 18 48 Z"
+          fill="url(#wciCloud)"
+          filter="drop-shadow(0 2px 4px rgba(0,0,0,0.08))"
+        />
+      )}
+
+      {kind === 'partly' && (
+        <g>
+          <circle cx="38" cy="24" r="14" fill="url(#wciSun)" className="agri-sun-pulse" />
+          <g stroke="#F59E0B" strokeWidth="2.5" strokeLinecap="round" opacity="0.8">
+            <line x1="38" y1="4" x2="38" y2="8" />
+            <line x1="52" y1="10" x2="49" y2="13" />
+            <line x1="58" y1="24" x2="54" y2="24" />
+            <line x1="52" y1="38" x2="49" y2="35" />
+          </g>
+          <path
+            d="M20 50 H46 C51 50 54 46 54 41 C54 36.5 50.5 33 46.5 33 C46 27 41 22 34 22 C28.5 22 24 25.5 22.5 30 C17.5 30.5 14 34.5 14 39.5 C14 45.5 18 50 20 50 Z"
+            fill="url(#wciCloud)"
+            filter="drop-shadow(0 2px 4px rgba(0,0,0,0.08))"
+          />
+        </g>
+      )}
+
+      {kind === 'rain' && (
+        <g>
+          <path
+            d="M18 40 H46 C52 40 56 35.5 56 30 C56 25 52.2 21.2 47.6 21 C46.8 14.4 41.2 9 34 9 C28 9 23 12.8 21.2 18 C15.4 18.6 11 23.4 11 29 C11 35 15.5 40 18 40 Z"
+            fill="url(#wciCloud)"
+            filter="drop-shadow(0 2px 4px rgba(0,0,0,0.08))"
+          />
+          <g stroke="url(#wciRain)" strokeWidth="3.5" strokeLinecap="round" className="agri-rain-drop">
+            <line x1="22" y1="46" x2="19" y2="54" />
+            <line x1="32" y1="46" x2="29" y2="56" />
+            <line x1="42" y1="46" x2="39" y2="54" />
+          </g>
+        </g>
+      )}
+    </svg>
+  );
+}

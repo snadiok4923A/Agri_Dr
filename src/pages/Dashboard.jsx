@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { AreaChart, Area, ResponsiveContainer, XAxis, Tooltip } from "recharts";
 import {
-    WeatherSunCloudIllustration,
+    WeatherConditionIllustration,
     AgriActionIcon,
 } from "../components/common/AgriIllustrations";
 import AnimatedNumber from "../components/common/AnimatedNumber";
@@ -156,6 +156,9 @@ export default function Dashboard() {
 
     return (
         <div className="page-container dashboard-page">
+            {/* Top cluster: greeting, production+weather, voice, diagnosis, market.
+                Desktop: two content-sized rows (right cards sit beside the
+                content). Mobile: rows stack as flex columns with gaps. */}
             {/* ==================== 1. GREETING + WEATHER ==================== */}
             <motion.section className="dashboard-greeting-row" {...reveal(0)}>
                 <div className="dashboard-greeting-left">
@@ -170,6 +173,9 @@ export default function Dashboard() {
 
             </motion.section>
 
+            {/* Desktop rows: [Production + Weather | Voice] and [Diagnosis | Market].
+                Mobile: rows dissolve (display: contents) so cards flow in spec order. */}
+            <div className="dashboard-desktop-row">
             {/* ==================== 2. PRODUCTION + WEATHER ROW ==================== */}
             <motion.section className="dashboard-top-row" {...reveal(1)}>
                 {/* Compact Production Summary (left) */}
@@ -231,7 +237,8 @@ export default function Dashboard() {
                     </div>
                 </div>
 
-                {/* Compact Weather Panel (right) */}
+                {/* Weather card — icon top-center, prominent temp, condition,
+                    humidity/wind bottom. No location text. */}
                 <div
                     className="dashboard-weather-card"
                     onClick={() => setWeatherOpen(true)}
@@ -240,13 +247,14 @@ export default function Dashboard() {
                     title="View Current Weather"
                 >
                     <span className="dashboard-weather-card__label">Weather</span>
-                    <div className="dashboard-weather-card__main">
-                        <span className="dashboard-weather-card__icon">
-                            <WeatherSunCloudIllustration size={40} />
-                        </span>
-                        <span className="dashboard-weather-card__temp">
-                            {weatherData.current.temperature}°
-                        </span>
+                    <div className="dashboard-weather-card__icon">
+                        <WeatherConditionIllustration
+                            condition={weatherData.current.condition}
+                            size={56}
+                        />
+                    </div>
+                    <div className="dashboard-weather-card__temp">
+                        {weatherData.current.temperature}°C
                     </div>
                     <div className="dashboard-weather-card__cond">
                         {weatherData.current.condition}
@@ -270,6 +278,7 @@ export default function Dashboard() {
             <motion.section className="dashboard-voice-row" {...reveal(2)}>
                 <VoiceModeCard />
             </motion.section>
+            </div>
 
             {/* Weather detail modal (opens over the dashboard) */}
             <WeatherModal
@@ -277,6 +286,7 @@ export default function Dashboard() {
                 onClose={() => setWeatherOpen(false)}
             />
 
+            <div className="dashboard-desktop-row">
             {/* ==================== 3. CROP DIAGNOSIS (AI PHOTO) ==================== */}
             <motion.section className="dashboard-diagnosis-section" {...reveal(2)}>
                 <div className="dashboard-diagnosis-card">
@@ -407,6 +417,7 @@ export default function Dashboard() {
             <motion.section className="dashboard-market-row" {...reveal(3)}>
                 <MarketCard />
             </motion.section>
+            </div>
 
             {/* ==================== 4. IMPORTANT ACTIONS ==================== */}
             <motion.section

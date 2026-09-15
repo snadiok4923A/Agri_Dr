@@ -64,62 +64,58 @@
 }
 
 /* =====================================================================
-   DESKTOP GRID AREAS — Voice Mode fills the space beside Weather,
-   Market fills the space beside Crop Diagnosis. On ≤900px every section
-   becomes a normal full-width row in DOM order (the mobile spec order).
+   DESKTOP ROWS — each row is content-sized and centered: row 1 is
+   [Production + Weather | Voice Mode], row 2 is [Diagnosis | Market].
+   The right card sits directly beside the main content (consistent 16px
+   gap), never pinned to the container edge; Weather and Diagnosis keep
+   their natural base sizes. On ≤900px the wrappers dissolve so every
+   section flows full-width in DOM order (the mobile spec order).
    ===================================================================== */
 @media (min-width: 901px) {
-    .dashboard-page {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(230px, 310px);
-        grid-template-areas:
-            "greeting greeting"
-            "top     voice"
-            "diag    market"
-            "actions actions"
-            "insights insights";
-        align-items: start;
-        max-width: 1240px;
-        margin: 0 auto;
+    .dashboard-desktop-row {
+        display: flex;
+        align-items: stretch;
+        justify-content: flex-start;
+        gap: 16px;
+        width: 100%;
     }
 
-    .dashboard-page > .dashboard-greeting-row { grid-area: greeting; }
-    .dashboard-page > .dashboard-top-row      { grid-area: top; }
-    .dashboard-page > .dashboard-voice-row    { grid-area: voice; }
-    .dashboard-page > .dashboard-diagnosis-section { grid-area: diag; }
-    .dashboard-page > .dashboard-market-row   { grid-area: market; }
-    .dashboard-page > .dashboard-section--actions  { grid-area: actions; }
-    .dashboard-page > .dashboard-section--insights { grid-area: insights; }
+    .dashboard-desktop-row > .dashboard-top-row,
+    .dashboard-desktop-row > .dashboard-diagnosis-section {
+        width: auto;
+        flex: 0 1 auto;
+        min-width: 0;
+    }
 
     .dashboard-voice-row,
     .dashboard-market-row {
-        display: flex;
+        flex: 0 1 280px;
         min-width: 0;
+        max-width: 310px;
     }
 
     .dashboard-voice-row .feature-card,
     .dashboard-market-row .feature-card {
         flex: 1;
         align-self: start;
+        width: 100%;
     }
 
-    /* Right column hugs the main content: the weather column becomes 1fr so
-       the top row always fills its track — no dead middle gap before the
-       Voice column. The card caps at 520px and right-aligns in its track. */
-    .dashboard-page .dashboard-top-row {
-        grid-template-columns: minmax(0, auto) minmax(auto, 1fr);
+    /* Row 2's left card keeps its original cap (no stretching) */
+    .dashboard-desktop-row .dashboard-diagnosis-card {
+        max-width: 480px;
     }
 
-    .dashboard-page .dashboard-weather-card {
-        max-width: 520px;
+    /* Greeting, rows and full-width sections share one 1240px centered
+       column so their left edges stay aligned at every desktop width */
+    .dashboard-greeting-row,
+    .dashboard-desktop-row,
+    .dashboard-section--actions,
+    .dashboard-section--insights {
+        width: 100%;
+        max-width: 1240px;
         margin-left: auto;
-    }
-
-    /* Crop Diagnosis fills its track so row 2 also reaches the Market
-       column, keeping a normal column gap at every width (higher
-       specificity beats the base max-width regardless of file order) */
-    .dashboard-page .dashboard-diagnosis-card {
-        max-width: none;
+        margin-right: auto;
     }
 }
 
@@ -235,13 +231,16 @@
     flex-shrink: 0;
 }
 
-/* Compact weather panel (right of production) — hierarchy:
-   "Weather" heading → icon + temp row → condition → humidity/wind */
+/* Weather card — reference-style centered layout:
+   "Weather" label → large icon → prominent temp → condition →
+   humidity/wind bottom row. Theme-scoped green gradients below. */
 .dashboard-weather-card {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 8px;
     padding: 16px 18px;
     min-width: 0;
     width: 100%;
@@ -253,6 +252,27 @@
     transition:
         transform var(--transition-fast),
         border-color var(--transition-fast);
+}
+
+/* Dark theme: deep forest-green glass gradient — the aurora background
+   stays faintly visible through it (blur/rim come from the shared glass rule) */
+[data-theme="dark"] .dashboard-weather-card {
+    background: linear-gradient(
+        165deg,
+        rgba(38, 62, 48, 0.50) 0%,
+        rgba(13, 23, 18, 0.72) 100%
+    );
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+    backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+}
+
+/* Light theme: soft leaf-tinted gradient, same centered design */
+[data-theme="light"] .dashboard-weather-card {
+    background: linear-gradient(
+        165deg,
+        rgba(240, 246, 240, 0.92) 0%,
+        rgba(216, 231, 220, 0.95) 100%
+    );
 }
 
 .dashboard-weather-card:hover {
@@ -268,46 +288,49 @@
     line-height: 1;
 }
 
-/* Icon + temperature row below the heading */
-.dashboard-weather-card__main {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-}
-
+/* Large condition icon, centered near the top */
 .dashboard-weather-card__icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     line-height: 0;
+    margin-top: 2px;
 }
 
+/* Temperature — the card's primary visual element */
 .dashboard-weather-card__temp {
-    font-size: 28px;
+    font-size: 30px;
     font-weight: 900;
     letter-spacing: -0.02em;
     color: var(--text-primary);
     line-height: 1;
-    flex-shrink: 0;
-}.dashboard-weather-card__cond {
+}
+
+/* Current condition, directly below the temperature */
+.dashboard-weather-card__cond {
     font-size: 14px;
     font-weight: 600;
     color: var(--text-secondary);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    max-width: 100%;
 }
 
+/* Bottom info row — humidity + wind, clearly readable */
 .dashboard-weather-card__meta {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 14px;
+    justify-content: center;
+    gap: 16px;
     font-size: 14px;
     font-weight: 500;
-    color: var(--text-muted);
+    color: var(--text-secondary);
     flex-wrap: wrap;
+    margin-top: 4px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+    width: 100%;
 }
 
 .dashboard-weather-card__meta-item {
@@ -400,6 +423,26 @@
     animation: sunGlow 3s ease-in-out infinite alternate;
 }
 
+/* Gentle falling rain drops for the rainy-condition illustration */
+.agri-rain-drop {
+    animation: rainFall 1.4s ease-in infinite;
+}
+
+@keyframes rainFall {
+    0% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    70% {
+        transform: translateY(3px);
+        opacity: 0.9;
+    }
+    100% {
+        transform: translateY(6px);
+        opacity: 0.3;
+    }
+}
+
 @keyframes sunGlow {
     0% {
         transform: scale(1);
@@ -412,12 +455,27 @@
 }
 
 /* ==================== MOBILE REORDER (≤900px) ====================
-   Natural flow: Greeting → Production+Weather → Crop Diagnosis →
-   Voice Mode → Market → What Needs Attention? → remaining sections */
+   Flow (DOM order, no reordering tricks): Greeting → Production+Weather →
+   Voice Mode → Crop Diagnosis → Market → What Needs Attention? → rest.
+   Wrappers are real flex columns with a 14px gap so cards keep breathing
+   room (display: contents is NOT reliably flattened in all webviews). */
 @media (max-width: 900px) {
     .dashboard-page {
         display: flex;
         flex-direction: column;
+        gap: 14px;
+    }
+
+    /* Real flex columns: uniform 14px rhythm inside each row group */
+    .dashboard-desktop-row {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    /* Slightly larger break before the first full section */
+    .dashboard-section--actions {
+        margin-top: 10px;
     }
 
     .dashboard-voice-row,
@@ -433,12 +491,6 @@
         flex: 1;
         align-self: stretch;
     }
-
-    .dashboard-diagnosis-section { order: 3; }
-    .dashboard-voice-row         { order: 4; }
-    .dashboard-market-row        { order: 5; }
-
-    .dashboard-page > .dashboard-section { order: 6; }
 }
 
 /* ==================== 3. CROP DIAGNOSIS (AI PHOTO) ==================== */
@@ -1077,6 +1129,7 @@
     .dashboard-hero-card {
         flex-direction: column;
         align-items: center;
+        justify-content: center; /* rebalance: content sits centered, not top-packed */
         text-align: center;
         gap: 12px;
         padding: 16px 12px;
@@ -1084,8 +1137,12 @@
 
     .dashboard-weather-card {
         padding: 16px 14px;
-        gap: 14px;
-        justify-content: space-evenly;
+        gap: 10px;
+    }
+
+    .dashboard-weather-card__icon svg {
+        width: 48px;
+        height: 48px;
     }
 
     .dashboard-weather-card__label {
@@ -1246,6 +1303,7 @@
     .agri-sway-right,
     .agri-sway-right-sub,
     .agri-sun-pulse,
+    .agri-rain-drop,
     .dashboard-action-card__icon--medicine svg,
     .dashboard-action-card__icon--fertilizer svg,
     .dashboard-action-card__icon--market svg,
