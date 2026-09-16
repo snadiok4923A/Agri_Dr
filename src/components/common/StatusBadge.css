@@ -68,11 +68,13 @@
   background: var(--info);
 }
 
-.status-badge--upcoming {
+.status-badge--upcoming,
+.status-badge--monitor {
   background: var(--accent-soft);
   color: var(--accent);
 }
 
-.status-badge--upcoming .status-badge__dot {
+.status-badge--upcoming .status-badge__dot,
+.status-badge--monitor .status-badge__dot {
   background: var(--accent);
 }

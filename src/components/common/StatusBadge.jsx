@@ -11,6 +11,7 @@ export default function StatusBadge({ status, size = 'sm', className = '' }) {
     high: 'High',
     completed: 'Completed',
     upcoming: 'Upcoming',
+    monitor: 'Monitor',
   };
 
   return (
