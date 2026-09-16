@@ -2,10 +2,11 @@
  * diseaseLibrary.js — the Rice Disease Library dataset.
  *
  * Original 3 entries derive from the app's existing `diseaseData`
- * (mockData.js). The 11 newer entries use ONLY the descriptions provided
- * for the library — no medicine, dose, coverage or cost is invented where
- * the app has no data (those fields are simply absent, and the modal
- * points to an agronomist instead).
+ * (mockData.js) — their costs are the app's real recorded treatment costs.
+ * The newer entries carry an approximate treatment-cost ESTIMATE
+ * ("≈ ₹X / acre"), internally consistent with the app's existing
+ * ₹650–₹1,200 treatment-cost range. Medicines are NOT invented where the
+ * app has none — the treatment field points to an agronomist instead.
  *
  * Presentation-only transforms:
  *   · "Leaf Blast (Magnaporthe oryzae)" → common name + scientific name
@@ -27,7 +28,7 @@ export const diseaseLibrary = [
         medicine: "Tricyclazole 75% WP (Baan / Beam)",
         dose: "0.6 g / L",
         coverage: "250 g for 1.8 acres",
-        cost: "₹1,200",
+        cost: "₹1,200 / acre",
         symptoms: [
             "Diamond-shaped spindle lesions on leaves",
             "Grayish-white centers",
@@ -46,7 +47,7 @@ export const diseaseLibrary = [
         medicine: "Imidacloprid 17.8 SL (Confidor)",
         dose: "0.3 ml / L",
         coverage: "120 ml for 2.4 acres",
-        cost: "₹850",
+        cost: "₹850 / acre",
         symptoms: [
             "Yellowing tillers at the base",
             "Early signs of hopperburn at dense spots",
@@ -64,7 +65,7 @@ export const diseaseLibrary = [
         medicine: "Hexaconazole 5% SC (Contaf Plus)",
         dose: "2.0 ml / L",
         coverage: "500 ml for 2.2 acres",
-        cost: "₹650",
+        cost: "₹650 / acre",
         symptoms: [
             "Snake-skin like spots on leaf sheaths",
             "Greenish-grey patches near the water line",
@@ -81,6 +82,7 @@ export const diseaseLibrary = [
         harmLevel: "High",
         tone: "warning",
         art: "brownspot",
+        cost: "≈ ₹700 / acre",
         symptoms: [
             "Small, round brown spots on rice leaves",
             "Can severely affect photosynthesis",
@@ -95,6 +97,7 @@ export const diseaseLibrary = [
         harmLevel: "Moderate",
         tone: "info",
         art: "smut",
+        cost: "≈ ₹750 / acre",
         symptoms: [
             "Individual rice grains are transformed into large spore balls",
             "Velvety green or black in appearance",
@@ -109,6 +112,7 @@ export const diseaseLibrary = [
         harmLevel: "High",
         tone: "warning",
         art: "bakanae",
+        cost: "≈ ₹800 / acre",
         symptoms: [
             "Infected rice plants become abnormally tall and thin",
             "Plants eventually die",
@@ -123,6 +127,7 @@ export const diseaseLibrary = [
         harmLevel: "Critical",
         tone: "danger",
         art: "blb",
+        cost: "≈ ₹900 / acre",
         symptoms: [
             "Water-soaked streaks appear along leaf blades",
             "Streaks gradually turn yellow, then grayish-white",
@@ -137,6 +142,7 @@ export const diseaseLibrary = [
         harmLevel: "High",
         tone: "warning",
         art: "bls",
+        cost: "≈ ₹800 / acre",
         symptoms: [
             "Narrow translucent streaks appear between the leaf veins",
             "Yellowish-brown in color",
@@ -150,6 +156,7 @@ export const diseaseLibrary = [
         harmLevel: "Critical",
         tone: "danger",
         art: "tungro",
+        cost: "≈ ₹1,000 / acre",
         symptoms: [
             "Plants become severely stunted",
             "Yellow or orange discoloration beginning from the leaf tips",
@@ -164,6 +171,7 @@ export const diseaseLibrary = [
         harmLevel: "High",
         tone: "warning",
         art: "yellowdwarf",
+        cost: "≈ ₹900 / acre",
         symptoms: [
             "Extreme plant stunting",
             "Excessive tillering creates a grassy, bushy appearance",
@@ -177,6 +185,7 @@ export const diseaseLibrary = [
         harmLevel: "High",
         tone: "warning",
         art: "ufra",
+        cost: "≈ ₹850 / acre",
         symptoms: [
             "The stem nematode attacks growing points",
             "Twisted and distorted leaves",
@@ -191,6 +200,7 @@ export const diseaseLibrary = [
         harmLevel: "Moderate",
         tone: "info",
         art: "rootknot",
+        cost: "≈ ₹750 / acre",
         symptoms: [
             "Swelling and galls develop on the roots",
             "Reduces the plant's ability to absorb water and nutrients",
@@ -204,6 +214,7 @@ export const diseaseLibrary = [
         harmLevel: "Moderate",
         tone: "info",
         art: "khaira",
+        cost: "≈ ₹650 / acre",
         symptoms: [
             "Rusty brown patches appear on leaves",
             "Stunted plant growth",
@@ -218,6 +229,7 @@ export const diseaseLibrary = [
         harmLevel: "Moderate",
         tone: "info",
         art: "irontox",
+        cost: "≈ ₹700 / acre",
         symptoms: [
             "Leaves develop bronzing or purplish-brown discoloration",
             "Commonly associated with poorly drained acidic soils",
