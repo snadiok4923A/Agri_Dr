@@ -6,10 +6,22 @@ import "./DashboardFeatureCards.css";
  * Voice Mode card — entry point for the persistent voice assistant.
  * Mirrors the dashboard's glass card language (surface, border, radius,
  * typography). Activation is persistent: it stays on until stopped from
- * the header or until the user navigates away.
+ * the card, the header icon, or a spoken stop command ("voice bondho").
  */
 export default function VoiceModeCard() {
-    const { active, start, stop, supported, transcript } = useVoiceMode();
+    const { active, status, start, stop, supported, transcript, lastCommand } =
+        useVoiceMode();
+
+    const listening = active && (status === "listening" || status === "starting");
+    const restarting = active && status === "restarting";
+
+    const statusLabel = !active
+        ? null
+        : listening
+          ? "Listening…"
+          : restarting
+            ? "Listening…"
+            : "Starting…";
 
     return (
         <div
@@ -28,11 +40,16 @@ export default function VoiceModeCard() {
                 <>
                     <p className="feature-card__sub feature-card__sub--live">
                         <span className="feature-card__live-dot" />
-                        Listening continuously…
+                        {statusLabel}
                     </p>
                     {transcript && (
                         <span className="feature-card__transcript">
                             “{transcript}”
+                        </span>
+                    )}
+                    {lastCommand?.intent && (
+                        <span className="feature-card__lastcmd">
+                            ✓ {lastCommand.intent.replaceAll("_", " ").toLowerCase()}
                         </span>
                     )}
                     <button
@@ -57,12 +74,17 @@ export default function VoiceModeCard() {
                         title={
                             supported
                                 ? undefined
-                                : "Voice input is not supported in this browser"
+                                : "Voice control is not supported in this browser."
                         }
                     >
                         <Mic size={14} />
                         {supported ? "Start Voice Mode" : "Voice Unavailable"}
                     </button>
+                    {!supported && (
+                        <span className="feature-card__hint">
+                            Voice control is not supported in this browser.
+                        </span>
+                    )}
                 </>
             )}
         </div>

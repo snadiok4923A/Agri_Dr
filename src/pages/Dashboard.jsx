@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import { useLanguage } from "../hooks/useLanguage";
@@ -28,7 +28,7 @@ import AnimatedNumber from "../components/common/AnimatedNumber";
 import WeatherModal from "../components/common/WeatherModal";
 import VoiceModeCard from "../components/dashboard/VoiceModeCard";
 import MarketCard from "../components/dashboard/MarketCard";
-import { useVoiceModeStopOnUnmount } from "../hooks/useVoiceMode";
+import { useVoiceMode, VOICE_OPEN_WEATHER_EVENT } from "../hooks/useVoiceMode";
 import "./Dashboard.css";
 
 // Large plant logo for the Expected/Potential hero card — public asset,
@@ -64,8 +64,25 @@ export default function Dashboard() {
     const isMobile = useMediaQuery("(max-width: 900px)");
     const shouldReduceMotion = useReducedMotion();
 
-    // Voice Mode must not survive navigation to another page
-    useVoiceModeStopOnUnmount();
+    // Voice Mode intentionally SURVIVES navigation (spec §1: commands like
+    // "Market Intelligence kholo" must not kill the session). It stops only
+    // via the Stop button/header icon or a spoken stop command.
+
+    // Voice-driven dashboard actions: floating weather modal + camera/upload
+    // triggers on the Crop Diagnosis card.
+    useEffect(() => {
+        const openWeather = () => setWeatherOpen(true);
+        const takePhoto = () => cameraInputRef.current?.click();
+        const uploadPhoto = () => uploadInputRef.current?.click();
+        window.addEventListener(VOICE_OPEN_WEATHER_EVENT, openWeather);
+        window.addEventListener("krisiveda:voice-take-photo", takePhoto);
+        window.addEventListener("krisiveda:voice-upload-photo", uploadPhoto);
+        return () => {
+            window.removeEventListener(VOICE_OPEN_WEATHER_EVENT, openWeather);
+            window.removeEventListener("krisiveda:voice-take-photo", takePhoto);
+            window.removeEventListener("krisiveda:voice-upload-photo", uploadPhoto);
+        };
+    }, []);
 
     // Helper to spread the fade-up reveal props onto a section, in order
     const reveal = (i) =>

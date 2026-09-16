@@ -21,8 +21,10 @@ export default function App() {
   return (
     <ThemeProvider>
       <LanguageProvider>
-        <VoiceModeProvider>
-          <BrowserRouter basename="/Agri_Dr">
+        {/* VoiceModeProvider lives INSIDE the Router so voice commands can
+            drive react-router navigation directly. */}
+        <BrowserRouter basename="/Agri_Dr">
+          <VoiceModeProvider>
             <Routes>
               <Route path="/" element={<Layout />}>
                 <Route index element={<Dashboard />} />
@@ -42,8 +44,8 @@ export default function App() {
               {/* Removed pages (e.g. /health) and unknown paths land on the dashboard */}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
-          </BrowserRouter>
-        </VoiceModeProvider>
+          </VoiceModeProvider>
+        </BrowserRouter>
       </LanguageProvider>
     </ThemeProvider>
   );

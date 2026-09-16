@@ -6,158 +6,171 @@ import {
     useCallback,
     useRef,
 } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { createVoiceRecognitionService, isSpeechRecognitionSupported } from "../services/voiceRecognitionService";
+import { parseVoiceCommand } from "../voice/voiceCommandParser";
+import { executeVoiceCommand, showUnknownCommandFeedback } from "../voice/executeVoiceCommand";
+import { useLanguage } from "./useLanguage";
+import { useTheme } from "./useTheme";
 
 /**
- * VoiceMode context — a clean, extensible foundation for a persistent
- * voice-controlled assistant.
+ * VoiceMode context — the persistent, rule-based voice assistant runtime.
  *
- * - Activation is PERSISTENT: mode stays on until stop() is called or the
- *   user navigates to another page (see Dashboard's useVoiceModeStopOnNavigate).
- * - Speech recognition (when supported) runs continuously and restarts itself
- *   after each utterance — it never auto-disables the mode.
- * - Commands are registered via registerCommands(); the handler is kept in a
- *   ref so the recognition loop always sees the latest handlers without
- *   needing to restart recognition.
+ * Flow (per spec):
+ *   microphone → Web Speech API (native, no external service) → final
+ *   transcript → parseVoiceCommand() (pure rules) → executeVoiceCommand()
+ *   (whitelisted actions) → UI toast feedback.
+ *
+ * - Activation is PERSISTENT: recognition self-restarts (continuous sessions
+ *   end after silence in browsers) until stop() is called — a command never
+ *   turns Voice Mode off by itself. Navigating between pages also keeps the
+ *   session alive, so "Market Intelligence kholo" works from anywhere.
+ * - Unknown commands NEVER stop Voice Mode ("Command not recognized" toast).
+ * - Voice Mode stops only via: the Stop button/header icon, or a spoken stop
+ *   command ("stop voice" / "voice bondho" / "ভয়েস বন্ধ করো" …).
  */
 
 const VoiceModeContext = createContext(null);
 
+/** App language code → Web Speech recognition locale (existing languages only). */
+const SR_LANGS = {
+    en: "en-IN",
+    bn: "bn-IN",
+    hi: "hi-IN",
+    te: "te-IN",
+    ta: "ta-IN",
+};
+
+/** DOM event used to open the Dashboard's floating Weather modal from voice. */
+export const VOICE_OPEN_WEATHER_EVENT = "krisiveda:voice-open-weather";
+
 export function VoiceModeProvider({ children }) {
     const [active, setActive] = useState(false);
+    const [status, setStatus] = useState("idle"); // idle | starting | listening | restarting
     const [transcript, setTranscript] = useState("");
-    const [supported, setSupported] = useState(false);
-    const [lastCommand, setLastCommand] = useState(null);
+    const [lastCommand, setLastCommand] = useState(null); // { text, intent, at }
+    const [supported] = useState(() => isSpeechRecognitionSupported());
 
-    // Registry of command handlers: { id: (text) => boolean|void }
-    const commandHandlersRef = useRef({});
+    const navigate = useNavigate();
+    const location = useLocation();
+    const { language, changeLanguage } = useLanguage();
+    const { setTheme } = useTheme();
 
-    // Recognition instance lives in a ref so React re-renders never reset it
-    const recognitionRef = useRef(null);
+    // Latest callbacks/actions for the recognition loop (avoids restarts).
+    const actionsRef = useRef(null);
+    const activeRef = useRef(false);
+    const serviceRef = useRef(null);
+    const stopRef = useRef(null);
 
     useEffect(() => {
-        const SR =
-            window.SpeechRecognition || window.webkitSpeechRecognition || null;
-        setSupported(Boolean(SR));
-    }, []);
+        activeRef.current = active;
+    }, [active]);
 
     const stop = useCallback(() => {
         setActive(false);
+        setStatus("idle");
         setTranscript("");
         try {
-            recognitionRef.current?.stop();
+            serviceRef.current?.stop();
         } catch {
             /* noop */
         }
     }, []);
+    stopRef.current = stop;
 
     const start = useCallback(() => {
+        if (!supported) return;
         setTranscript("");
         setActive(true);
-    }, []);
+    }, [supported]);
 
     const toggle = useCallback(() => {
         if (active) stop();
         else start();
     }, [active, start, stop]);
 
-    // ---- Speech recognition loop (continuous, self-restarting) ----
+    /* ---------- Handle one finalized utterance ---------- */
+    const handleFinalTranscript = useCallback((text) => {
+        setTranscript(text);
+        const parsed = parseVoiceCommand(text);
+        if (!parsed) {
+            // Unknown command: keep listening, show friendly feedback.
+            setLastCommand({ text, intent: null, at: Date.now() });
+            showUnknownCommandFeedback();
+            return;
+        }
+        setLastCommand({ text, intent: parsed.intent, at: Date.now() });
+        const handled = executeVoiceCommand(parsed, actionsRef.current);
+        if (!handled) showUnknownCommandFeedback();
+    }, []);
+
+    /* ---------- Recognition service lifecycle ---------- */
     useEffect(() => {
         if (!active || !supported) return undefined;
 
-        const SR =
-            window.SpeechRecognition || window.webkitSpeechRecognition;
-        const recognition = new SR();
-        recognitionRef.current = recognition;
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.lang =
-            document.documentElement.getAttribute("lang") || "en";
-
-        recognition.onresult = (event) => {
-            let interim = "";
-            let final = "";
-            for (let i = event.resultIndex; i < event.results.length; i++) {
-                const res = event.results[i];
-                if (res.isFinal) final += res[0].transcript;
-                else interim += res[i][0].transcript;
-            }
-            setTranscript(final || interim);
-            if (final) {
-                const text = final.trim().toLowerCase();
-                setLastCommand({ text, at: Date.now() });
-                const handlers = Object.values(commandHandlersRef.current);
-                for (const handler of handlers) {
-                    try {
-                        const consumed = handler?.(text);
-                        if (consumed) break;
-                        // A handler returning true "consumed" the command
-                    } catch {
-                        /* keep other handlers running */
+        const service =
+            serviceRef.current ||
+            createVoiceRecognitionService({
+                lang: SR_LANGS[language] || "en-IN",
+                onState: (s) => setStatus(s),
+                onFinal: handleFinalTranscript,
+                onInterim: (t) => setTranscript(t),
+                onError: (code) => {
+                    if (code === "not-allowed" || code === "service-not-allowed") {
+                        // Microphone blocked — cannot keep listening.
+                        stopRef.current?.();
                     }
-                }
-            }
-        };
-
-        recognition.onerror = () => {
-            /* errors (no-speech, network) must NOT end voice mode */
-        };
-
-        recognition.onend = () => {
-            // Keep the session alive: restart unless mode was explicitly stopped
-            if (recognitionRef.current === recognition && activeRef.current) {
-                try {
-                    recognition.start();
-                } catch {
-                    /* already started */
-                }
-                return;
-            }
-        };
-
-        try {
-            recognition.start();
-        } catch {
-            /* noop */
-        }
+                    // no-speech / network / aborted: stay in voice mode.
+                },
+            });
+        serviceRef.current = service;
+        service.setHandlers({ onFinal: handleFinalTranscript });
+        service.setLang(SR_LANGS[language] || "en-IN");
+        service.start();
 
         return () => {
-            recognitionRef.current = null;
-            try {
-                recognition.stop();
-            } catch {
-                /* noop */
-            }
+            // Component-scoped cleanup only happens when voice mode turns off
+            // (or the provider unmounts) — stop() already covers navigation.
         };
-    }, [active, supported]);
+    }, [active, supported, handleFinalTranscript]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // Keep a ref of `active` for the async recognition.onend callback
-    const activeRef = useRef(active);
+    /* Follow the app's language selector so farmers can speak Bangla/Hindi. */
     useEffect(() => {
-        activeRef.current = active;
-    }, [active]);
+        serviceRef.current?.setLang(SR_LANGS[language] || "en-IN");
+    }, [language]);
 
-    // Register/unregister command handlers
-    const registerCommands = useCallback((handlers) => {
-        commandHandlersRef.current = {
-            ...commandHandlersRef.current,
-            ...handlers,
-        };
-        return () => {
-            for (const id of Object.keys(handlers)) {
-                delete commandHandlersRef.current[id];
+    /* ---------- App actions handed to the executor ---------- */
+    useEffect(() => {
+        const openWeatherModal = () => {
+            const dispatch = () =>
+                window.dispatchEvent(new CustomEvent(VOICE_OPEN_WEATHER_EVENT));
+            if (location.pathname !== "/") {
+                navigate("/");
+                setTimeout(dispatch, 350);
+            } else {
+                dispatch();
             }
         };
-    }, []);
+
+        actionsRef.current = {
+            navigate,
+            navigateBack: () => navigate(-1),
+            openWeather: openWeatherModal,
+            setTheme,
+            changeLanguage,
+            stopVoice: () => stopRef.current?.(),
+        };
+    }, [navigate, location.pathname, setTheme, changeLanguage]);
 
     const value = {
         active,
+        status,
         transcript,
         supported,
         lastCommand,
         start,
         stop,
         toggle,
-        registerCommands,
     };
 
     return (
@@ -168,12 +181,3 @@ export function VoiceModeProvider({ children }) {
 }
 
 export const useVoiceMode = () => useContext(VoiceModeContext);
-
-/**
- * Convenience hook for pages: stop voice mode when this page unmounts
- * (i.e. the user navigated to another dashboard page).
- */
-export function useVoiceModeStopOnUnmount() {
-    const { stop } = useVoiceMode();
-    useEffect(() => () => stop(), [stop]);
-}
