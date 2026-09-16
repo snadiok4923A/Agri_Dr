@@ -164,8 +164,8 @@ export default function Disease() {
                             </span>
                         </div>
 
-                        {/* Recommended treatment — medicine/dose/coverage when the
-                            app has real data, cost estimate for every disease. */}
+                        {/* Recommended treatment — identical structure for every
+                            disease: Medicine + Dose · Coverage · Treatment Cost. */}
                         <div className="disease-page__msection">
                             <h4 className="disease-page__msection-title">Recommended Treatment</h4>
                             <div className="disease-page__fact">
@@ -174,28 +174,25 @@ export default function Disease() {
                                     {selected.medicine || "Ask an agronomist"}
                                 </span>
                             </div>
-                            {(selected.dose || selected.coverage || selected.cost) && (
-                                <div className="disease-page__modal-stats">
-                                    {selected.dose && (
-                                        <div className="disease-page__mstat">
-                                            <span className="disease-page__mstat-label">Dose</span>
-                                            <span className="disease-page__mstat-val">{selected.dose}</span>
-                                        </div>
-                                    )}
-                                    {selected.coverage && (
-                                        <div className="disease-page__mstat">
-                                            <span className="disease-page__mstat-label">Coverage</span>
-                                            <span className="disease-page__mstat-val">{selected.coverage}</span>
-                                        </div>
-                                    )}
-                                    <div className="disease-page__mstat">
-                                        <span className="disease-page__mstat-label">Treatment Cost</span>
-                                        <span className="disease-page__mstat-val disease-page__mstat-val--cost">
-                                            {selected.cost}
-                                        </span>
-                                    </div>
+                            <div className="disease-page__modal-stats">
+                                <div className="disease-page__mstat">
+                                    <span className="disease-page__mstat-label">Dose</span>
+                                    <span className="disease-page__mstat-val">{selected.dose}</span>
                                 </div>
-                            )}
+                                <div className="disease-page__mstat">
+                                    <span className="disease-page__mstat-label">Coverage</span>
+                                    <span className="disease-page__mstat-val">
+                                        {selected.coverage}
+                                        {selected.coverageNote ? ` (${selected.coverageNote})` : ""}
+                                    </span>
+                                </div>
+                                <div className="disease-page__mstat">
+                                    <span className="disease-page__mstat-label">Treatment Cost</span>
+                                    <span className="disease-page__mstat-val disease-page__mstat-val--cost">
+                                        {selected.cost}
+                                    </span>
+                                </div>
+                            </div>
                             {selected.note && (
                                 <p className="disease-page__disease-note">{selected.note}</p>
                             )}
@@ -211,15 +208,13 @@ export default function Disease() {
                             </ul>
                         </div>
 
-                        {/* Commonly seen in (only where data exists) */}
-                        {selected.commonIn?.length > 0 && (
-                            <div className="disease-page__msection">
-                                <h4 className="disease-page__msection-title">Commonly Seen In</h4>
-                                <p className="disease-page__common-in">
-                                    {selected.commonIn.join(" · ")}
-                                </p>
-                            </div>
-                        )}
+                        {/* Commonly seen in — relevant varieties for every disease */}
+                        <div className="disease-page__msection">
+                            <h4 className="disease-page__msection-title">Commonly Seen In</h4>
+                            <p className="disease-page__common-in">
+                                {(selected.commonIn || []).join(" · ")}
+                            </p>
+                        </div>
 
                         {/* Ask AI footer */}
                         <button

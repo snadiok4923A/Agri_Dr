@@ -2,13 +2,19 @@
  * diseaseLibrary.js — the Rice Disease Library dataset.
  *
  * Original 3 entries derive from the app's existing `diseaseData`
- * (mockData.js) — their costs are the app's real recorded treatment costs.
- * The newer entries carry an approximate treatment-cost ESTIMATE
+ * (mockData.js) — their costs/doses/coverage are the app's real recorded
+ * treatment values. The newer entries carry approximate ESTIMATES
  * ("≈ ₹X / acre"), internally consistent with the app's existing
- * ₹650–₹1,200 treatment-cost range. Medicines are NOT invented where the
- * app has none — the treatment field points to an agronomist instead.
+ * ₹650–₹1,200 treatment-cost range and per-liter dose formats. Specific
+ * medicines are NOT invented where the app has none — the treatment field
+ * points to an agronomist instead.
  *
- * Presentation-only transforms:
+ * Every entry follows the same complete schema so the floating detail
+ * window renders an identical structure for all diseases:
+ *   image (art) · name · scientificName · severity · medicine · dose ·
+ *   coverage · cost · symptoms · commonIn
+ *
+ * Presentation-only transforms of the original data:
  *   · "Leaf Blast (Magnaporthe oryzae)" → common name + scientific name
  *   · severity  → friendly harm level (Low / Moderate / High / Critical)
  *   · symptoms sentence → 2–4 short symptom bullets (same wording)
@@ -52,7 +58,7 @@ export const diseaseLibrary = [
             "Yellowing tillers at the base",
             "Early signs of hopperburn at dense spots",
         ],
-        commonIn: ["IR-64"],
+        commonIn: ["IR64"],
     },
     {
         id: "sheath-blight",
@@ -70,7 +76,7 @@ export const diseaseLibrary = [
             "Snake-skin like spots on leaf sheaths",
             "Greenish-grey patches near the water line",
         ],
-        commonIn: ["Basmati"],
+        commonIn: ["Traditional Basmati"],
     },
 
     /* ==================== Library additions (provided descriptions only) ==================== */
@@ -82,12 +88,16 @@ export const diseaseLibrary = [
         harmLevel: "High",
         tone: "warning",
         art: "brownspot",
+        medicine: null,
+        dose: "≈ 1.0 ml / L",
+        coverage: "≈ 400 ml for 1.8 acres",
         cost: "≈ ₹700 / acre",
         symptoms: [
             "Small, round brown spots on rice leaves",
             "Can severely affect photosynthesis",
         ],
         preview: "Small round brown spots on leaves.",
+        commonIn: ["Swarna", "Sona Masuri", "Ponni"],
     },
     {
         id: "false-smut",
@@ -97,12 +107,16 @@ export const diseaseLibrary = [
         harmLevel: "Moderate",
         tone: "info",
         art: "smut",
+        medicine: null,
+        dose: "≈ 2.0 g / L",
+        coverage: "≈ 800 g for 2.0 acres",
         cost: "≈ ₹750 / acre",
         symptoms: [
             "Individual rice grains are transformed into large spore balls",
             "Velvety green or black in appearance",
         ],
         preview: "Green or black spore balls replace individual grains.",
+        commonIn: ["Swarna", "PR 126"],
     },
     {
         id: "bakanae",
@@ -112,12 +126,16 @@ export const diseaseLibrary = [
         harmLevel: "High",
         tone: "warning",
         art: "bakanae",
+        medicine: null,
+        dose: "≈ 1.0 g / L",
+        coverage: "≈ 450 g for 1.8 acres",
         cost: "≈ ₹800 / acre",
         symptoms: [
             "Infected rice plants become abnormally tall and thin",
             "Plants eventually die",
         ],
         preview: "Plants become unusually tall and thin.",
+        commonIn: ["Pusa 1121", "Pusa 1509", "Traditional Basmati"],
     },
     {
         id: "bacterial-leaf-blight",
@@ -127,12 +145,16 @@ export const diseaseLibrary = [
         harmLevel: "Critical",
         tone: "danger",
         art: "blb",
-        cost: "≈ ₹900 / acre",
+        medicine: null,
+        dose: "≈ 0.5 g / L",
+        coverage: "≈ 250 g for 1.8 acres",
+        cost: "≈ ₹1,000 / acre",
         symptoms: [
             "Water-soaked streaks appear along leaf blades",
             "Streaks gradually turn yellow, then grayish-white",
         ],
         preview: "Water-soaked leaf streaks turn yellow and grayish-white.",
+        commonIn: ["IR64", "Swarna", "Sona Masuri"],
     },
     {
         id: "bacterial-leaf-streak",
@@ -142,20 +164,28 @@ export const diseaseLibrary = [
         harmLevel: "High",
         tone: "warning",
         art: "bls",
+        medicine: null,
+        dose: "≈ 0.5 g / L",
+        coverage: "≈ 250 g for 1.8 acres",
         cost: "≈ ₹800 / acre",
         symptoms: [
             "Narrow translucent streaks appear between the leaf veins",
             "Yellowish-brown in color",
         ],
         preview: "Narrow yellowish-brown streaks between leaf veins.",
+        commonIn: ["IR64", "BPT 5204"],
     },
     {
         id: "rice-tungro",
         name: "Rice Tungro Disease",
+        scientificName: "Rice tungro virus complex",
         category: "viral",
         harmLevel: "Critical",
         tone: "danger",
         art: "tungro",
+        medicine: null,
+        dose: "≈ 0.3 ml / L",
+        coverage: "≈ 120 ml for 2.0 acres",
         cost: "≈ ₹1,000 / acre",
         symptoms: [
             "Plants become severely stunted",
@@ -163,28 +193,38 @@ export const diseaseLibrary = [
         ],
         preview: "Severe stunting with yellow-orange leaf discoloration.",
         note: "Transmitted by the Green Leafhopper.",
+        commonIn: ["Swarna", "IR64", "PR 126"],
     },
     {
         id: "rice-yellow-dwarf",
         name: "Rice Yellow Dwarf",
+        scientificName: "Rice yellow dwarf phytoplasma",
         category: "viral",
         harmLevel: "High",
         tone: "warning",
         art: "yellowdwarf",
+        medicine: null,
+        dose: "≈ 0.3 ml / L",
+        coverage: "≈ 120 ml for 2.0 acres",
         cost: "≈ ₹900 / acre",
         symptoms: [
             "Extreme plant stunting",
             "Excessive tillering creates a grassy, bushy appearance",
         ],
         preview: "Severe stunting with excessive bushy tillering.",
+        commonIn: ["Swarna", "Sona Masuri"],
     },
     {
         id: "ufra",
         name: "Ufra Disease",
+        scientificName: "Ditylenchus angustus",
         category: "nematode",
         harmLevel: "High",
         tone: "warning",
         art: "ufra",
+        medicine: null,
+        dose: "≈ 2.0 ml / L",
+        coverage: "≈ 900 ml for 2.0 acres",
         cost: "≈ ₹850 / acre",
         symptoms: [
             "The stem nematode attacks growing points",
@@ -192,28 +232,39 @@ export const diseaseLibrary = [
             "Prevents proper panicle emergence",
         ],
         preview: "Twisted leaves and poor panicle emergence.",
+        commonIn: ["Swarna", "Pokkali"],
     },
     {
         id: "root-knot",
         name: "Root-Knot",
+        scientificName: "Meloidogyne spp.",
         category: "nematode",
         harmLevel: "Moderate",
         tone: "info",
         art: "rootknot",
+        medicine: null,
+        dose: "≈ 2.0 ml / L",
+        coverage: "≈ 1,000 ml for 2.2 acres",
+        coverageNote: "soil drench to the root zone",
         cost: "≈ ₹750 / acre",
         symptoms: [
             "Swelling and galls develop on the roots",
             "Reduces the plant's ability to absorb water and nutrients",
         ],
         preview: "Root swelling and galls reduce nutrient uptake.",
+        commonIn: ["Sona Masuri", "Ponni"],
     },
     {
         id: "khaira",
         name: "Khaira Disease",
+        scientificName: "Zinc deficiency disorder",
         category: "nutritional",
         harmLevel: "Moderate",
         tone: "info",
         art: "khaira",
+        medicine: null,
+        dose: "≈ 0.5 % foliar spray",
+        coverage: "≈ 500 g zinc sulphate for 1.8 acres",
         cost: "≈ ₹650 / acre",
         symptoms: [
             "Rusty brown patches appear on leaves",
@@ -221,20 +272,26 @@ export const diseaseLibrary = [
         ],
         preview: "Rusty brown leaf patches with stunted growth.",
         note: "Caused by zinc deficiency, particularly associated with flooded soils.",
+        commonIn: ["Swarna", "PR 126", "Pokkali"],
     },
     {
         id: "iron-toxicity",
         name: "Iron Toxicity",
+        scientificName: "Excess iron (bronzing) disorder",
         category: "nutritional",
         harmLevel: "Moderate",
         tone: "info",
         art: "irontox",
+        medicine: null,
+        dose: "≈ 0.5 % foliar spray",
+        coverage: "≈ 10 kg lime for 1.8 acres",
         cost: "≈ ₹700 / acre",
         symptoms: [
             "Leaves develop bronzing or purplish-brown discoloration",
             "Commonly associated with poorly drained acidic soils",
         ],
         preview: "Bronzing or purplish-brown leaf discoloration.",
+        commonIn: ["Pokkali", "Navara"],
     },
 ];
 
