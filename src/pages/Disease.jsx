@@ -1,143 +1,223 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../hooks/useLanguage";
-import { diseaseData } from "../data/mockData";
-import { Leaf, Bug, ShieldCheck } from "lucide-react";
-import StatusBadge from "../components/common/StatusBadge";
+import {
+    diseaseLibrary,
+    diseaseFilters,
+    matchesDiseaseFilter,
+} from "../data/diseaseLibrary";
+import DiseaseIllustration from "../components/common/DiseaseIllustration";
+import { X, Sparkles, ArrowRight } from "lucide-react";
 import "./Disease.css";
 
 /**
- * Disease & Medicine — minimal farmer-first cards.
+ * Disease & Medicine — "Rice Disease Library".
  *
- * Each card answers exactly seven questions: what disease, how serious,
- * which medicine, how much dose, how much land, how much cost, what symptoms.
- * Everything else (production impact, prevention plans, detection metadata)
- * is intentionally omitted to keep the page readable at a glance.
+ * Krisiveda has NO sensor/monitoring system, so nothing here claims a
+ * disease was detected in the user's field. The farmer browses common rice
+ * diseases (same interaction as the Rice Varieties page), opens a floating
+ * glass detail window, and reads treatment info derived from the app's
+ * existing data.
  */
-
-/** Per-disease icon, matched to the disease type. */
-const DISEASE_ICONS = {
-    1: Leaf, // Leaf Blast — fungal leaf disease
-    2: Bug, // Brown Plant Hopper — insect pest
-    3: ShieldCheck, // Sheath Blight Preventive — protective spray
-};
-
-/**
- * Split the app's dosage string into its two farmer-facing parts WITHOUT
- * inventing values:
- *   "0.6 g / L (approx. 250 g for 1.8 ac)" →
- *   dose: "0.6 g / L"  ·  coverage: "250 g for 1.8 acres"
- * If the string has no parenthetical total, coverage stays null (rendered
- * as "—") rather than being fabricated.
- */
-function parseDosage(dosage = "") {
-    const dose = dosage.split("(")[0].trim();
-    const paren = dosage.match(/\(([^)]+)\)/)?.[1] || "";
-    const m = paren.match(/([\d.]+)\s*(kg|g|ml|l)\b\s*for\s*([\d.]+)\s*(ac|acre)/i);
-    if (!m) return { dose, coverage: null };
-    const qty = `${m[1]} ${m[2]}`;
-    const areaNum = parseFloat(m[3]);
-    const area = `${m[3]} ${areaNum === 1 ? "acre" : "acres"}`;
-    return { dose, coverage: `${qty} for ${area}` };
-}
-
-/** severity → StatusBadge status (existing badge styles only). */
-function badgeFor(severity) {
-    if (severity === "critical") return "critical";
-    if (severity === "moderate") return "needs-attention";
-    return "monitor";
-}
-
 export default function Disease() {
     const { t } = useLanguage();
+    const navigate = useNavigate();
+    const [filter, setFilter] = useState("all");
+    const [selected, setSelected] = useState(null);
+
+    // Lock body scroll while the modal is open
+    useEffect(() => {
+        document.body.style.overflow = selected ? "hidden" : "";
+        return () => {
+            document.body.style.overflow = "";
+        };
+    }, [selected]);
+
+    // Esc closes the modal
+    useEffect(() => {
+        if (!selected) return undefined;
+        const onKey = (e) => e.key === "Escape" && setSelected(null);
+        window.addEventListener("keydown", onKey);
+        return () => window.removeEventListener("keydown", onKey);
+    }, [selected]);
+
+    const visible = diseaseLibrary.filter((d) => matchesDiseaseFilter(d, filter));
 
     return (
         <div className="page-container disease-page">
+            {/* Header */}
             <section className="disease-page__header section">
-                <div>
-                    <h1 className="disease-page__title">{t("nav.disease")}</h1>
-                    <p className="dashboard__section-subtitle">
-                        What is affecting your crop — and the right medicine,
-                        dose and cost to treat it
-                    </p>
-                </div>
+                <h1 className="disease-page__title">{t("nav.disease")}</h1>
+                <p className="disease-page__subtitle">
+                    Common rice diseases and their treatment — browse a disease
+                    to see medicine, dose and cost.
+                </p>
             </section>
 
+            {/* Filters */}
+            <div className="disease-page__filters" role="tablist" aria-label="Filter diseases">
+                {diseaseFilters.map((f) => (
+                    <button
+                        key={f.id}
+                        type="button"
+                        role="tab"
+                        aria-selected={filter === f.id}
+                        className={`disease-page__filter${
+                            filter === f.id ? " disease-page__filter--active" : ""
+                        }`}
+                        onClick={() => setFilter(f.id)}
+                    >
+                        {f.label}
+                    </button>
+                ))}
+            </div>
+
+            {/* Cards grid */}
             <div className="disease-page__grid">
-                {diseaseData.map((disease) => {
-                    const Icon = DISEASE_ICONS[disease.id] || Leaf;
-                    const { dose, coverage } = parseDosage(disease.dosage);
-                    return (
-                        <div
-                            key={disease.id}
-                            className={`disease-page__card disease-page__card--${disease.severity}`}
+                {visible.map((d) => (
+                    <button
+                        key={d.id}
+                        type="button"
+                        className="disease-page__card"
+                        onClick={() => setSelected(d)}
+                        aria-haspopup="dialog"
+                    >
+                        <div className="disease-page__card-top">
+                            <span className={`disease-page__card-icon disease-page__icon--${d.tone}`}>
+                                <DiseaseIllustration kind={d.art} />
+                            </span>
+                            <span className={`disease-page__status disease-page__status--${d.tone}`}>
+                                {d.harmLevel}
+                            </span>
+                        </div>
+
+                        <div className="disease-page__card-names">
+                            <h3 className="disease-page__card-name">{d.name}</h3>
+                            <span className="disease-page__card-sci">{d.scientificName}</span>
+                        </div>
+
+                        <div className="disease-page__card-cost">
+                            <span className="disease-page__label">Treatment cost</span>
+                            <span className="disease-page__cost-val">{d.cost}</span>
+                        </div>
+
+                        <p className="disease-page__card-symptoms">{d.symptoms[0]}…</p>
+
+                        <span className="disease-page__card-cta">
+                            View Details <ArrowRight size={13} />
+                        </span>
+                    </button>
+                ))}
+            </div>
+
+            {visible.length === 0 && (
+                <p className="disease-page__empty">No diseases match this filter yet.</p>
+            )}
+
+            {/* ==================== Floating detail window ==================== */}
+            {selected && (
+                <div
+                    className="disease-page__overlay"
+                    onClick={() => setSelected(null)}
+                    role="presentation"
+                >
+                    <div
+                        className="disease-page__modal"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label={selected.name}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <button
+                            type="button"
+                            className="disease-page__modal-close"
+                            onClick={() => setSelected(null)}
+                            aria-label="Close"
                         >
-                            {/* ---- Header: icon + name · status badge ---- */}
-                            <div className="disease-page__card-header">
-                                <div className="disease-page__card-title">
-                                    <span
-                                        className={`disease-page__icon disease-page__icon--${disease.severity}`}
-                                    >
-                                        <Icon size={16} />
-                                    </span>
-                                    <span>{disease.name}</span>
-                                </div>
-                                <StatusBadge status={badgeFor(disease.severity)} />
-                            </div>
+                            <X size={18} />
+                        </button>
 
-                            <p className="disease-page__meta">
-                                Rice Variety: <strong>{disease.variety}</strong>
-                                <span className="disease-page__meta-dot">·</span>
-                                {disease.field}
-                            </p>
+                        {/* Disease image */}
+                        <div className="disease-page__modal-art">
+                            <DiseaseIllustration kind={selected.art} />
+                        </div>
 
-                            {/* ---- Recommended medicine ---- */}
-                            <div className="disease-page__medicine">
-                                <span className="disease-page__label">
-                                    Recommended Medicine
-                                </span>
-                                <span className="disease-page__medicine-name">
-                                    {disease.medicine}
+                        {/* Name + scientific name + severity */}
+                        <div className="disease-page__modal-head">
+                            <div>
+                                <h3 className="disease-page__modal-name">{selected.name}</h3>
+                                <span className="disease-page__modal-sci">
+                                    {selected.scientificName}
                                 </span>
                             </div>
+                            <span className={`disease-page__status disease-page__status--${selected.tone}`}>
+                                {selected.harmLevel}
+                            </span>
+                        </div>
 
-                            {/* ---- Dose · Coverage · Cost row ---- */}
-                            <div className="disease-page__stats">
-                                <div className="disease-page__stat">
-                                    <span className="disease-page__label">
-                                        Dose
-                                    </span>
-                                    <span className="disease-page__stat-value">
-                                        {dose || "—"}
-                                    </span>
-                                </div>
-                                <div className="disease-page__stat">
-                                    <span className="disease-page__label">
-                                        Coverage
-                                    </span>
-                                    <span className="disease-page__stat-value">
-                                        {coverage || "—"}
-                                    </span>
-                                </div>
-                                <div className="disease-page__stat">
-                                    <span className="disease-page__label">
-                                        Cost
-                                    </span>
-                                    <span className="disease-page__stat-value disease-page__stat-value--cost">
-                                        {disease.treatmentCost}
-                                    </span>
-                                </div>
-                            </div>
-
-                            {/* ---- Symptoms ---- */}
-                            <div className="disease-page__symptoms">
-                                <span className="disease-page__label">
-                                    {t("disease.symptoms")}
+                        {/* Recommended treatment */}
+                        <div className="disease-page__msection">
+                            <h4 className="disease-page__msection-title">Recommended Treatment</h4>
+                            <div className="disease-page__fact">
+                                <span className="disease-page__fact-label">Medicine</span>
+                                <span className="disease-page__fact-val">
+                                    {selected.medicine}
                                 </span>
-                                <p>{disease.symptoms}</p>
+                            </div>
+                            <div className="disease-page__modal-stats">
+                                <div className="disease-page__mstat">
+                                    <span className="disease-page__mstat-label">Dose</span>
+                                    <span className="disease-page__mstat-val">{selected.dose}</span>
+                                </div>
+                                <div className="disease-page__mstat">
+                                    <span className="disease-page__mstat-label">Coverage</span>
+                                    <span className="disease-page__mstat-val">
+                                        {selected.coverage}
+                                    </span>
+                                </div>
+                                <div className="disease-page__mstat">
+                                    <span className="disease-page__mstat-label">Cost</span>
+                                    <span className="disease-page__mstat-val disease-page__mstat-val--cost">
+                                        {selected.cost}
+                                    </span>
+                                </div>
                             </div>
                         </div>
-                    );
-                })}
-            </div>
+
+                        {/* Symptoms */}
+                        <div className="disease-page__msection">
+                            <h4 className="disease-page__msection-title">Symptoms</h4>
+                            <ul className="disease-page__symptom-list">
+                                {selected.symptoms.map((s) => (
+                                    <li key={s}>{s}</li>
+                                ))}
+                            </ul>
+                        </div>
+
+                        {/* Commonly seen in (only where data exists) */}
+                        {selected.commonIn?.length > 0 && (
+                            <div className="disease-page__msection">
+                                <h4 className="disease-page__msection-title">Commonly Seen In</h4>
+                                <p className="disease-page__common-in">
+                                    {selected.commonIn.join(" · ")}
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Ask AI footer */}
+                        <button
+                            type="button"
+                            className="disease-page__ask-ai"
+                            onClick={() => navigate("/ai-doctor")}
+                        >
+                            <span>
+                                <strong>Have a question?</strong> Ask AI
+                            </span>
+                            <Sparkles size={16} />
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -1,205 +1,487 @@
+/* ============================================================
+   Disease & Medicine — "Rice Disease Library"
+   Card + modal language mirrors the Rice Varieties page.
+   ============================================================ */
+
 .disease-page__title {
-    font-size: 28px;
+    font-size: clamp(24px, 3.2vw, 30px);
     font-weight: 800;
     letter-spacing: -0.03em;
 }
 
-.disease-page__header {
-    margin-bottom: 24px;
+.disease-page__subtitle {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+/* ==================== Filters ==================== */
+.disease-page__filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 18px 0 20px;
+}
+
+.disease-page__filter {
+    padding: 7px 14px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    font-family: inherit;
+    transition: all var(--transition-fast);
+}
+
+.disease-page__filter:hover {
+    border-color: rgba(111, 207, 142, 0.45);
+    color: var(--text-primary);
+}
+
+.disease-page__filter--active {
+    color: var(--leaf);
+    background: var(--leaf-soft);
+    border-color: rgba(111, 207, 142, 0.5);
 }
 
 /* ==================== Grid ==================== */
 .disease-page__grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 20px;
-    align-items: start; /* cards keep natural heights — no stretching */
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
 }
 
 /* ==================== Card ==================== */
 .disease-page__card {
     display: flex;
     flex-direction: column;
-    gap: 14px;
-    padding: 20px 22px;
+    gap: 10px;
+    padding: 16px 16px 14px;
+    text-align: left;
+    font-family: inherit;
     background: var(--bg-surface);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    min-width: 0; /* allow content to shrink, never overflow */
+    cursor: pointer;
+    min-width: 0;
+    transition:
+        transform 280ms ease,
+        border-color 280ms ease,
+        box-shadow 280ms ease;
 }
 
-/* Severity signal: one quiet left accent, nothing louder */
-.disease-page__card--critical {
-    border-left: 3px solid var(--danger);
-}
-.disease-page__card--moderate {
-    border-left: 3px solid var(--warning);
-}
-.disease-page__card--low {
-    border-left: 3px solid var(--info);
+.disease-page__card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(111, 207, 142, 0.4);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
 }
 
-/* ==================== Header: icon + name · badge ==================== */
-.disease-page__card-header {
+.disease-page__card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+/* Small framed disease artwork */
+.disease-page__card-icon {
+    width: 74px;
+    height: 56px;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Severity badge — same treatment as the Crops status chips */
+.disease-page__status {
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+
+.disease-page__status--danger {
+    color: #e08a8a;
+    background: rgba(214, 89, 89, 0.12);
+}
+
+.disease-page__status--warning {
+    color: var(--warning);
+    background: var(--warning-soft);
+}
+
+.disease-page__status--info {
+    color: var(--info);
+    background: var(--info-soft, rgba(107, 184, 232, 0.1));
+}
+
+.disease-page__card-names {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+}
+
+.disease-page__card-name {
+    margin: 0;
+    font-size: 15.5px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.disease-page__card-sci {
+    font-size: 11px;
+    font-style: italic;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Treatment cost — the card's dominant number (gold, like the Crops price) */
+.disease-page__card-cost {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.disease-page__label {
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    line-height: 1;
+}
+
+.disease-page__cost-val {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--gold);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.disease-page__card-symptoms {
+    margin: 0;
+    font-size: 11.5px;
+    line-height: 1.45;
+    color: var(--text-secondary);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.disease-page__card-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: auto;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--leaf);
+}
+
+/* ==================== Floating detail window ==================== */
+.disease-page__overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(5, 8, 6, 0.55);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    animation: disease-overlay-in 200ms ease both;
+}
+
+@keyframes disease-overlay-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.disease-page__modal {
+    position: relative;
+    width: min(480px, 100%);
+    max-height: min(88vh, 760px);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px;
+    background: var(--bg-surface);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-top-color: rgba(255, 255, 255, 0.16);
+    border-radius: 20px;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.06),
+        0 24px 64px rgba(0, 0, 0, 0.45);
+    animation: disease-modal-in 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes disease-modal-in {
+    from {
+        opacity: 0;
+        transform: translateY(14px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.disease-page__modal-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    color: var(--text-secondary);
+    background: rgba(10, 20, 14, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.disease-page__modal-close:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.12);
+}
+
+/* Disease image — rounded banner, never oversized */
+.disease-page__modal-art {
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.disease-page__modal-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    padding-right: 30px;
+}
+
+.disease-page__modal-name {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+}
+
+.disease-page__modal-sci {
+    font-size: 12px;
+    font-style: italic;
+    color: var(--text-muted);
+}
+
+/* --- Sections --- */
+.disease-page__msection {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    padding: 14px;
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--radius-md);
+}
+
+.disease-page__msection-title {
+    margin: 0;
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--leaf);
+}
+
+.disease-page__fact {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+}
+
+.disease-page__fact-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+.disease-page__fact-val {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-align: right;
+    min-width: 0;
+}
+
+/* Dose · Coverage · Cost strip */
+.disease-page__modal-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.disease-page__mstat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 9px 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--radius-md);
+    min-width: 0;
+}
+
+.disease-page__mstat-label {
+    font-size: 9.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-muted);
+}
+
+.disease-page__mstat-val {
+    font-size: 12.5px;
+    font-weight: 800;
+    color: var(--text-primary);
+    overflow-wrap: break-word;
+    line-height: 1.3;
+}
+
+.disease-page__mstat-val--cost {
+    color: var(--gold);
+}
+
+/* Symptom bullets */
+.disease-page__symptom-list {
+    margin: 0;
+    padding-left: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.disease-page__symptom-list li {
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: var(--text-secondary);
+}
+
+.disease-page__symptom-list li::marker {
+    color: var(--leaf);
+}
+
+.disease-page__common-in {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* --- Ask AI footer (same language as the Crops modal) --- */
+.disease-page__ask-ai {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-}
-
-.disease-page__card-title {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    min-width: 0;
-    font-size: 16.5px;
-    font-weight: 800;
-    letter-spacing: -0.01em;
-    color: var(--text-primary);
-    line-height: 1.25;
-}
-
-.disease-page__card-title > span:last-child {
-    min-width: 0;
-}
-
-.disease-page__icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    width: 32px;
-    height: 32px;
+    padding: 13px 16px;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--text-secondary);
+    background: linear-gradient(
+        135deg,
+        rgba(111, 207, 142, 0.14),
+        rgba(232, 184, 75, 0.1)
+    );
+    border: 1px solid rgba(111, 207, 142, 0.35);
     border-radius: var(--radius-md);
-    background: var(--bg-elevated);
-    border: 1px solid var(--border-light);
+    cursor: pointer;
+    transition: all var(--transition-fast);
 }
 
-.disease-page__icon--critical {
-    color: var(--danger);
-    background: var(--danger-soft);
-    border-color: transparent;
-}
-.disease-page__icon--moderate {
-    color: var(--warning);
-    background: var(--warning-soft);
-    border-color: transparent;
-}
-.disease-page__icon--low {
-    color: var(--info);
-    background: var(--info-soft);
-    border-color: transparent;
-}
-
-/* ==================== Variety · Field line ==================== */
-.disease-page__meta {
-    margin: -4px 0 0;
-    padding-left: 42px; /* aligns under the title text, past the icon */
-    font-size: 12.5px;
-    color: var(--text-secondary);
-}
-
-.disease-page__meta strong {
+.disease-page__ask-ai strong {
     color: var(--text-primary);
-    font-weight: 700;
 }
 
-.disease-page__meta-dot {
-    margin: 0 7px;
+.disease-page__ask-ai svg {
+    color: var(--leaf);
+}
+
+.disease-page__ask-ai:hover {
+    border-color: rgba(111, 207, 142, 0.6);
+    box-shadow: 0 4px 18px rgba(111, 207, 142, 0.12);
+}
+
+.disease-page__empty {
+    padding: 40px 0;
+    text-align: center;
     color: var(--text-muted);
+    font-size: 13px;
 }
 
-/* ==================== Small uppercase labels ==================== */
-.disease-page__label {
+/* ==================== Disease artwork sizing ==================== */
+.disease-art {
+    width: 100%;
+    height: 100%;
     display: block;
-    font-size: 10.5px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.07em;
-    color: var(--text-muted);
-    margin-bottom: 4px;
 }
 
-/* ==================== Medicine block ==================== */
-.disease-page__medicine {
-    padding: 12px 0 2px;
-    border-top: 1px solid var(--border-light);
-}
-
-.disease-page__medicine-name {
+.disease-art__svg {
+    width: 100%;
+    height: 100%;
     display: block;
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--text-primary);
-    line-height: 1.3;
-}
-
-/* ==================== Dose · Coverage · Cost row ==================== */
-.disease-page__stats {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 12px;
-    padding: 12px 0;
-    border-top: 1px solid var(--border-light);
-}
-
-.disease-page__stat {
-    min-width: 0;
-}
-
-.disease-page__stat-value {
-    display: block;
-    font-size: 13.5px;
-    font-weight: 700;
-    color: var(--text-primary);
-    line-height: 1.35;
-    overflow-wrap: break-word;
-}
-
-.disease-page__stat-value--cost {
-    color: var(--accent);
-}
-
-/* ==================== Symptoms ==================== */
-.disease-page__symptoms {
-    padding-top: 12px;
-    border-top: 1px solid var(--border-light);
-}
-
-.disease-page__symptoms p {
-    margin: 0;
-    font-size: 12.5px;
-    line-height: 1.55;
-    color: var(--text-secondary);
 }
 
 /* ==================== Responsive ==================== */
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
+    .disease-page__grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
     .disease-page__grid {
         grid-template-columns: 1fr;
-        gap: 16px;
     }
-}
 
-@media (max-width: 480px) {
-    .disease-page__card {
+    .disease-page__overlay {
+        padding: 12px;
+        align-items: flex-end;
+    }
+
+    .disease-page__modal {
+        max-height: 92vh;
         padding: 18px 16px;
-    }
-
-    /* Meta line hugs the icon column cleanly on tiny screens */
-    .disease-page__meta {
-        padding-left: 0;
-    }
-
-    /* Dose / Coverage / Cost wrap into a comfortable 3-up → stacked flow */
-    .disease-page__stats {
-        gap: 10px;
+        border-radius: 18px 18px 0 0;
     }
 }
 
-@media (max-width: 360px) {
-    .disease-page__stats {
+@media (max-width: 400px) {
+    .disease-page__modal-stats {
         grid-template-columns: 1fr;
-        gap: 8px;
     }
 }
