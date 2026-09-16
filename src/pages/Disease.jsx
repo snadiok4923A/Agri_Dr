@@ -96,10 +96,19 @@ export default function Disease() {
                             <span className="disease-page__card-sci">{d.scientificName}</span>
                         </div>
 
-                        <div className="disease-page__card-cost">
-                            <span className="disease-page__label">Treatment cost</span>
-                            <span className="disease-page__cost-val">{d.cost}</span>
-                        </div>
+                        {d.cost ? (
+                            <div className="disease-page__card-cost">
+                                <span className="disease-page__label">Treatment cost</span>
+                                <span className="disease-page__cost-val">{d.cost}</span>
+                            </div>
+                        ) : (
+                            <div className="disease-page__card-cost">
+                                <span className="disease-page__label">Treatment</span>
+                                <span className="disease-page__cost-val disease-page__cost-val--muted">
+                                    Ask an agronomist
+                                </span>
+                            </div>
+                        )}
 
                         <p className="disease-page__card-symptoms">{d.symptoms[0]}…</p>
 
@@ -155,33 +164,47 @@ export default function Disease() {
                             </span>
                         </div>
 
-                        {/* Recommended treatment */}
+                        {/* Recommended treatment — fields appear only when the
+                            app has real data; otherwise point to an agronomist. */}
                         <div className="disease-page__msection">
                             <h4 className="disease-page__msection-title">Recommended Treatment</h4>
-                            <div className="disease-page__fact">
-                                <span className="disease-page__fact-label">Medicine</span>
-                                <span className="disease-page__fact-val">
-                                    {selected.medicine}
-                                </span>
-                            </div>
-                            <div className="disease-page__modal-stats">
-                                <div className="disease-page__mstat">
-                                    <span className="disease-page__mstat-label">Dose</span>
-                                    <span className="disease-page__mstat-val">{selected.dose}</span>
-                                </div>
-                                <div className="disease-page__mstat">
-                                    <span className="disease-page__mstat-label">Coverage</span>
-                                    <span className="disease-page__mstat-val">
-                                        {selected.coverage}
-                                    </span>
-                                </div>
-                                <div className="disease-page__mstat">
-                                    <span className="disease-page__mstat-label">Cost</span>
-                                    <span className="disease-page__mstat-val disease-page__mstat-val--cost">
-                                        {selected.cost}
-                                    </span>
-                                </div>
-                            </div>
+                            {selected.medicine || selected.dose || selected.coverage || selected.cost ? (
+                                <>
+                                    {selected.medicine && (
+                                        <div className="disease-page__fact">
+                                            <span className="disease-page__fact-label">Medicine</span>
+                                            <span className="disease-page__fact-val">{selected.medicine}</span>
+                                        </div>
+                                    )}
+                                    <div className="disease-page__modal-stats">
+                                        {selected.dose && (
+                                            <div className="disease-page__mstat">
+                                                <span className="disease-page__mstat-label">Dose</span>
+                                                <span className="disease-page__mstat-val">{selected.dose}</span>
+                                            </div>
+                                        )}
+                                        {selected.coverage && (
+                                            <div className="disease-page__mstat">
+                                                <span className="disease-page__mstat-label">Coverage</span>
+                                                <span className="disease-page__mstat-val">{selected.coverage}</span>
+                                            </div>
+                                        )}
+                                        {selected.cost && (
+                                            <div className="disease-page__mstat">
+                                                <span className="disease-page__mstat-label">Cost</span>
+                                                <span className="disease-page__mstat-val disease-page__mstat-val--cost">{selected.cost}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </>
+                            ) : (
+                                <p className="disease-page__no-treatment">
+                                    Treatment information available from an agronomist.
+                                </p>
+                            )}
+                            {selected.note && (
+                                <p className="disease-page__disease-note">{selected.note}</p>
+                            )}
                         </div>
 
                         {/* Symptoms */}
