@@ -51,6 +51,7 @@ const RAW_VARIETIES = [
     {
         id: "pusa-1121",
         name: "Pusa 1121",
+        image: "/crops/Pusa_1121.jpg",
         group: "basmati",
         tone: "gold",
         variant: "basmati",
@@ -70,6 +71,7 @@ const RAW_VARIETIES = [
     {
         id: "pusa-1509",
         name: "Pusa 1509",
+        image: "/crops/Pusa_1509.jpg",
         group: "basmati",
         tone: "gold",
         variant: "basmati",
@@ -89,6 +91,7 @@ const RAW_VARIETIES = [
     {
         id: "pusa-1718",
         name: "Pusa 1718",
+        image: "/crops/Pusa_1718.jpg",
         group: "basmati",
         tone: "gold",
         variant: "basmati",
@@ -108,6 +111,7 @@ const RAW_VARIETIES = [
     {
         id: "traditional-basmati",
         name: "Traditional Basmati",
+        image: "/crops/Traditional_Basmati.jpg",
         group: "basmati",
         tone: "gold",
         variant: "basmati",
@@ -129,6 +133,7 @@ const RAW_VARIETIES = [
     {
         id: "sona-masuri",
         name: "Sona Masuri",
+        image: "/crops/Sona_Masuri.jpg",
         group: "common",
         tone: "leaf",
         variant: "white",
@@ -148,6 +153,7 @@ const RAW_VARIETIES = [
     {
         id: "ponni",
         name: "Ponni",
+        image: "/crops/Ponni.jpg",
         group: "common",
         tone: "leaf",
         variant: "white",
@@ -167,6 +173,7 @@ const RAW_VARIETIES = [
     {
         id: "ir64",
         name: "IR64",
+        image: "/crops/IR64.jpg",
         group: "common",
         tone: "leaf",
         variant: "common",
@@ -186,6 +193,7 @@ const RAW_VARIETIES = [
     {
         id: "swarna",
         name: "Swarna",
+        image: "/crops/Swarna.jpg",
         aka: "MTU 7029",
         group: "common",
         tone: "leaf",
@@ -206,6 +214,7 @@ const RAW_VARIETIES = [
     {
         id: "bpt-5204",
         name: "BPT 5204",
+        image: "/crops/BPT_5204.jpg",
         aka: "Samba Mahsuri",
         group: "common",
         tone: "leaf",
@@ -226,6 +235,7 @@ const RAW_VARIETIES = [
     {
         id: "pr-126",
         name: "PR 126",
+        image: "/crops/PR_126.jpg",
         group: "common",
         tone: "leaf",
         variant: "common",
@@ -247,6 +257,7 @@ const RAW_VARIETIES = [
     {
         id: "black-rice",
         name: "Black Rice",
+        image: "/crops/black_rice.jpg",
         aka: "Chak Hao",
         group: "specialty",
         tone: "teal",
@@ -271,6 +282,7 @@ const RAW_VARIETIES = [
     {
         id: "red-rice-matta",
         name: "Red Rice",
+        image: "/crops/Red_Rice.jpg",
         aka: "Matta",
         group: "specialty",
         tone: "teal",
@@ -295,6 +307,7 @@ const RAW_VARIETIES = [
     {
         id: "gobindobhog",
         name: "Gobindobhog",
+        image: "/crops/Gobindobhog.jpg",
         group: "specialty",
         tone: "gold",
         variant: "whiteGold",
@@ -318,6 +331,7 @@ const RAW_VARIETIES = [
     {
         id: "kalanamak",
         name: "Kalanamak",
+        image: "/crops/Kalanamak.jpg",
         aka: "Buddha's rice",
         group: "specialty",
         tone: "teal",
@@ -342,6 +356,7 @@ const RAW_VARIETIES = [
     {
         id: "joha",
         name: "Joha",
+        image: "/crops/Joha.jpg",
         group: "specialty",
         tone: "teal",
         variant: "paleGold",
@@ -365,6 +380,7 @@ const RAW_VARIETIES = [
     {
         id: "navara",
         name: "Navara",
+        image: "/crops/Navara.jpg",
         group: "specialty",
         tone: "teal",
         variant: "navara",
@@ -388,6 +404,7 @@ const RAW_VARIETIES = [
     {
         id: "pokkali",
         name: "Pokkali",
+        image: "/crops/Pokkali.jpg",
         group: "specialty",
         tone: "teal",
         variant: "pokkali",

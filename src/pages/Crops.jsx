@@ -18,6 +18,15 @@ import "./Crops.css";
 /* Custom rice illustration from the public folder (base-path aware) */
 const RICE_LOGO = `${import.meta.env.BASE_URL}crop.svg`;
 
+/* Per-variety photo from the public folder (base-path aware, e.g.
+ * "/crops/Pusa_1509.jpg" → "/Agri_Dr/crops/Pusa_1509.jpg" on GH Pages).
+ * Falls back to the shared rice illustration if a variety has no image. */
+function varietyImage(v) {
+    return v?.image
+        ? `${import.meta.env.BASE_URL}${v.image.replace(/^\//, "")}`
+        : RICE_LOGO;
+}
+
 /* ---------------- helpers ---------------- */
 
 const LEVEL_ORDER = { Low: 1, Medium: 2, High: 3 };
@@ -130,7 +139,7 @@ export default function Crops() {
                     >
                         <div className="crops-page__card-top">
                             <span className={`crops-page__card-icon crops-page__card-icon--${v.tone}`}>
-                                <img className="crops-page__card-logo" src={RICE_LOGO} alt="" loading="lazy" />
+                                <img className="crops-page__card-logo" src={varietyImage(v)} alt={v.name} loading="lazy" />
                             </span>
                             <span className={`crops-page__status crops-page__status--${v.statusTone}`}>
                                 {v.status}
@@ -209,7 +218,7 @@ export default function Crops() {
                         {/* Modal header */}
                         <div className="crops-page__modal-head">
                             <span className={`crops-page__card-icon crops-page__card-icon--${selected.tone} crops-page__card-icon--lg`}>
-                                <img className="crops-page__card-logo" src={RICE_LOGO} alt="" />
+                                <img className="crops-page__card-logo" src={varietyImage(selected)} alt={selected.name} />
                             </span>
                             <div>
                                 <h3 className="crops-page__modal-name">
