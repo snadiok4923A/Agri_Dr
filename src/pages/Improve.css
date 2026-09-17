@@ -1,12 +1,12 @@
 /* ==================== Header ==================== */
 .improve-page__title {
-  font-size: clamp(24px, 3.2vw, 30px);
+  font-size: clamp(max(min(calc(24px * var(--ts-heading, 1)), 30px), 12px), 3.2vw, calc(30px * var(--ts-heading, 1)));
   font-weight: 800;
   letter-spacing: -0.03em;
 }
 
 .improve-page__subtitle {
-  font-size: 14px;
+  font-size: min(max(calc(14px * var(--ts-body, 1)), 9px), 24px);
   color: var(--text-muted);
   margin-top: 4px;
 }
@@ -29,7 +29,7 @@
   gap: 6px;
   width: fit-content;
   padding: 5px 12px;
-  font-size: 12.5px;
+  font-size: min(max(calc(12.5px * var(--ts-body, 1)), 9px), 24px);
   font-weight: 600;
   color: var(--leaf);
   background: var(--leaf-soft);
@@ -54,14 +54,14 @@
 }
 
 .improve-page__hero-line {
-  font-size: clamp(17px, 2.2vw, 21px);
+  font-size: clamp(max(min(calc(17px * var(--ts-heading, 1)), 21px), 12px), 2.2vw, calc(21px * var(--ts-heading, 1)));
   font-weight: 500;
   color: var(--text-secondary);
   line-height: 1.45;
 }
 
 .improve-page__hero-line strong {
-  font-size: clamp(24px, 3vw, 30px);
+  font-size: clamp(max(min(calc(24px * var(--ts-heading, 1)), 30px), 12px), 3vw, calc(30px * var(--ts-heading, 1)));
   font-weight: 800;
   color: var(--text-primary);
   letter-spacing: -0.02em;
@@ -86,7 +86,7 @@
 }
 
 .improve-page__track-num {
-  font-size: 20px;
+  font-size: max(min(calc(20px * var(--ts-heading, 1)), 32px), 12px);
   font-weight: 800;
   color: var(--text-primary);
   letter-spacing: -0.02em;
@@ -94,7 +94,7 @@
 }
 
 .improve-page__track-cap {
-  font-size: 12px;
+  font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -179,7 +179,7 @@
 .improve-page__gain {
   padding: 6px 14px;
   border-radius: var(--radius-full);
-  font-size: 12.5px;
+  font-size: min(max(calc(12.5px * var(--ts-body, 1)), 9px), 24px);
   font-weight: 700;
 }
 
@@ -195,7 +195,7 @@
 
 /* ==================== Goals ==================== */
 .improve-page__section-title {
-  font-size: 17px;
+  font-size: max(min(calc(17px * var(--ts-mid, 1)), 26px), 10px);
   font-weight: 700;
   color: var(--text-primary);
   margin-bottom: 16px;
@@ -265,7 +265,7 @@
 }
 
 .improve-page__goal-label {
-  font-size: 12px;
+  font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
   font-weight: 600;
   color: var(--text-primary);
   white-space: nowrap;
@@ -275,7 +275,7 @@
 }
 
 .improve-page__goal-value {
-  font-size: 11.5px;
+  font-size: min(max(calc(11.5px * var(--ts-small, 1)), 8px), 17px);
   color: var(--text-muted);
 }
 
@@ -339,7 +339,7 @@
 }
 
 .improve-page__action-title {
-  font-size: 14.5px;
+  font-size: min(max(calc(14.5px * var(--ts-body, 1)), 9px), 24px);
   font-weight: 700;
   color: var(--text-primary);
   white-space: nowrap;
@@ -348,7 +348,7 @@
 }
 
 .improve-page__action-field {
-  font-size: 12px;
+  font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
   color: var(--text-muted);
   display: block;
   margin-top: 2px;
@@ -366,7 +366,7 @@
 }
 
 .improve-page__action-value {
-  font-size: 16px;
+  font-size: max(min(calc(16px * var(--ts-mid, 1)), 26px), 10px);
   font-weight: 800;
   color: var(--leaf);
   letter-spacing: -0.01em;
@@ -379,7 +379,7 @@
 .improve-page__action-pill {
   padding: 3px 9px;
   border-radius: var(--radius-full);
-  font-size: 11.5px;
+  font-size: min(max(calc(11.5px * var(--ts-small, 1)), 8px), 17px);
   font-weight: 600;
   white-space: nowrap;
 }
@@ -462,7 +462,7 @@
   }
 
   .improve-page__goal-label {
-    font-size: 11.5px;
+    font-size: min(max(calc(11.5px * var(--ts-small, 1)), 8px), 17px);
   }
 
   .improve-page__action-card {
@@ -475,7 +475,7 @@
   }
 
   .improve-page__action-value {
-    font-size: 15px;
+    font-size: min(max(calc(15px * var(--ts-body, 1)), 9px), 24px);
   }
 }
 
@@ -485,11 +485,11 @@
   }
 
   .improve-page__track-num {
-    font-size: 16px;
+    font-size: max(min(calc(16px * var(--ts-mid, 1)), 26px), 10px);
   }
 
   .improve-page__track-cap {
-    font-size: 10.5px;
+    font-size: min(max(calc(10.5px * var(--ts-small, 1)), 8px), 17px);
   }
 
   .improve-page__track-end {
@@ -501,7 +501,7 @@
   }
 
   .improve-page__gain {
-    font-size: 12.5px;
+    font-size: min(max(calc(12.5px * var(--ts-body, 1)), 9px), 24px);
     padding: 5px 10px;
   }
 }

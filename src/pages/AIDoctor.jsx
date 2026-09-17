@@ -257,7 +257,7 @@ export default function AIDoctor() {
                                             >
                                                 <div
                                                     style={{
-                                                        fontSize: 13,
+                                                        fontSize: "min(max(calc(13px * var(--ts-body, 1)), 9px), 24px)",
                                                         fontWeight: 700,
                                                         color: "var(--text-primary)",
                                                     }}
@@ -266,7 +266,7 @@ export default function AIDoctor() {
                                                 </div>
                                                 <div
                                                     style={{
-                                                        fontSize: 12,
+                                                        fontSize: "min(max(calc(12px * var(--ts-body, 1)), 9px), 24px)",
                                                         color: "var(--text-secondary)",
                                                         marginTop: 4,
                                                     }}
@@ -281,7 +281,7 @@ export default function AIDoctor() {
                                                 </div>
                                                 <div
                                                     style={{
-                                                        fontSize: 12,
+                                                        fontSize: "min(max(calc(12px * var(--ts-body, 1)), 9px), 24px)",
                                                         color: "var(--danger)",
                                                         marginTop: 6,
                                                         fontWeight: 600,

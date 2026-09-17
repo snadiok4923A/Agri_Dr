@@ -23,7 +23,7 @@
   gap: 2px;
   padding: 6px 12px;
   border-radius: var(--radius-md);
-  font-size: 11px;
+  font-size: min(max(calc(11px * var(--ts-small, 1)), 8px), 17px);
   font-weight: 500;
   color: var(--text-muted);
   text-decoration: none;
@@ -55,6 +55,6 @@
   .mobile-nav__item {
     min-width: 0;
     padding: 6px 8px;
-    font-size: 10px;
+    font-size: min(max(calc(10px * var(--ts-small, 1)), 8px), 17px);
   }
 }

@@ -29,7 +29,7 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    font-size: 12px;
+    font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 600;
     color: var(--gold);
     letter-spacing: 0.02em;
@@ -42,7 +42,7 @@
 
 .dashboard-greeting-title {
     /* Responsive type: scales with viewport, clamped for readability */
-    font-size: clamp(20px, 4.5vw, 26px);
+    font-size: clamp(max(min(calc(20px * var(--ts-heading, 1)), 26px), 12px), 4.5vw, calc(26px * var(--ts-heading, 1)));
     font-weight: 800;
     color: var(--text-primary);
     letter-spacing: -0.03em;
@@ -197,7 +197,7 @@
 }
 
 .dashboard-hero-stat-num {
-    font-size: 30px;
+    font-size: max(min(calc(30px * var(--ts-display, 1)), 45px), 14px);
     font-weight: 900;
     letter-spacing: -0.03em;
     color: var(--text-primary);
@@ -209,7 +209,7 @@
 
 .dashboard-hero-stat-num em {
     font-style: normal;
-    font-size: 14px;
+    font-size: min(max(calc(14px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 700;
     color: var(--text-secondary);
 }
@@ -219,7 +219,7 @@
 }
 
 .dashboard-hero-stat-cap {
-    font-size: 12px;
+    font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 600;
     color: var(--text-muted);
 }
@@ -282,7 +282,7 @@
 
 /* "Weather" — top heading */
 .dashboard-weather-card__label {
-    font-size: 13px;
+    font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 700;
     color: var(--text-secondary);
     line-height: 1;
@@ -299,7 +299,7 @@
 
 /* Temperature — the card's primary visual element */
 .dashboard-weather-card__temp {
-    font-size: 30px;
+    font-size: max(min(calc(30px * var(--ts-display, 1)), 45px), 14px);
     font-weight: 900;
     letter-spacing: -0.02em;
     color: var(--text-primary);
@@ -308,7 +308,7 @@
 
 /* Current condition, directly below the temperature */
 .dashboard-weather-card__cond {
-    font-size: 14px;
+    font-size: min(max(calc(14px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 600;
     color: var(--text-secondary);
     white-space: nowrap;
@@ -323,7 +323,7 @@
     align-items: center;
     justify-content: center;
     gap: 16px;
-    font-size: 14px;
+    font-size: min(max(calc(14px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 500;
     color: var(--text-secondary);
     flex-wrap: wrap;
@@ -341,7 +341,7 @@
 }
 
 .dashboard-weather-card__meta-ico {
-    font-size: 16px;
+    font-size: max(min(calc(16px * var(--ts-mid, 1)), 26px), 10px);
     line-height: 1;
 }
 
@@ -531,7 +531,7 @@
     align-items: center;
     gap: 6px;
     width: fit-content;
-    font-size: 12px;
+    font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -539,7 +539,7 @@
 }
 
 .dashboard-diagnosis-title {
-    font-size: 19px;
+    font-size: max(min(calc(19px * var(--ts-mid, 1)), 26px), 10px);
     font-weight: 800;
     letter-spacing: -0.02em;
     color: var(--text-primary);
@@ -547,7 +547,7 @@
 }
 
 .dashboard-diagnosis-sub {
-    font-size: 12.5px;
+    font-size: min(max(calc(12.5px * var(--ts-body, 1)), 9px), 24px);
     line-height: 1.45;
     color: var(--text-secondary);
     margin: 0;
@@ -623,7 +623,7 @@
     border-radius: var(--radius-full);
     background: rgba(255, 255, 255, 0.05);
     color: var(--text-primary);
-    font-size: 13px;
+    font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 700;
     font-family: inherit;
     cursor: pointer;
@@ -724,7 +724,7 @@
     -webkit-backdrop-filter: blur(8px);
     backdrop-filter: blur(8px);
     color: var(--leaf);
-    font-size: 12.5px;
+    font-size: min(max(calc(12.5px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 700;
     white-space: nowrap;
 }
@@ -749,7 +749,7 @@
 }
 
 .dashboard-diagnosis-result__issue {
-    font-size: 11.5px;
+    font-size: min(max(calc(11.5px * var(--ts-small, 1)), 8px), 17px);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -757,13 +757,13 @@
 }
 
 .dashboard-diagnosis-result__confidence {
-    font-size: 12px;
+    font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 800;
     color: var(--leaf);
 }
 
 .dashboard-diagnosis-result__name {
-    font-size: 24px;
+    font-size: max(min(calc(24px * var(--ts-heading, 1)), 38px), 12px);
     font-weight: 900;
     letter-spacing: -0.02em;
     color: var(--text-primary);
@@ -787,7 +787,7 @@
 }
 
 .dashboard-diagnosis-result__treatment span {
-    font-size: 11px;
+    font-size: min(max(calc(11px * var(--ts-small, 1)), 8px), 17px);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
@@ -795,7 +795,7 @@
 }
 
 .dashboard-diagnosis-result__treatment strong {
-    font-size: 13.5px;
+    font-size: min(max(calc(13.5px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 800;
     color: var(--text-primary);
 }
@@ -822,7 +822,7 @@
 }
 
 .dashboard-section-title {
-    font-size: 16px;
+    font-size: max(min(calc(16px * var(--ts-mid, 1)), 26px), 10px);
     font-weight: 800;
     color: var(--text-primary);
     letter-spacing: -0.01em;
@@ -830,7 +830,7 @@
 }
 
 .dashboard-section-link {
-    font-size: 12px;
+    font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 700;
     color: var(--leaf);
     cursor: pointer;
@@ -955,7 +955,7 @@
 }
 
 .dashboard-action-card__title {
-    font-size: 13px;
+    font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 700;
     color: var(--text-primary);
     white-space: nowrap;
@@ -964,7 +964,7 @@
 }
 
 .dashboard-action-card__badge {
-    font-size: 11px;
+    font-size: min(max(calc(11px * var(--ts-small, 1)), 8px), 17px);
     font-weight: 700;
     padding: 1px 6px;
     border-radius: var(--radius-full);
@@ -992,7 +992,7 @@
 }
 
 .dashboard-action-card__subtitle {
-    font-size: 12px;
+    font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
     color: var(--text-muted);
     white-space: nowrap;
     overflow: hidden;
@@ -1039,21 +1039,21 @@
 }
 
 .dashboard-insight-card__title {
-    font-size: 13px;
+    font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 800;
     color: var(--text-primary);
     display: block;
 }
 
 .dashboard-insight-card__sub {
-    font-size: 12px;
+    font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
     color: var(--text-muted);
     display: block;
     margin-top: 2px;
 }
 
 .dashboard-insight-card__badge {
-    font-size: 11px;
+    font-size: min(max(calc(11px * var(--ts-small, 1)), 8px), 17px);
     font-weight: 700;
     padding: 2px 8px;
     border-radius: var(--radius-full);
@@ -1084,7 +1084,7 @@
 }
 
 .dashboard-profit-bar-name {
-    font-size: 12px;
+    font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 600;
     color: var(--text-secondary);
     width: 90px;
@@ -1111,7 +1111,7 @@
 }
 
 .dashboard-profit-bar-val {
-    font-size: 12px;
+    font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 700;
     color: var(--text-primary);
     width: 50px;
@@ -1159,7 +1159,7 @@
     }
 
     .dashboard-weather-card__label {
-        font-size: 14px;
+        font-size: min(max(calc(14px * var(--ts-body, 1)), 9px), 24px);
     }
 
     .dashboard-weather-card__icon svg {
@@ -1168,20 +1168,20 @@
     }
 
     .dashboard-weather-card__temp {
-        font-size: 32px;
+        font-size: max(min(calc(32px * var(--ts-display, 1)), 48px), 14px);
     }
 
     .dashboard-weather-card__cond {
-        font-size: 14.5px;
+        font-size: min(max(calc(14.5px * var(--ts-body, 1)), 9px), 24px);
     }
 
     .dashboard-weather-card__meta {
         gap: 18px;
-        font-size: 15px;
+        font-size: min(max(calc(15px * var(--ts-body, 1)), 9px), 24px);
     }
 
     .dashboard-weather-card__meta-ico {
-        font-size: 17px;
+        font-size: max(min(calc(17px * var(--ts-mid, 1)), 26px), 10px);
     }
 
     .dashboard-actions-grid {
@@ -1194,7 +1194,7 @@
     }
 
     .dashboard-hero-stat-num {
-        font-size: 26px;
+        font-size: max(min(calc(26px * var(--ts-heading, 1)), 42px), 12px);
     }
 
     .dashboard-diagnosis-cta .dashboard-diagnosis-btn {
@@ -1214,7 +1214,7 @@
     }
 
     .dashboard-weather-card__label {
-        font-size: 13.5px;
+        font-size: min(max(calc(13.5px * var(--ts-body, 1)), 9px), 24px);
     }
 
     .dashboard-weather-card__icon svg {
@@ -1223,20 +1223,20 @@
     }
 
     .dashboard-weather-card__temp {
-        font-size: 30px;
+        font-size: max(min(calc(30px * var(--ts-display, 1)), 45px), 14px);
     }
 
     .dashboard-weather-card__cond {
-        font-size: 14px;
+        font-size: min(max(calc(14px * var(--ts-body, 1)), 9px), 24px);
     }
 
     .dashboard-weather-card__meta {
         gap: 12px;
-        font-size: 15px;
+        font-size: min(max(calc(15px * var(--ts-body, 1)), 9px), 24px);
     }
 
     .dashboard-weather-card__meta-ico {
-        font-size: 16px;
+        font-size: max(min(calc(16px * var(--ts-mid, 1)), 26px), 10px);
     }
 
     .dashboard-diagnosis-card {
@@ -1269,7 +1269,7 @@
     }
 
     .dashboard-hero-stat-num {
-        font-size: 20px;
+        font-size: max(min(calc(20px * var(--ts-heading, 1)), 32px), 12px);
     }
 
     .dashboard-hero-stat-sep {
@@ -1283,7 +1283,7 @@
     }
 
     .dashboard-weather-card__label {
-        font-size: 12.5px;
+        font-size: min(max(calc(12.5px * var(--ts-body, 1)), 9px), 24px);
     }
 
     .dashboard-weather-card__icon svg {
@@ -1292,20 +1292,20 @@
     }
 
     .dashboard-weather-card__temp {
-        font-size: 26px;
+        font-size: max(min(calc(26px * var(--ts-heading, 1)), 42px), 12px);
     }
 
     .dashboard-weather-card__cond {
-        font-size: 13px;
+        font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
     }
 
     .dashboard-weather-card__meta {
         gap: 10px;
-        font-size: 14px;
+        font-size: min(max(calc(14px * var(--ts-body, 1)), 9px), 24px);
     }
 
     .dashboard-weather-card__meta-ico {
-        font-size: 15px;
+        font-size: min(max(calc(15px * var(--ts-body, 1)), 9px), 24px);
     }
 }
 

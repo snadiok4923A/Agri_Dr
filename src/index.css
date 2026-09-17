@@ -26,7 +26,7 @@
   -moz-osx-font-smoothing: grayscale;
 
   @media (max-width: 1024px) {
-    font-size: 16px;
+    font-size: max(min(calc(16px * var(--ts-mid, 1)), 26px), 10px);
   }
 }
 
@@ -74,21 +74,21 @@ h2 {
 }
 
 h1 {
-  font-size: 56px;
+  font-size: max(min(calc(56px * var(--ts-display, 1)), 84px), 14px);
   letter-spacing: -1.68px;
   margin: 32px 0;
   @media (max-width: 1024px) {
-    font-size: 36px;
+    font-size: max(min(calc(36px * var(--ts-display, 1)), 54px), 14px);
     margin: 20px 0;
   }
 }
 h2 {
-  font-size: 24px;
+  font-size: max(min(calc(24px * var(--ts-heading, 1)), 38px), 12px);
   line-height: 118%;
   letter-spacing: -0.24px;
   margin: 0 0 8px;
   @media (max-width: 1024px) {
-    font-size: 20px;
+    font-size: max(min(calc(20px * var(--ts-heading, 1)), 32px), 12px);
   }
 }
 p {
@@ -104,7 +104,7 @@ code,
 }
 
 code {
-  font-size: 15px;
+  font-size: min(max(calc(15px * var(--ts-body, 1)), 9px), 24px);
   line-height: 135%;
   padding: 4px 8px;
   background: var(--code-bg);

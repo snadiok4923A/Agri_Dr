@@ -2,7 +2,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 13px;
+  font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
   font-weight: 500;
   color: var(--text-muted);
   padding: 6px 0;
@@ -15,7 +15,7 @@
 }
 
 .crop-details__crop-name {
-  font-size: 28px;
+  font-size: max(min(calc(28px * var(--ts-display, 1)), 42px), 14px);
   font-weight: 800;
   letter-spacing: -0.03em;
   color: var(--text-primary);
@@ -23,7 +23,7 @@
 
 .crop-details__crop-field {
   display: block;
-  font-size: 14px;
+  font-size: min(max(calc(14px * var(--ts-body, 1)), 9px), 24px);
   color: var(--text-muted);
   margin-top: 4px;
 }
@@ -44,7 +44,7 @@
 }
 
 .crop-details__day-label {
-  font-size: 16px;
+  font-size: max(min(calc(16px * var(--ts-mid, 1)), 26px), 10px);
   font-weight: 700;
   color: var(--text-primary);
   display: block;
@@ -77,12 +77,12 @@
 }
 
 .crop-details__stat-label {
-  font-size: 12px;
+  font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
   color: var(--text-muted);
 }
 
 .crop-details__stat-value {
-  font-size: 22px;
+  font-size: max(min(calc(22px * var(--ts-heading, 1)), 35px), 12px);
   font-weight: 700;
   color: var(--text-primary);
 }
@@ -93,7 +93,7 @@
 
 /* Timeline */
 .crop-details__section-title {
-  font-size: 17px;
+  font-size: max(min(calc(17px * var(--ts-mid, 1)), 26px), 10px);
   font-weight: 700;
   color: var(--text-primary);
   margin-bottom: 20px;
@@ -148,7 +148,7 @@
 }
 
 .crop-details__timeline-label {
-  font-size: 12px;
+  font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
   color: var(--text-muted);
   margin-top: 8px;
   text-align: center;
@@ -161,7 +161,7 @@
 }
 
 .crop-details__timeline-badge {
-  font-size: 11px;
+  font-size: min(max(calc(11px * var(--ts-small, 1)), 8px), 17px);
   font-weight: 600;
   color: var(--accent);
   background: var(--accent-soft);
@@ -208,18 +208,18 @@
 }
 
 .crop-details__advanced-label {
-  font-size: 12px;
+  font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
   color: var(--text-muted);
 }
 
 .crop-details__advanced-value {
-  font-size: 22px;
+  font-size: max(min(calc(22px * var(--ts-heading, 1)), 35px), 12px);
   font-weight: 700;
   color: var(--text-primary);
 }
 
 .crop-details__advanced-note {
-  font-size: 12px;
+  font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
   color: var(--text-secondary);
 }
 

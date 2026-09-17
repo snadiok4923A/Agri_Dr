@@ -40,7 +40,7 @@
 }
 
 .metric-card__label {
-  font-size: 13px;
+  font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
   color: var(--text-muted);
   font-weight: 500;
 }
@@ -52,7 +52,7 @@
 }
 
 .metric-card__number {
-  font-size: 28px;
+  font-size: max(min(calc(28px * var(--ts-display, 1)), 42px), 14px);
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.02em;
@@ -60,14 +60,14 @@
 }
 
 .metric-card__unit {
-  font-size: 14px;
+  font-size: min(max(calc(14px * var(--ts-body, 1)), 9px), 24px);
   font-weight: 500;
   color: var(--text-muted);
 }
 
 .metric-card__change {
   margin-top: 8px;
-  font-size: 12px;
+  font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
   font-weight: 600;
 }
 

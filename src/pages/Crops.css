@@ -1,12 +1,12 @@
 /* ==================== Header ==================== */
 .crops-page__title {
-  font-size: clamp(24px, 3.2vw, 30px);
+  font-size: clamp(max(min(calc(24px * var(--ts-heading, 1)), 30px), 12px), 3.2vw, calc(30px * var(--ts-heading, 1)));
   font-weight: 800;
   letter-spacing: -0.03em;
 }
 
 .crops-page__subtitle {
-  font-size: 14px;
+  font-size: min(max(calc(14px * var(--ts-body, 1)), 9px), 24px);
   color: var(--text-muted);
   margin-top: 4px;
 }
@@ -21,7 +21,7 @@
 
 .crops-page__filter {
   padding: 7px 14px;
-  font-size: 12.5px;
+  font-size: min(max(calc(12.5px * var(--ts-body, 1)), 9px), 24px);
   font-weight: 600;
   color: var(--text-secondary);
   background: var(--bg-surface);
@@ -116,7 +116,7 @@
 .crops-page__status {
   padding: 4px 10px;
   border-radius: var(--radius-full);
-  font-size: 11.5px;
+  font-size: min(max(calc(11.5px * var(--ts-small, 1)), 8px), 17px);
   font-weight: 700;
   letter-spacing: 0.02em;
   white-space: nowrap;
@@ -160,7 +160,7 @@
 }
 
 .crops-page__card-name {
-  font-size: 15.5px;
+  font-size: min(max(calc(15.5px * var(--ts-body, 1)), 9px), 24px);
   font-weight: 700;
   color: var(--text-primary);
   white-space: nowrap;
@@ -169,7 +169,7 @@
 }
 
 .crops-page__card-aka {
-  font-size: 12px;
+  font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
   color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
@@ -188,7 +188,7 @@
    across the letters themselves (background-clip: text, no extra element). */
 .crops-page__price-kicker {
   flex-basis: 100%;
-  font-size: 10.5px;
+  font-size: min(max(calc(10.5px * var(--ts-small, 1)), 8px), 17px);
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -232,20 +232,20 @@
 }
 
 .crops-page__price-val {
-  font-size: 21px;
+  font-size: max(min(calc(21px * var(--ts-heading, 1)), 34px), 12px);
   font-weight: 800;
   letter-spacing: -0.02em;
   color: var(--gold);
 }
 
 .crops-page__price-per {
-  font-size: 12px;
+  font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
   color: var(--text-muted);
   font-weight: 600;
 }
 
 .crops-page__price-note {
-  font-size: 11px;
+  font-size: min(max(calc(11px * var(--ts-small, 1)), 8px), 17px);
   color: var(--text-muted);
   padding: 2px 7px;
   border-radius: var(--radius-full);
@@ -272,12 +272,12 @@
 }
 
 .crops-page__money-row > span {
-  font-size: 12.5px;
+  font-size: min(max(calc(12.5px * var(--ts-body, 1)), 9px), 24px);
   color: var(--text-muted);
 }
 
 .crops-page__money-row strong {
-  font-size: 13px;
+  font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
   font-weight: 700;
   color: var(--text-primary);
   display: flex;
@@ -288,12 +288,12 @@
 
 .crops-page__money-row--profit strong {
   color: var(--leaf);
-  font-size: 14px;
+  font-size: min(max(calc(14px * var(--ts-body, 1)), 9px), 24px);
 }
 
 .crops-page__money-per {
   font-style: normal;
-  font-size: 11px;
+  font-size: min(max(calc(11px * var(--ts-small, 1)), 8px), 17px);
   color: var(--text-muted);
   font-weight: 500;
 }
@@ -310,7 +310,7 @@
 }
 
 .crops-page__meter-label {
-  font-size: 11.5px;
+  font-size: min(max(calc(11.5px * var(--ts-small, 1)), 8px), 17px);
   color: var(--text-muted);
   width: 58px;
   flex-shrink: 0;
@@ -342,7 +342,7 @@
 }
 
 .crops-page__meter-val {
-  font-size: 11.5px;
+  font-size: min(max(calc(11.5px * var(--ts-small, 1)), 8px), 17px);
   color: var(--text-secondary);
   width: 46px;
   text-align: right;
@@ -354,7 +354,7 @@
   padding: 40px 0;
   text-align: center;
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
 }
 
 /* ==================== Modal ==================== */
@@ -441,14 +441,14 @@
 }
 
 .crops-page__modal-name {
-  font-size: 19px;
+  font-size: max(min(calc(19px * var(--ts-mid, 1)), 26px), 10px);
   font-weight: 800;
   color: var(--text-primary);
   letter-spacing: -0.02em;
 }
 
 .crops-page__modal-aka {
-  font-size: 12.5px;
+  font-size: min(max(calc(12.5px * var(--ts-body, 1)), 9px), 24px);
   font-weight: 500;
   color: var(--text-muted);
 }
@@ -477,7 +477,7 @@
 }
 
 .crops-page__mstat-label {
-  font-size: 10.5px;
+  font-size: min(max(calc(10.5px * var(--ts-small, 1)), 8px), 17px);
   text-transform: uppercase;
   letter-spacing: 0.07em;
   color: var(--text-muted);
@@ -487,7 +487,7 @@
 }
 
 .crops-page__mstat-val {
-  font-size: 14px;
+  font-size: min(max(calc(14px * var(--ts-body, 1)), 9px), 24px);
   font-weight: 800;
   color: var(--text-primary);
   white-space: nowrap;
@@ -498,7 +498,7 @@
 }
 
 .crops-page__mstat-note {
-  font-size: 10.5px;
+  font-size: min(max(calc(10.5px * var(--ts-small, 1)), 8px), 17px);
   color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
@@ -520,7 +520,7 @@
   display: flex;
   align-items: center;
   gap: 7px;
-  font-size: 12px;
+  font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.07em;
@@ -538,13 +538,13 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
   color: var(--text-muted);
   flex-shrink: 0;
 }
 
 .crops-page__fact-val {
-  font-size: 12.5px;
+  font-size: min(max(calc(12.5px * var(--ts-body, 1)), 9px), 24px);
   font-weight: 600;
   color: var(--text-primary);
   text-align: right;
@@ -569,7 +569,7 @@
   gap: 10px;
   padding: 14px 18px;
   font-family: inherit;
-  font-size: 14px;
+  font-size: min(max(calc(14px * var(--ts-body, 1)), 9px), 24px);
   color: var(--text-secondary);
   background: linear-gradient(
     135deg,
@@ -699,7 +699,7 @@
   }
 
   .crops-page__price-val {
-    font-size: 24px;
+    font-size: max(min(calc(24px * var(--ts-heading, 1)), 38px), 12px);
   }
 }
 
@@ -709,6 +709,6 @@
   }
 
   .crops-page__mstat-val {
-    font-size: 13px;
+    font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
   }
 }

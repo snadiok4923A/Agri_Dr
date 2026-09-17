@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './hooks/useTheme';
 import { LanguageProvider } from './hooks/useLanguage';
+import { TextSizeProvider } from './hooks/useTextSize';
 import { VoiceModeProvider } from './hooks/useVoiceMode';
 import Layout from './components/layout/Layout';
 import Dashboard from './pages/Dashboard';
@@ -20,6 +21,7 @@ import Settings from './pages/Settings';
 export default function App() {
   return (
     <ThemeProvider>
+      <TextSizeProvider>
       <LanguageProvider>
         {/* VoiceModeProvider lives INSIDE the Router so voice commands can
             drive react-router navigation directly. */}
@@ -47,6 +49,7 @@ export default function App() {
           </VoiceModeProvider>
         </BrowserRouter>
       </LanguageProvider>
+      </TextSizeProvider>
     </ThemeProvider>
   );
 }

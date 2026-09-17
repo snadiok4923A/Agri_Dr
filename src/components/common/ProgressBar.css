@@ -10,13 +10,13 @@
 }
 
 .progress-bar__label {
-  font-size: 13px;
+  font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
   font-weight: 500;
   color: var(--text-secondary);
 }
 
 .progress-bar__value {
-  font-size: 13px;
+  font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
   font-weight: 600;
   color: var(--text-primary);
 }

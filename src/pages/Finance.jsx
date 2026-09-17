@@ -173,7 +173,7 @@ export default function Finance() {
                                             background: "var(--bg-surface)",
                                             border: "1px solid var(--border)",
                                             borderRadius: "var(--radius-md)",
-                                            fontSize: 12,
+                                            fontSize: "min(max(calc(12px * var(--ts-body, 1)), 9px), 24px)",
                                         }}
                                     />
                                 </PieChart>
@@ -217,7 +217,7 @@ export default function Finance() {
                                 <XAxis
                                     dataKey="month"
                                     tick={{
-                                        fontSize: 11,
+                                        fontSize: "min(max(calc(11px * var(--ts-small, 1)), 8px), 17px)",
                                         fill: "var(--chart-text)",
                                     }}
                                     axisLine={false}
@@ -225,7 +225,7 @@ export default function Finance() {
                                 />
                                 <YAxis
                                     tick={{
-                                        fontSize: 11,
+                                        fontSize: "min(max(calc(11px * var(--ts-small, 1)), 8px), 17px)",
                                         fill: "var(--chart-text)",
                                     }}
                                     axisLine={false}
@@ -240,7 +240,7 @@ export default function Finance() {
                                         background: "var(--bg-surface)",
                                         border: "1px solid var(--border)",
                                         borderRadius: "var(--radius-md)",
-                                        fontSize: 12,
+                                        fontSize: "min(max(calc(12px * var(--ts-body, 1)), 9px), 24px)",
                                     }}
                                 />
                                 <Bar

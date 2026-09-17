@@ -1,5 +1,5 @@
 .market-page__title {
-    font-size: 28px;
+    font-size: max(min(calc(28px * var(--ts-display, 1)), 42px), 14px);
     font-weight: 800;
     letter-spacing: -0.03em;
 }
@@ -20,7 +20,7 @@
 }
 
 .market-page__advisory-text {
-    font-size: 13px;
+    font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
     color: var(--text-primary);
     line-height: 1.5;
 }
@@ -49,7 +49,7 @@
 }
 
 .market-page__crop-name {
-    font-size: 18px;
+    font-size: max(min(calc(18px * var(--ts-mid, 1)), 26px), 10px);
     font-weight: 800;
     color: var(--text-primary);
     display: block;
@@ -63,14 +63,14 @@
 }
 
 .market-page__crop-amount {
-    font-size: 26px;
+    font-size: max(min(calc(26px * var(--ts-heading, 1)), 42px), 12px);
     font-weight: 800;
     color: var(--text-primary);
     letter-spacing: -0.02em;
 }
 
 .market-page__crop-unit {
-    font-size: 13px;
+    font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
     color: var(--text-muted);
 }
 
@@ -78,7 +78,7 @@
     display: flex;
     align-items: center;
     gap: 4px;
-    font-size: 12px;
+    font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 700;
     padding: 4px 10px;
     border-radius: var(--radius-full);
@@ -108,7 +108,7 @@
 .market-page__calc-row {
     display: flex;
     justify-content: space-between;
-    font-size: 12px;
+    font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
 }
 
 .market-page__calc-lbl {
@@ -135,7 +135,7 @@
 }
 
 .market-page__markets-title {
-    font-size: 12px;
+    font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 700;
     color: var(--text-muted);
     text-transform: uppercase;
@@ -161,12 +161,12 @@
 
 .market-page__market-name {
     flex: 1;
-    font-size: 12px;
+    font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
     color: var(--text-secondary);
 }
 
 .market-page__market-price {
-    font-size: 13px;
+    font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 700;
     color: var(--text-primary);
 }

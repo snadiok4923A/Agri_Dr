@@ -1,11 +1,11 @@
 .fertilizer-page__title {
-    font-size: 28px;
+    font-size: max(min(calc(28px * var(--ts-display, 1)), 42px), 14px);
     font-weight: 800;
     letter-spacing: -0.03em;
 }
 
 .fertilizer-page__section-title {
-    font-size: 17px;
+    font-size: max(min(calc(17px * var(--ts-mid, 1)), 26px), 10px);
     font-weight: 700;
     color: var(--text-primary);
     margin-bottom: 14px;
@@ -46,14 +46,14 @@
 }
 
 .fertilizer-page__upcoming-product {
-    font-size: 16px;
+    font-size: max(min(calc(16px * var(--ts-mid, 1)), 26px), 10px);
     font-weight: 700;
     color: var(--text-primary);
     display: block;
 }
 
 .fertilizer-page__upcoming-detail {
-    font-size: 12px;
+    font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
     color: var(--text-muted);
     display: block;
     margin-top: 2px;
@@ -69,7 +69,7 @@
 }
 
 .fertilizer-page__col-lbl {
-    font-size: 11px;
+    font-size: min(max(calc(11px * var(--ts-small, 1)), 8px), 17px);
     font-weight: 700;
     text-transform: uppercase;
     color: var(--text-muted);
@@ -77,7 +77,7 @@
 }
 
 .fertilizer-page__col-val {
-    font-size: 13px;
+    font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 700;
     color: var(--text-primary);
     margin-top: 2px;
@@ -96,7 +96,7 @@
 }
 
 .fertilizer-page__benefit-text {
-    font-size: 12px;
+    font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
     color: var(--success);
 }
 
@@ -118,7 +118,7 @@
 }
 
 .fertilizer-page__history-date {
-    font-size: 12px;
+    font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 600;
     color: var(--text-muted);
     min-width: 90px;
@@ -129,14 +129,14 @@
 }
 
 .fertilizer-page__history-product {
-    font-size: 14px;
+    font-size: min(max(calc(14px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 600;
     color: var(--text-primary);
     display: block;
 }
 
 .fertilizer-page__history-detail {
-    font-size: 12px;
+    font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
     color: var(--text-muted);
     display: block;
     margin-top: 1px;
@@ -146,7 +146,7 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 12px;
+    font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
     color: var(--success);
     font-weight: 500;
 }

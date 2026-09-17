@@ -104,7 +104,7 @@ export default function Insights() {
                             {t("insights.productionForecast")} {t("insights.aprToSep")}
                         </h2>
                         <span
-                            style={{ fontSize: 11, color: "var(--text-muted)" }}
+                            style={{ fontSize: "min(max(calc(11px * var(--ts-small, 1)), 8px), 17px)", color: "var(--text-muted)" }}
                         >
                             {t("insights.tonUnit")}
                         </span>
@@ -138,7 +138,7 @@ export default function Insights() {
                             <XAxis
                                 dataKey="month"
                                 tick={{
-                                    fontSize: 10,
+                                    fontSize: "min(max(calc(10px * var(--ts-small, 1)), 8px), 17px)",
                                     fill: "var(--chart-text)",
                                 }}
                                 axisLine={false}
@@ -147,7 +147,7 @@ export default function Insights() {
                             <YAxis
                                 domain={[0, 20]}
                                 tick={{
-                                    fontSize: 10,
+                                    fontSize: "min(max(calc(10px * var(--ts-small, 1)), 8px), 17px)",
                                     fill: "var(--chart-text)",
                                 }}
                                 axisLine={false}
@@ -163,7 +163,7 @@ export default function Insights() {
                                     background: "var(--bg-surface)",
                                     border: "1px solid var(--border)",
                                     borderRadius: "var(--radius-md)",
-                                    fontSize: 12,
+                                    fontSize: "min(max(calc(12px * var(--ts-body, 1)), 9px), 24px)",
                                 }}
                             />
                             <Area
@@ -190,7 +190,7 @@ export default function Insights() {
                             {t("insights.yield")} {t("insights.expectedVsPotential")}
                         </h2>
                         <span
-                            style={{ fontSize: 11, color: "var(--text-muted)" }}
+                            style={{ fontSize: "min(max(calc(11px * var(--ts-small, 1)), 8px), 17px)", color: "var(--text-muted)" }}
                         >
                             {t("insights.perAcre")}
                         </span>
@@ -204,7 +204,7 @@ export default function Insights() {
                             <XAxis
                                 dataKey="month"
                                 tick={{
-                                    fontSize: 10,
+                                    fontSize: "min(max(calc(10px * var(--ts-small, 1)), 8px), 17px)",
                                     fill: "var(--chart-text)",
                                 }}
                                 axisLine={false}
@@ -213,7 +213,7 @@ export default function Insights() {
                             <YAxis
                                 domain={[2, 5]}
                                 tick={{
-                                    fontSize: 10,
+                                    fontSize: "min(max(calc(10px * var(--ts-small, 1)), 8px), 17px)",
                                     fill: "var(--chart-text)",
                                 }}
                                 axisLine={false}
@@ -231,7 +231,7 @@ export default function Insights() {
                                     background: "var(--bg-surface)",
                                     border: "1px solid var(--border)",
                                     borderRadius: "var(--radius-md)",
-                                    fontSize: 12,
+                                    fontSize: "min(max(calc(12px * var(--ts-body, 1)), 9px), 24px)",
                                 }}
                             />
                             <Line

@@ -1,5 +1,5 @@
 .soil-page__title {
-    font-size: 28px;
+    font-size: max(min(calc(28px * var(--ts-display, 1)), 42px), 14px);
     font-weight: 800;
     letter-spacing: -0.03em;
 }
@@ -12,7 +12,7 @@
     background: var(--bg-surface);
     border: 1px solid var(--border);
     border-radius: var(--radius-full);
-    font-size: 12px;
+    font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
     color: var(--text-secondary);
 }
 
@@ -35,14 +35,14 @@
 }
 
 .soil-page__ph-label {
-    font-size: 12px;
+    font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 700;
     text-transform: uppercase;
     color: var(--text-muted);
 }
 
 .soil-page__ph-value {
-    font-size: 44px;
+    font-size: max(min(calc(44px * var(--ts-display, 1)), 66px), 14px);
     font-weight: 800;
     color: var(--accent);
     letter-spacing: -0.03em;
@@ -51,7 +51,7 @@
 }
 
 .soil-page__ph-status {
-    font-size: 13px;
+    font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 600;
     color: var(--text-secondary);
 }
@@ -69,13 +69,13 @@
 }
 
 .soil-page__issue-label {
-    font-size: 13px;
+    font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 700;
     color: var(--text-primary);
 }
 
 .soil-page__impact-text {
-    font-size: 14px;
+    font-size: min(max(calc(14px * var(--ts-body, 1)), 9px), 24px);
     color: var(--text-secondary);
     line-height: 1.5;
 }
@@ -88,12 +88,12 @@
     background: rgba(232, 169, 78, 0.1);
     border: 1px solid rgba(232, 169, 78, 0.3);
     border-radius: var(--radius-md);
-    font-size: 12px;
+    font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
     color: var(--text-primary);
 }
 
 .soil-page__section-title {
-    font-size: 17px;
+    font-size: max(min(calc(17px * var(--ts-mid, 1)), 26px), 10px);
     font-weight: 700;
     color: var(--text-primary);
     margin-bottom: 14px;
@@ -121,13 +121,13 @@
 }
 
 .soil-page__nutrient-name {
-    font-size: 14px;
+    font-size: min(max(calc(14px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 700;
     color: var(--text-primary);
 }
 
 .soil-page__nutrient-status {
-    font-size: 12px;
+    font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 600;
     padding: 2px 8px;
     border-radius: var(--radius-full);
@@ -136,14 +136,14 @@
 }
 
 .soil-page__nutrient-value {
-    font-size: 20px;
+    font-size: max(min(calc(20px * var(--ts-heading, 1)), 32px), 12px);
     font-weight: 800;
     color: var(--text-primary);
     margin-top: 6px;
 }
 
 .soil-page__nutrient-rec {
-    font-size: 12px;
+    font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
     color: var(--text-secondary);
     line-height: 1.4;
     margin-top: 4px;
@@ -163,14 +163,14 @@
 }
 
 .soil-page__field-name {
-    font-size: 16px;
+    font-size: max(min(calc(16px * var(--ts-mid, 1)), 26px), 10px);
     font-weight: 700;
     color: var(--text-primary);
     margin: 0;
 }
 
 .soil-page__field-target {
-    font-size: 12px;
+    font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 700;
     color: var(--accent);
 }
@@ -192,12 +192,12 @@
 }
 
 .soil-page__data-pill span {
-    font-size: 11px;
+    font-size: min(max(calc(11px * var(--ts-small, 1)), 8px), 17px);
     color: var(--text-muted);
 }
 
 .soil-page__data-pill strong {
-    font-size: 12px;
+    font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
     color: var(--text-primary);
 }
 

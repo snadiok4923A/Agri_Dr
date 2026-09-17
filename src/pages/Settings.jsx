@@ -1,12 +1,24 @@
 import { useLanguage } from '../hooks/useLanguage';
 import { useTheme } from '../hooks/useTheme';
+import { useTextSize } from '../hooks/useTextSize';
 import { demoUser } from '../data/mockData';
-import { Settings as SettingsIcon, Globe, Palette } from 'lucide-react';
+import { Settings as SettingsIcon, Globe, Palette, Type } from 'lucide-react';
 import './Settings.css';
+
+/* Level percentage → localized name key */
+const TEXT_SIZE_LABELS = {
+  50: 'tsVerySmall',
+  75: 'tsSmall',
+  100: 'tsDefault',
+  125: 'tsLarge',
+  150: 'tsXLarge',
+  200: 'tsA11yLarge',
+};
 
 export default function Settings() {
   const { language, changeLanguage, languages, t } = useLanguage();
   const { theme, setTheme } = useTheme();
+  const { textSize, setTextSize, textSizes } = useTextSize();
 
   return (
     <div className="page-container settings-page">
@@ -64,6 +76,34 @@ export default function Settings() {
                   <span className="settings-page__lang-flag">{lang.flag}</span>
                   <span className="settings-page__lang-native">{lang.native}</span>
                   <span className="settings-page__lang-name">{lang.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Text Size (accessibility) */}
+        <section className="settings-page__section">
+          <div className="settings-page__section-header">
+            <div className="settings-page__section-icon">
+              <Type size={18} />
+            </div>
+            <div>
+              <h2 className="settings-page__section-title">{t('settings.textSize')}</h2>
+              <p className="settings-page__section-subtitle">{t('settings.chooseTextSize')}</p>
+            </div>
+          </div>
+          <div className="settings-page__section-content">
+            <div className="settings-page__textsize-grid">
+              {textSizes.map((size) => (
+                <button
+                  key={size}
+                  className={`settings-page__textsize-option ${size === textSize ? 'settings-page__textsize-option--active' : ''}`}
+                  onClick={() => setTextSize(size)}
+                  aria-pressed={size === textSize}
+                >
+                  <span className="settings-page__textsize-percent">{size}%</span>
+                  <span className="settings-page__textsize-name">{t(`settings.${TEXT_SIZE_LABELS[size]}`)}</span>
                 </button>
               ))}
             </div>

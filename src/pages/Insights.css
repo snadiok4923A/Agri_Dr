@@ -1,5 +1,5 @@
 .insights-page__title {
-    font-size: 28px;
+    font-size: max(min(calc(28px * var(--ts-display, 1)), 42px), 14px);
     font-weight: 800;
     letter-spacing: -0.03em;
 }
@@ -18,7 +18,7 @@
 }
 
 .insights-page__metric-label {
-    font-size: 12px;
+    font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 700;
     text-transform: uppercase;
     color: var(--text-muted);
@@ -27,20 +27,20 @@
 }
 
 .insights-page__metric-value {
-    font-size: 22px;
+    font-size: max(min(calc(22px * var(--ts-heading, 1)), 35px), 12px);
     font-weight: 800;
     color: var(--text-primary);
     display: block;
 }
 
 .insights-page__metric-unit {
-    font-size: 13px;
+    font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 500;
     color: var(--text-muted);
 }
 
 .insights-page__metric-change {
-    font-size: 12px;
+    font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 600;
     display: inline-block;
     margin-top: 4px;
@@ -90,7 +90,7 @@
 
 .insights-page__highlight-tag {
     display: block;
-    font-size: 11px;
+    font-size: min(max(calc(11px * var(--ts-small, 1)), 8px), 17px);
     font-weight: 700;
     text-transform: uppercase;
     color: var(--text-muted);
@@ -98,7 +98,7 @@
 
 .insights-page__highlight-val {
     display: block;
-    font-size: 14px;
+    font-size: min(max(calc(14px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 700;
     color: var(--text-primary);
     margin-top: 2px;
@@ -119,7 +119,7 @@
 }
 
 .insights-page__section-title {
-    font-size: 16px;
+    font-size: max(min(calc(16px * var(--ts-mid, 1)), 26px), 10px);
     font-weight: 700;
     color: var(--text-primary);
     margin-bottom: 14px;
@@ -137,7 +137,7 @@
     width: 100%;
     border-collapse: collapse;
     text-align: left;
-    font-size: 13px;
+    font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
 }
 
 .insights-page__table th {
@@ -146,7 +146,7 @@
     color: var(--text-muted);
     font-weight: 700;
     text-transform: uppercase;
-    font-size: 12px;
+    font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
     letter-spacing: 0.04em;
     border-bottom: 1px solid var(--border);
 }
@@ -162,7 +162,7 @@
 }
 
 .insights-page__badge {
-    font-size: 12px;
+    font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 700;
     padding: 2px 8px;
     border-radius: var(--radius-full);
@@ -171,7 +171,7 @@
 }
 
 .insights-page__efficiency-tag {
-    font-size: 12px;
+    font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 600;
     color: var(--accent);
     background: var(--accent-soft);
@@ -209,14 +209,14 @@
 }
 
 .insights-page__activity-action {
-    font-size: 13px;
+    font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 500;
     color: var(--text-primary);
     display: block;
 }
 
 .insights-page__activity-field {
-    font-size: 12px;
+    font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
     color: var(--text-muted);
 }
 
@@ -224,7 +224,7 @@
     display: flex;
     align-items: center;
     gap: 4px;
-    font-size: 12px;
+    font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
     color: var(--text-muted);
 }
 
@@ -244,7 +244,7 @@
 }
 
 .insights-page__calendar-date {
-    font-size: 12px;
+    font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 600;
     color: var(--text-muted);
     min-width: 60px;
@@ -255,19 +255,19 @@
 }
 
 .insights-page__calendar-task {
-    font-size: 13px;
+    font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 600;
     color: var(--text-primary);
     display: block;
 }
 
 .insights-page__calendar-field {
-    font-size: 12px;
+    font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
     color: var(--text-muted);
 }
 
 .insights-page__calendar-badge {
-    font-size: 11px;
+    font-size: min(max(calc(11px * var(--ts-small, 1)), 8px), 17px);
     font-weight: 600;
     padding: 2px 8px;
     border-radius: var(--radius-full);

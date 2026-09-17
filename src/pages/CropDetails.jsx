@@ -75,7 +75,7 @@ export default function CropDetails() {
                     </div>
                     <span
                         style={{
-                            fontSize: 12,
+                            fontSize: "min(max(calc(12px * var(--ts-body, 1)), 9px), 24px)",
                             color: "var(--text-muted)",
                             marginTop: 6,
                             display: "block",
@@ -91,7 +91,7 @@ export default function CropDetails() {
                     <span className="crop-details__stat-value">
                         {formatNumber(crop.expectedYield)} {t("common.ton")}
                     </span>
-                    <span style={{ fontSize: 11, color: "var(--text-muted)" }}>
+                    <span style={{ fontSize: "min(max(calc(11px * var(--ts-small, 1)), 8px), 17px)", color: "var(--text-muted)" }}>
                         {formatNumber(crop.expectedYield * 1000)} {t("crops.kgTarget")}
                     </span>
                 </div>
@@ -102,7 +102,7 @@ export default function CropDetails() {
                     <span className="crop-details__stat-value">
                         ₹{formatNumber(crop.estimatedCost)}
                     </span>
-                    <span style={{ fontSize: 11, color: "var(--text-muted)" }}>
+                    <span style={{ fontSize: "min(max(calc(11px * var(--ts-small, 1)), 8px), 17px)", color: "var(--text-muted)" }}>
                         {t("crops.inputLabor")}
                     </span>
                 </div>
@@ -116,7 +116,7 @@ export default function CropDetails() {
                     >
                         ₹{formatNumber(crop.expectedProfit)}
                     </span>
-                    <span style={{ fontSize: 11, color: "var(--success)" }}>
+                    <span style={{ fontSize: "min(max(calc(11px * var(--ts-small, 1)), 8px), 17px)", color: "var(--success)" }}>
                         {formatNumber(crop.profitMargin)}% {t("crops.margin")}
                     </span>
                 </div>
@@ -186,7 +186,7 @@ export default function CropDetails() {
                         </div>
                         <span
                             className="crop-details__advanced-value"
-                            style={{ fontSize: 16 }}
+                            style={{ fontSize: "max(min(calc(16px * var(--ts-mid, 1)), 26px), 10px)" }}
                         >
                             {fieldInfo.medicineRequirement.medicine}
                         </span>
@@ -217,7 +217,7 @@ export default function CropDetails() {
                         </div>
                         <span
                             className="crop-details__advanced-value"
-                            style={{ fontSize: 16 }}
+                            style={{ fontSize: "max(min(calc(16px * var(--ts-mid, 1)), 26px), 10px)" }}
                         >
                             {fieldInfo.fertilizerRequirement.fertilizer}
                         </span>
@@ -249,7 +249,7 @@ export default function CropDetails() {
                         </div>
                         <span
                             className="crop-details__advanced-value"
-                            style={{ fontSize: 16 }}
+                            style={{ fontSize: "max(min(calc(16px * var(--ts-mid, 1)), 26px), 10px)" }}
                         >
                             ₹{formatNumber(crop.marketPrice)} {t("crops.perQuintal")}
                         </span>
@@ -276,7 +276,7 @@ export default function CropDetails() {
                         </div>
                         <span
                             className="crop-details__advanced-value"
-                            style={{ fontSize: 16 }}
+                            style={{ fontSize: "max(min(calc(16px * var(--ts-mid, 1)), 26px), 10px)" }}
                         >
                             {formatNumber(+(crop.potentialYield - crop.expectedYield).toFixed(1), { minimumFractionDigits: 1 })}{" "}
                             {t("crops.tonGap")}

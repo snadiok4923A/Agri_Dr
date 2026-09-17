@@ -125,7 +125,7 @@ export default function Market() {
                                     <XAxis
                                         dataKey="month"
                                         tick={{
-                                            fontSize: 10,
+                                            fontSize: "min(max(calc(10px * var(--ts-small, 1)), 8px), 17px)",
                                             fill: "var(--chart-text)",
                                         }}
                                         axisLine={false}
@@ -137,7 +137,7 @@ export default function Market() {
                                             "dataMax + 50",
                                         ]}
                                         tick={{
-                                            fontSize: 10,
+                                            fontSize: "min(max(calc(10px * var(--ts-small, 1)), 8px), 17px)",
                                             fill: "var(--chart-text)",
                                         }}
                                         axisLine={false}
@@ -153,7 +153,7 @@ export default function Market() {
                                             background: "var(--bg-surface)",
                                             border: "1px solid var(--border)",
                                             borderRadius: "var(--radius-md)",
-                                            fontSize: 12,
+                                            fontSize: "min(max(calc(12px * var(--ts-body, 1)), 9px), 24px)",
                                         }}
                                     />
                                     <Line

@@ -1,11 +1,11 @@
 .ai-doctor__title {
-  font-size: 28px;
+  font-size: max(min(calc(28px * var(--ts-display, 1)), 42px), 14px);
   font-weight: 800;
   letter-spacing: -0.03em;
 }
 
 .ai-doctor__subtitle {
-  font-size: 14px;
+  font-size: min(max(calc(14px * var(--ts-body, 1)), 9px), 24px);
   color: var(--text-muted);
   margin-top: 4px;
 }
@@ -32,13 +32,13 @@
 }
 
 .ai-doctor__hero-title {
-  font-size: 24px;
+  font-size: max(min(calc(24px * var(--ts-heading, 1)), 38px), 12px);
   font-weight: 700;
   color: var(--text-primary);
 }
 
 .ai-doctor__hero-subtitle {
-  font-size: 14px;
+  font-size: min(max(calc(14px * var(--ts-body, 1)), 9px), 24px);
   color: var(--text-muted);
   margin-top: 6px;
   margin-bottom: 32px;
@@ -59,7 +59,7 @@
   background: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  font-size: 14px;
+  font-size: min(max(calc(14px * var(--ts-body, 1)), 9px), 24px);
   font-weight: 600;
   color: var(--text-primary);
   transition: all var(--transition-fast);
@@ -85,7 +85,7 @@
 }
 
 .ai-doctor__suggested-label {
-  font-size: 12px;
+  font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
   color: var(--text-muted);
   display: block;
   margin-bottom: 10px;
@@ -105,7 +105,7 @@
   background: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  font-size: 13px;
+  font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
   color: var(--text-secondary);
   text-align: left;
   transition: all var(--transition-fast);
@@ -169,7 +169,7 @@
 .ai-doctor__message-content {
   padding: 14px 18px;
   border-radius: var(--radius-lg);
-  font-size: 14px;
+  font-size: min(max(calc(14px * var(--ts-body, 1)), 9px), 24px);
   line-height: 1.6;
   color: var(--text-primary);
 }
@@ -187,7 +187,7 @@
 .ai-doctor__confidence {
   display: inline-block;
   margin-top: 8px;
-  font-size: 12px;
+  font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
   color: var(--text-muted);
   font-weight: 500;
 }
@@ -204,7 +204,7 @@
   align-items: center;
   gap: 8px;
   font-weight: 600;
-  font-size: 15px;
+  font-size: min(max(calc(15px * var(--ts-body, 1)), 9px), 24px);
 }
 
 .ai-doctor__diagnosis-header svg {
@@ -214,7 +214,7 @@
 .ai-doctor__diagnosis-meta {
   display: flex;
   gap: 16px;
-  font-size: 13px;
+  font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
   color: var(--text-muted);
 }
 
@@ -223,7 +223,7 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  font-size: 13px;
+  font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
   color: var(--text-secondary);
 }
 
@@ -235,7 +235,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
   font-weight: 500;
   color: var(--accent);
   padding: 6px 12px;
@@ -352,7 +352,7 @@
   width: 100%;
   padding: 10px 12px;
   border-radius: var(--radius-md);
-  font-size: 13px;
+  font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
   font-weight: 500;
   color: var(--text-secondary);
   transition: all var(--transition-fast);
@@ -373,7 +373,7 @@
   border: none;
   background: none;
   outline: none;
-  font-size: 14.5px;
+  font-size: min(max(calc(14.5px * var(--ts-body, 1)), 9px), 24px);
   color: var(--text-primary);
   padding: 8px 6px;
 }
@@ -434,7 +434,7 @@
   align-items: center;
   gap: 10px;
   padding: 8px 16px;
-  font-size: 13px;
+  font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
   color: var(--accent);
   margin-bottom: 8px;
   justify-content: center;
@@ -514,7 +514,7 @@
   }
 
   .ai-doctor__chatbar-input {
-    font-size: 16px; /* prevents iOS zoom-on-focus */
+    font-size: max(min(calc(16px * var(--ts-mid, 1)), 26px), 10px); /* prevents iOS zoom-on-focus */
     padding: 7px 4px;
   }
 

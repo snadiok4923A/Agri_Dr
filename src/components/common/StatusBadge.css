@@ -8,12 +8,12 @@
 }
 
 .status-badge--sm {
-  font-size: 12px;
+  font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
   padding: 3px 10px;
 }
 
 .status-badge--md {
-  font-size: 13px;
+  font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
   padding: 4px 12px;
 }
 

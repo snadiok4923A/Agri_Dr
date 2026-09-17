@@ -125,7 +125,7 @@ export default function MyFarm() {
                             </h2>
                             <span
                                 style={{
-                                    fontSize: 12,
+                                    fontSize: "min(max(calc(12px * var(--ts-body, 1)), 9px), 24px)",
                                     color: "var(--text-muted)",
                                 }}
                             >

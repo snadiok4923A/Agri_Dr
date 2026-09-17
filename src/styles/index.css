@@ -139,7 +139,7 @@
 }
 
 html {
-    font-size: 16px;
+    font-size: max(min(calc(16px * var(--ts-mid, 1)), 26px), 10px);
     width: 100%;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
@@ -375,6 +375,136 @@ ol {
     list-style: none;
 }
 
+/* ============================================================
+   TEXT SIZE ACCESSIBILITY — 50% → 200%
+   Controlled progressive scaling (readability, NOT page zoom):
+   • Tier sizes are decoupled from the root: each font-size is
+     (original px) × tier factor, so big text never compounds.
+   • Root --text-scale is gentle (0.94–1.08): rem icons/spacing
+     follow the level only mildly — cards keep their proportions.
+   • Body text responds most, headlines/nav/numbers least; absolute
+     px floors keep 50% readable, caps keep 200% controlled.
+   ============================================================ */
+html {
+    /* data-textsize is set by the useTextSize provider (default 100) */
+    font-size: calc(16px * var(--text-scale, 1));
+}
+
+/* Typographic factors per level. The root --text-scale is kept gentle
+   (spacing/icons follow it only mildly); tier factors own the typography
+   so small text moves most, headlines/nav/numbers barely move. Controlled
+   progressive curve: "readability, NOT page zoom". */
+:root {
+    --ts-small: 1;
+    --ts-body: 1;
+    --ts-mid: 1;
+    --ts-heading: 1;
+    --ts-display: 1;
+    --text-scale: 1;
+}
+
+/* 50% — Compact: readable floor, no cramped spacing collapse */
+html[data-textsize="50"] {
+    --text-scale: 0.94;
+    --ts-small: 0.78;
+    --ts-body: 0.82;
+    --ts-mid: 0.86;
+    --ts-heading: 0.92;
+    --ts-display: 0.95;
+}
+
+/* 75% — Slightly Compact */
+html[data-textsize="75"] {
+    --text-scale: 0.97;
+    --ts-small: 0.89;
+    --ts-body: 0.92;
+    --ts-mid: 0.94;
+    --ts-heading: 0.97;
+    --ts-display: 0.99;
+}
+
+/* 125% — Comfortable Large: only moderately larger */
+html[data-textsize="125"] {
+    --text-scale: 1.03;
+    --ts-small: 1.07;
+    --ts-body: 1.08;
+    --ts-mid: 1.06;
+    --ts-heading: 1.03;
+    --ts-display: 1.02;
+}
+
+/* 150% — Large: clearly larger, still compact */
+html[data-textsize="150"] {
+    --text-scale: 1.05;
+    --ts-small: 1.13;
+    --ts-body: 1.15;
+    --ts-mid: 1.11;
+    --ts-heading: 1.05;
+    --ts-display: 1.03;
+}
+
+/* 200% — Accessibility Large: bigger, never huge */
+html[data-textsize="200"] {
+    --text-scale: 1.08;
+    --ts-small: 1.2;
+    --ts-body: 1.24;
+    --ts-mid: 1.16;
+    --ts-heading: 1.07;
+    --ts-display: 1.05;
+}
+
+/* Mobile (the problem screenshot case): even gentler curve so Bengali
+   text never overwhelms the cards; bottom-nav labels stay compact. */
+@media (max-width: 768px) {
+    html[data-textsize="125"] {
+        --ts-small: 1.05;
+        --ts-body: 1.06;
+        --ts-mid: 1.05;
+    }
+    html[data-textsize="150"] {
+        --ts-small: 1.1;
+        --ts-body: 1.12;
+        --ts-mid: 1.08;
+        --ts-heading: 1.04;
+    }
+    html[data-textsize="200"] {
+        --text-scale: 1.05;
+        --ts-small: 1.14;
+        --ts-body: 1.17;
+        --ts-mid: 1.12;
+        --ts-heading: 1.06;
+        --ts-display: 1.05;
+    }
+    html[data-textsize="50"] {
+        --ts-small: 0.8;
+        --ts-body: 0.84;
+    }
+    html[data-textsize="200"] [class*="bottom-nav"],
+    html[data-textsize="200"] [class*="mobile-nav"] {
+        --ts-small: 1.08;
+        --ts-body: 1.08;
+    }
+    html[data-textsize="150"] [class*="bottom-nav"],
+    html[data-textsize="150"] [class*="mobile-nav"] {
+        --ts-small: 1.05;
+        --ts-body: 1.05;
+    }
+    /* Very large text: stack the Expected/Potential values so they
+       never clip inside the hero card (100% design is untouched). */
+    html[data-textsize="200"] .dashboard-hero-stats {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    html[data-textsize="200"] .dashboard-hero-stat-sep {
+        display: none;
+    }
+    html[data-textsize="150"] .dashboard-hero-stats {
+        flex-wrap: wrap;
+        row-gap: 6px;
+    }
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
     width: 6px;
@@ -522,7 +652,7 @@ ol {
         0 10px 34px rgba(0, 0, 0, 0.4),
         0 0 22px rgba(111, 207, 142, 0.12);
     color: #eaf6ee;
-    font-size: 14px;
+    font-size: min(max(calc(14px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 600;
     letter-spacing: 0.01em;
     text-align: center;
@@ -548,7 +678,7 @@ ol {
 @media (max-width: 900px) {
     .voice-toast {
         bottom: 92px;
-        font-size: 13.5px;
+        font-size: min(max(calc(13.5px * var(--ts-body, 1)), 9px), 24px);
     }
 }
 

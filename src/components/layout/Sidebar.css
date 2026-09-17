@@ -48,7 +48,7 @@
 }
 
 .sidebar__logo-text {
-    font-size: 18px;
+    font-size: max(min(calc(18px * var(--ts-mid, 1)), 26px), 10px);
     font-weight: 700;
     letter-spacing: -0.02em;
     color: var(--text-primary);
@@ -69,7 +69,7 @@
 }
 
 .sidebar__section-label {
-    font-size: 12px;
+    font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -83,7 +83,7 @@
     gap: 10px;
     padding: 9px 12px;
     border-radius: var(--radius-md);
-    font-size: 14px;
+    font-size: min(max(calc(14px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 500;
     color: var(--text-secondary);
     transition: all var(--transition-fast);
@@ -110,7 +110,7 @@
 }
 
 .sidebar__link--sub {
-    font-size: 13px;
+    font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
     padding: 7px 12px;
 }
 
@@ -162,7 +162,7 @@
 }
 
 .sidebar__user-name {
-    font-size: 13px;
+    font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 600;
     color: var(--text-primary);
     white-space: nowrap;
@@ -171,7 +171,7 @@
 }
 
 .sidebar__user-role {
-    font-size: 12px;
+    font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
     color: var(--text-muted);
 }
 
