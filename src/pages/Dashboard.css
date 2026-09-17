@@ -219,7 +219,7 @@
 }
 
 .dashboard-hero-stat-cap {
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
     color: var(--text-muted);
 }
@@ -531,7 +531,7 @@
     align-items: center;
     gap: 6px;
     width: fit-content;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -724,7 +724,7 @@
     -webkit-backdrop-filter: blur(8px);
     backdrop-filter: blur(8px);
     color: var(--leaf);
-    font-size: 11.5px;
+    font-size: 12.5px;
     font-weight: 700;
     white-space: nowrap;
 }
@@ -749,7 +749,7 @@
 }
 
 .dashboard-diagnosis-result__issue {
-    font-size: 10.5px;
+    font-size: 11.5px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -757,7 +757,7 @@
 }
 
 .dashboard-diagnosis-result__confidence {
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 800;
     color: var(--leaf);
 }
@@ -787,7 +787,7 @@
 }
 
 .dashboard-diagnosis-result__treatment span {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
@@ -964,7 +964,7 @@
 }
 
 .dashboard-action-card__badge {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     padding: 1px 6px;
     border-radius: var(--radius-full);
@@ -992,7 +992,7 @@
 }
 
 .dashboard-action-card__subtitle {
-    font-size: 11px;
+    font-size: 12px;
     color: var(--text-muted);
     white-space: nowrap;
     overflow: hidden;
@@ -1046,14 +1046,14 @@
 }
 
 .dashboard-insight-card__sub {
-    font-size: 11px;
+    font-size: 12px;
     color: var(--text-muted);
     display: block;
     margin-top: 2px;
 }
 
 .dashboard-insight-card__badge {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     padding: 2px 8px;
     border-radius: var(--radius-full);
@@ -1084,7 +1084,7 @@
 }
 
 .dashboard-profit-bar-name {
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
     color: var(--text-secondary);
     width: 90px;
@@ -1111,7 +1111,7 @@
 }
 
 .dashboard-profit-bar-val {
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     color: var(--text-primary);
     width: 50px;

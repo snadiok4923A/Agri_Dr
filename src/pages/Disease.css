@@ -100,7 +100,7 @@
 .disease-page__status {
     padding: 4px 10px;
     border-radius: var(--radius-full);
-    font-size: 10.5px;
+    font-size: 11.5px;
     font-weight: 700;
     letter-spacing: 0.02em;
     white-space: nowrap;
@@ -136,7 +136,7 @@
 }
 
 .disease-page__card-sci {
-    font-size: 11px;
+    font-size: 12px;
     font-style: italic;
     color: var(--text-muted);
     white-space: nowrap;
@@ -170,7 +170,7 @@
 }
 
 .disease-page__label {
-    font-size: 9.5px;
+    font-size: 10.5px;
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -209,14 +209,14 @@
     margin: 0;
     padding-top: 8px;
     border-top: 1px dashed rgba(255, 255, 255, 0.08);
-    font-size: 11.5px;
+    font-size: 12.5px;
     line-height: 1.45;
     color: var(--text-muted);
 }
 
 .disease-page__card-symptoms {
     margin: 0;
-    font-size: 11.5px;
+    font-size: 12.5px;
     line-height: 1.45;
     color: var(--text-secondary);
     display: -webkit-box;
@@ -368,7 +368,7 @@
 
 .disease-page__msection-title {
     margin: 0;
-    font-size: 11.5px;
+    font-size: 12.5px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.07em;
@@ -415,7 +415,7 @@
 }
 
 .disease-page__mstat-label {
-    font-size: 9.5px;
+    font-size: 10.5px;
     text-transform: uppercase;
     letter-spacing: 0.07em;
     color: var(--text-muted);
