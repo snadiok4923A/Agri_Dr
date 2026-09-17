@@ -36,7 +36,7 @@ export default function MobileDrawer({ open, onClose }) {
                 className={`mobile-drawer ${open ? 'mobile-drawer--open' : ''}`}
                 role="dialog"
                 aria-modal="true"
-                aria-label="Navigation"
+                aria-label={t("common.navigation")}
             >
                 <div className="mobile-drawer__logo">
                     <Sprout size={22} className="mobile-drawer__logo-icon" />
@@ -44,7 +44,7 @@ export default function MobileDrawer({ open, onClose }) {
                     <button
                         className="mobile-drawer__close"
                         onClick={onClose}
-                        aria-label="Close menu"
+                        aria-label={t("common.close")}
                     >
                         <X size={18} />
                     </button>

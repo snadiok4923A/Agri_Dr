@@ -15,7 +15,7 @@ import {
 import "./Insights.css";
 
 export default function Insights() {
-    const { t } = useLanguage();
+    const { t, formatNumber } = useLanguage();
 
     return (
         <div className="page-container insights-page">
@@ -25,8 +25,7 @@ export default function Insights() {
                         {t("nav.insights")}
                     </h1>
                     <p className="dashboard__section-subtitle">
-                        Rice yield analytics, production forecasting, cost
-                        efficiency, and variety profitability benchmarking
+                        {t("insights.subtitle")}
                     </p>
                 </div>
             </section>
@@ -40,8 +39,8 @@ export default function Insights() {
                         </span>
                         <span className="insights-page__metric-value">
                             {m.unit === "₹"
-                                ? `₹${m.value.toLocaleString("en-IN")}`
-                                : m.value}
+                                ? `₹${formatNumber(m.value)}`
+                                : formatNumber(m.value)}
                             {m.unit && m.unit !== "₹" && (
                                 <span className="insights-page__metric-unit">
                                     {" "}
@@ -52,8 +51,8 @@ export default function Insights() {
                         <span
                             className={`insights-page__metric-change insights-page__metric-change--${m.trend}`}
                         >
-                            {m.trend === "up" ? "↗" : "↘"} {Math.abs(m.change)}%
-                            vs target
+                            {m.trend === "up" ? "↗" : "↘"} {formatNumber(Math.abs(m.change))}%
+                            {" "}{t("insights.vsTarget")}
                         </span>
                     </div>
                 ))}
@@ -67,7 +66,7 @@ export default function Insights() {
                     </div>
                     <div>
                         <span className="insights-page__highlight-tag">
-                            Highest Profit Variety
+                            {t("insights.highestProfit")}
                         </span>
                         <span className="insights-page__highlight-val">
                             {analyticsData.bestVariety}
@@ -81,7 +80,7 @@ export default function Insights() {
                     </div>
                     <div>
                         <span className="insights-page__highlight-tag">
-                            Highest Volume Yield
+                            {t("insights.highestVolume")}
                         </span>
                         <span className="insights-page__highlight-val">
                             {analyticsData.highestYield}
@@ -102,12 +101,12 @@ export default function Insights() {
                         }}
                     >
                         <h2 className="insights-page__section-title">
-                            {t("insights.productionForecast")} (Apr - Sep)
+                            {t("insights.productionForecast")} {t("insights.aprToSep")}
                         </h2>
                         <span
                             style={{ fontSize: 11, color: "var(--text-muted)" }}
                         >
-                            Ton
+                            {t("insights.tonUnit")}
                         </span>
                     </div>
                     <ResponsiveContainer width="100%" height={210}>
@@ -157,8 +156,8 @@ export default function Insights() {
                             />
                             <Tooltip
                                 formatter={(val) => [
-                                    `${val} Ton`,
-                                    "Projected Production",
+                                    `${formatNumber(val)} ${t("insights.tonUnit")}`,
+                                    t("insights.projectedProduction"),
                                 ]}
                                 contentStyle={{
                                     background: "var(--bg-surface)",
@@ -188,12 +187,12 @@ export default function Insights() {
                         }}
                     >
                         <h2 className="insights-page__section-title">
-                            {t("insights.yield")} (Expected vs Potential)
+                            {t("insights.yield")} {t("insights.expectedVsPotential")}
                         </h2>
                         <span
                             style={{ fontSize: 11, color: "var(--text-muted)" }}
                         >
-                            Ton / Acre
+                            {t("insights.perAcre")}
                         </span>
                     </div>
                     <ResponsiveContainer width="100%" height={210}>
@@ -223,10 +222,10 @@ export default function Insights() {
                             />
                             <Tooltip
                                 formatter={(val, name) => [
-                                    `${val} Ton/ac`,
+                                    `${formatNumber(val)} ${t("insights.perAcre")}`,
                                     name === "actual"
-                                        ? "Expected"
-                                        : "Potential",
+                                        ? t("insights.expected")
+                                        : t("insights.potential"),
                                 ]}
                                 contentStyle={{
                                     background: "var(--bg-surface)",
@@ -241,7 +240,7 @@ export default function Insights() {
                                 stroke="var(--accent)"
                                 strokeWidth={2}
                                 dot={false}
-                                name="Expected"
+                                name={t("insights.expected")}
                             />
                             <Line
                                 type="monotone"
@@ -250,7 +249,7 @@ export default function Insights() {
                                 strokeWidth={2}
                                 strokeDasharray="5 5"
                                 dot={false}
-                                name="Potential"
+                                name={t("insights.potential")}
                             />
                         </LineChart>
                     </ResponsiveContainer>
@@ -260,18 +259,18 @@ export default function Insights() {
             {/* Variety Comparison Benchmarking Table */}
             <section className="insights-page__table-section section">
                 <h2 className="insights-page__section-title">
-                    Rice Variety Comparative Benchmarking
+                    {t("insights.benchmarking")}
                 </h2>
                 <div className="insights-page__table-wrapper">
                     <table className="insights-page__table">
                         <thead>
                             <tr>
-                                <th>Rice Variety</th>
-                                <th>Expected Yield</th>
-                                <th>Estimated Cost</th>
-                                <th>Expected Net Profit</th>
-                                <th>Profit Margin</th>
-                                <th>Efficiency Distinction</th>
+                                <th>{t("crops.variety")}</th>
+                                <th>{t("crops.expectedYield")}</th>
+                                <th>{t("crops.estimatedCost")}</th>
+                                <th>{t("insights.expectedNetProfit")}</th>
+                                <th>{t("crops.margin")}</th>
+                                <th>{t("insights.efficiency")}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -280,19 +279,19 @@ export default function Insights() {
                                     <td>
                                         <strong>{row.variety}</strong>
                                     </td>
-                                    <td>{row.expectedYield} Ton</td>
-                                    <td>₹{row.cost.toLocaleString("en-IN")}</td>
+                                    <td>{formatNumber(row.expectedYield)} {t("common.ton")}</td>
+                                    <td>₹{formatNumber(row.cost)}</td>
                                     <td
                                         style={{
                                             color: "var(--success)",
                                             fontWeight: 700,
                                         }}
                                     >
-                                        ₹{row.profit.toLocaleString("en-IN")}
+                                        ₹{formatNumber(row.profit)}
                                     </td>
                                     <td>
                                         <span className="insights-page__badge">
-                                            {row.margin}%
+                                            {formatNumber(row.margin)}%
                                         </span>
                                     </td>
                                     <td>
@@ -310,9 +309,9 @@ export default function Insights() {
             {/* Calendar & Recent Operations */}
             <div className="insights-page__grid">
                 <section className="insights-page__calendar section">
-                    <h2 className="insights-page__section-title">
-                        Agronomic Crop Calendar
-                    </h2>
+                <h2 className="insights-page__section-title">
+                    {t("insights.cropCalendar")}
+                </h2>
                     <div className="insights-page__calendar-list">
                         {calendarData.map((c, i) => (
                             <div

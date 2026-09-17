@@ -1,17 +1,21 @@
 import { useEffect, useRef, useState } from "react";
 import { animate, useReducedMotion } from "framer-motion";
+import { useLanguage } from "../../hooks/useLanguage";
 
 /**
  * Smoothly counts a number up whenever `value` changes.
  * Falls back to an instant, static value when the user has
  * requested reduced motion (prefers-reduced-motion).
+ *
+ * Locale-aware: renders digits in the selected UI language
+ * (e.g. ১২.২ in Bengali) via the i18n formatter.
  */
 export default function AnimatedNumber({
     value,
     duration = 1.1,
     decimals = 0,
-    locale = "en-IN",
 }) {
+    const { language, locale } = useLanguage();
     const [display, setDisplay] = useState(0);
     const prevValue = useRef(0);
     const shouldReduceMotion = useReducedMotion();
@@ -36,10 +40,15 @@ export default function AnimatedNumber({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [value, duration, shouldReduceMotion]);
 
-    const formatted = display.toLocaleString(locale, {
-        minimumFractionDigits: decimals,
-        maximumFractionDigits: decimals,
-    });
+    let formatted;
+    try {
+        formatted = display.toLocaleString(language === "en" ? "en-IN" : locale, {
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals,
+        });
+    } catch {
+        formatted = display.toFixed(decimals);
+    }
 
     return <>{formatted}</>;
 }

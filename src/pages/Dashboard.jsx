@@ -35,13 +35,6 @@ import "./Dashboard.css";
 // base-path aware so it resolves identically on localhost and GitHub Pages.
 const PLANT_LOGO = `${import.meta.env.BASE_URL}plant.svg`;
 
-const getGreeting = (t) => {
-    const hour = new Date().getHours();
-    if (hour < 12) return t("dashboard.greeting") || "Good morning";
-    if (hour < 17) return t("dashboard.greetingAfternoon") || "Good afternoon";
-    return t("dashboard.greetingEvening") || "Good evening";
-};
-
 // Reveal sections with a subtle, staggered fade-up (skipped for reduced motion)
 const sectionVariants = {
     hidden: { opacity: 0, y: 14 },
@@ -57,16 +50,20 @@ const sectionVariants = {
 };
 
 export default function Dashboard() {
-    const { t } = useLanguage();
+    const { t, formatNumber, formatLabel } = useLanguage();
     const navigate = useNavigate();
     // Mobile breakpoint — switches Voice Mode + Market into the side-by-side
     // pair below Crop Diagnosis without touching the desktop grid pairing.
     const isMobile = useMediaQuery("(max-width: 900px)");
     const shouldReduceMotion = useReducedMotion();
 
-    // Voice Mode intentionally SURVIVES navigation (spec §1: commands like
-    // "Market Intelligence kholo" must not kill the session). It stops only
-    // via the Stop button/header icon or a spoken stop command.
+    // Time-of-day greeting, translated (শুভ সকাল / शुभ प्रभात / …)
+    const greeting = (() => {
+        const hour = new Date().getHours();
+        if (hour < 12) return t("dashboard.greeting");
+        if (hour < 17) return t("dashboard.greetingAfternoon");
+        return t("dashboard.greetingEvening");
+    })();
 
     // Voice-driven dashboard actions: floating weather modal + camera/upload
     // triggers on the Crop Diagnosis card.
@@ -137,40 +134,42 @@ export default function Dashboard() {
         setDiagStage("idle");
     };
 
-    // Simple, high-priority action cards
+    // Simple, high-priority action cards — labels resolve through i18n
+    const gapT = formatNumber(
+        +(farmData.potentialYield - totalYield).toFixed(1),
+        { minimumFractionDigits: 1 }
+    );
     const actionItems = [
         {
             id: "med",
             type: "medicine",
-            title: "Leaf Blast Treatment",
-            subtitle: "Spray Tricyclazole in Field B",
-            badge: "Action Needed",
+            title: t("dashboard.leafBlastTreatment"),
+            subtitle: t("dashboard.sprayTricyclazole"),
+            badge: t("dashboard.actionNeeded"),
             path: "/disease",
         },
         {
             id: "fert",
             type: "fertilizer",
-            title: "Urea Top-Dressing",
-            subtitle: "40 kg required in Field A",
-            badge: "Due Tomorrow",
+            title: t("dashboard.ureaTopDressing"),
+            subtitle: t("dashboard.ureaRequired"),
+            badge: t("dashboard.dueTomorrow"),
             path: "/fertilizer",
         },
         {
             id: "mkt",
             type: "market",
-            title: "Basmati Price Up +5.1%",
-            subtitle: "₹5,200/Q at Burdwan Mandi",
-            badge: "Sell Premium",
+            title: t("dashboard.basmatiPriceUp"),
+            subtitle: t("dashboard.basmatiAtMandi"),
+            badge: t("dashboard.sellPremium"),
             path: "/market",
         },
         {
             id: "yield",
             type: "production",
-            title: "Expected Profit Opportunity",
-            subtitle: `Close ${(
-                farmData.potentialYield - totalYield
-            ).toFixed(1)}T gap for +₹89K profit`,
-            badge: "+78% Margin",
+            title: t("dashboard.profitOpportunity"),
+            subtitle: t("dashboard.closeGap", { n: gapT }),
+            badge: "+78% " + t("crops.margin"),
             path: "/improve",
         },
     ];
@@ -186,10 +185,11 @@ export default function Dashboard() {
                 <div className="dashboard-greeting-left">
                     <span className="dashboard-greeting-tag">
                         <Wheat size={14} className="dashboard-greeting-icon" />
-                        {farmData.name} · {farmData.totalLand} Acres
+                        {farmData.name} · {formatNumber(farmData.totalLand)}{" "}
+                        {t("dashboard.acres")}
                     </span>
                     <h1 className="dashboard-greeting-title">
-                        {getGreeting(t)}, {farmData.owner}
+                        {greeting}, {farmData.owner}
                     </h1>
                 </div>
 
@@ -247,7 +247,7 @@ export default function Dashboard() {
                                 <AnimatedNumber value={currentEst} decimals={1} />
                                 <em>T</em>
                             </span>
-                            <span className="dashboard-hero-stat-cap">Expected</span>
+                            <span className="dashboard-hero-stat-cap">{t("dashboard.expected")}</span>
                         </div>
                         <div className="dashboard-hero-stat-sep" />
                         <div className="dashboard-hero-stat">
@@ -255,7 +255,7 @@ export default function Dashboard() {
                                 <AnimatedNumber value={totalYield} decimals={1} />
                                 <em>T</em>
                             </span>
-                            <span className="dashboard-hero-stat-cap">Potential</span>
+                            <span className="dashboard-hero-stat-cap">{t("dashboard.potential")}</span>
                         </div>
                     </div>
                 </div>
@@ -267,9 +267,9 @@ export default function Dashboard() {
                     onClick={() => setWeatherOpen(true)}
                     role="button"
                     tabIndex={0}
-                    title="View Current Weather"
+                    title={t("dashboard.viewWeather")}
                 >
-                    <span className="dashboard-weather-card__label">Weather</span>
+                    <span className="dashboard-weather-card__label">{t("dashboard.weather")}</span>
                     <div className="dashboard-weather-card__icon">
                         <WeatherConditionIllustration
                             condition={weatherData.current.condition}
@@ -277,7 +277,7 @@ export default function Dashboard() {
                         />
                     </div>
                     <div className="dashboard-weather-card__temp">
-                        {weatherData.current.temperature}°C
+                        {formatNumber(weatherData.current.temperature)}°C
                     </div>
                     <div className="dashboard-weather-card__cond">
                         {weatherData.current.condition}
@@ -285,11 +285,11 @@ export default function Dashboard() {
                     <div className="dashboard-weather-card__meta">
                         <span className="dashboard-weather-card__meta-item">
                             <span className="dashboard-weather-card__meta-ico">💧</span>
-                            {weatherData.current.humidity}%
+                            {formatNumber(weatherData.current.humidity)}%
                         </span>
                         <span className="dashboard-weather-card__meta-item">
                             <span className="dashboard-weather-card__meta-ico">💨</span>
-                            {weatherData.current.wind} km/h
+                            {formatNumber(weatherData.current.wind)} km/h
                         </span>
                     </div>
                 </div>
@@ -320,11 +320,11 @@ export default function Dashboard() {
                     <div className="dashboard-diagnosis-info">
                         <span className="dashboard-diagnosis-tag">
                             <ScanLine size={13} />
-                            AI Plant Doctor
+                            {t("dashboard.aiPlantDoctor")}
                         </span>
-                        <h3 className="dashboard-diagnosis-title">Crop Diagnosis</h3>
+                        <h3 className="dashboard-diagnosis-title">{t("dashboard.cropDiagnosis")}</h3>
                         <p className="dashboard-diagnosis-sub">
-                            Snap a photo — AI detects the problem and the treatment
+                            {t("dashboard.diagnosisSub")}
                         </p>
 
                         {/* Compact 3-step visual workflow: Camera → AI → Treatment */}
@@ -348,14 +348,14 @@ export default function Dashboard() {
                                 onClick={() => cameraInputRef.current?.click()}
                             >
                                 <Camera size={18} />
-                                Take Photo
+                                {t("dashboard.takePhoto")}
                             </button>
                             <button
                                 className="dashboard-diagnosis-btn"
                                 onClick={() => uploadInputRef.current?.click()}
                             >
                                 <Upload size={16} />
-                                Upload Photo
+                                {t("dashboard.uploadPhoto")}
                             </button>
                         </div>
 
@@ -382,13 +382,13 @@ export default function Dashboard() {
                         <div className="dashboard-diagnosis-view">
                         {(diagStage === "preview" || diagStage === "analyzing") && (
                             <div className="dashboard-diagnosis-photo">
-                                <img src={photo} alt="Crop for diagnosis" />
+                                <img src={photo} alt={t("dashboard.cropForDiagnosis")} />
                                 {diagStage === "analyzing" && (
                                     <>
                                         <div className="dashboard-diagnosis-scanline" />
                                         <div className="dashboard-diagnosis-status">
                                             <ScanLine size={14} />
-                                            Analyzing crop…
+                                            {t("dashboard.analyzing")}
                                         </div>
                                     </>
                                 )}
@@ -399,10 +399,10 @@ export default function Dashboard() {
                             <div className="dashboard-diagnosis-result">
                                 <div className="dashboard-diagnosis-result__head">
                                     <span className="dashboard-diagnosis-result__issue">
-                                        Possible Issue
+                                        {t("dashboard.possibleIssue")}
                                     </span>
                                     <span className="dashboard-diagnosis-result__confidence">
-                                        92% match
+                                        92% {t("dashboard.match")}
                                     </span>
                                 </div>
                                 <span className="dashboard-diagnosis-result__name">
@@ -411,8 +411,8 @@ export default function Dashboard() {
                                 <div className="dashboard-diagnosis-result__treatment">
                                     <Pill size={15} />
                                     <div>
-                                        <span>Recommended Treatment</span>
-                                        <strong>Tricyclazole · 250 g</strong>
+                                        <span>{t("dashboard.recommendedTreatment")}</span>
+                                        <strong>Tricyclazole · {formatLabel("250 g")}</strong>
                                     </div>
                                 </div>
                                 <div className="dashboard-diagnosis-result__actions">
@@ -420,7 +420,7 @@ export default function Dashboard() {
                                         className="dashboard-diagnosis-btn dashboard-diagnosis-btn--primary"
                                         onClick={() => navigate("/disease")}
                                     >
-                                        Full Guidance
+                                        {t("dashboard.fullGuidance")}
                                         <ArrowRight size={15} />
                                     </button>
                                     <button
@@ -428,7 +428,7 @@ export default function Dashboard() {
                                         onClick={resetDiagnosis}
                                     >
                                         <RotateCcw size={14} />
-                                        Retake
+                                        {t("dashboard.retake")}
                                     </button>
                                 </div>
                             </div>
@@ -467,7 +467,7 @@ export default function Dashboard() {
             >
                 <div className="dashboard-section-header">
                     <h3 className="dashboard-section-title">
-                        What Needs Attention?
+                        {t("dashboard.whatNeedsAttention")}
                     </h3>
                 </div>
 
@@ -516,13 +516,13 @@ export default function Dashboard() {
             >
                 <div className="dashboard-section-header">
                     <h3 className="dashboard-section-title">
-                        Production & Profit Trends
+                        {t("dashboard.productionTrends")}
                     </h3>
                     <span
                         className="dashboard-section-link"
                         onClick={() => navigate("/insights")}
                     >
-                        Deep Analytics →
+                        {t("dashboard.deepAnalytics")}
                     </span>
                 </div>
 
@@ -532,14 +532,14 @@ export default function Dashboard() {
                         <div className="dashboard-insight-card__header">
                             <div>
                                 <span className="dashboard-insight-card__title">
-                                    Production Forecast
+                                    {t("dashboard.productionForecast")}
                                 </span>
                                 <span className="dashboard-insight-card__sub">
-                                    April – September (Tons)
+                                    {t("dashboard.aprilToSeptember")}
                                 </span>
                             </div>
                             <span className="dashboard-insight-card__badge">
-                                16.1T Target
+                                {t("dashboard.target")}
                             </span>
                         </div>
 
@@ -585,8 +585,8 @@ export default function Dashboard() {
                                     />
                                     <Tooltip
                                         formatter={(val) => [
-                                            `${val} Ton`,
-                                            "Projected Yield",
+                                            `${formatNumber(val)} ${t("common.ton")}`,
+                                            t("dashboard.projectedYield"),
                                         ]}
                                         contentStyle={{
                                             background: "var(--bg-surface)",
@@ -613,14 +613,14 @@ export default function Dashboard() {
                         <div className="dashboard-insight-card__header">
                             <div>
                                 <span className="dashboard-insight-card__title">
-                                    Profit Forecast
+                                    {t("dashboard.profitForecast")}
                                 </span>
                                 <span className="dashboard-insight-card__sub">
-                                    By variety · Total ₹4,89,680
+                                    {t("dashboard.byVariety")}
                                 </span>
                             </div>
                             <span className="dashboard-insight-card__badge dashboard-insight-card__badge--profit">
-                                Highest: Basmati
+                                {t("dashboard.highest")}
                             </span>
                         </div>
 
@@ -648,8 +648,8 @@ export default function Dashboard() {
                                         </div>
                                         <span className="dashboard-profit-bar-val">
                                             ₹
-                                            {(c.expectedProfit / 1000).toFixed(
-                                                0,
+                                            {formatNumber(
+                                                +(c.expectedProfit / 1000).toFixed(0)
                                             )}
                                             k
                                         </span>

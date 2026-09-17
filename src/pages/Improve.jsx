@@ -84,8 +84,16 @@ const URGENCY_TONE = {
     optimization: "info",
 };
 
+/* Urgency pill labels resolve through i18n at render time */
+const URGENCY_KEY = {
+    "Action Now": "improve.actionNow",
+    "This Week": "improve.thisWeek",
+    "Good Time": "improve.goodTime",
+    "Save Now": "improve.saveNow",
+};
+
 export default function Improve() {
-    const { t } = useLanguage();
+    const { t, formatNumber } = useLanguage();
     const shouldReduceMotion = useReducedMotion();
     const [goal, setGoal] = useState("all");
 
@@ -110,32 +118,32 @@ export default function Improve() {
 
     // Visual improvement goals — small values derived from real farm data
     const goals = [
-        { id: "all", label: "All", icon: Sparkles, value: null },
+        { id: "all", label: t("improve.goalAll"), icon: Sparkles, value: null },
         {
             id: "production",
-            label: "Production",
+            label: t("improve.goalProduction"),
             icon: Wheat,
-            value: `${expected}T`,
+            value: `${formatNumber(expected, { minimumFractionDigits: 1 })}T`,
         },
         {
             id: "profit",
-            label: "Profit",
+            label: t("improve.goalProfit"),
             icon: IndianRupee,
-            value: `₹${(farmData.expectedProfit / 100000).toFixed(1)}L`,
+            value: `₹${formatNumber(+(farmData.expectedProfit / 100000).toFixed(1), { minimumFractionDigits: 1 })}L`,
         },
         {
             id: "protection",
-            label: "Crop Protection",
+            label: t("improve.goalProtection"),
             icon: ShieldCheck,
-            value: `${criticalCount} alerts`,
+            value: `${formatNumber(criticalCount)} ${t("improve.alerts")}`,
         },
         {
             id: "growth",
-            label: "Growth",
+            label: t("improve.goalGrowth"),
             icon: Sprout,
-            value: `${fields.length} fields`,
+            value: `${formatNumber(fields.length)} ${t("improve.fields")}`,
         },
-        { id: "yield", label: "Yield", icon: TrendingUp, value: `${pct}%` },
+        { id: "yield", label: t("improve.goalYield"), icon: TrendingUp, value: `${formatNumber(pct)}%` },
     ];
 
     const visibleRecs =
@@ -151,7 +159,10 @@ export default function Improve() {
             <section className="improve-page__header section" {...reveal(0)}>
                 <h1 className="improve-page__title">{t("nav.improve")}</h1>
                 <p className="improve-page__subtitle">
-                    AI finds the fastest way from {expected}T to {potential}T
+                    {t("improve.aiFinds", {
+                        from: formatNumber(expected, { minimumFractionDigits: 1 }),
+                        to: formatNumber(potential, { minimumFractionDigits: 1 }),
+                    })}
                 </p>
             </section>
 
@@ -160,11 +171,11 @@ export default function Improve() {
                 <div className="improve-page__hero-card">
                     <span className="improve-page__ai-pill">
                         <Sparkles size={13} />
-                        AI Insight
+                        {t("improve.aiInsight")}
                     </span>
 
                     <p className="improve-page__hero-line">
-                        You&rsquo;re at{" "}
+                        {t("improve.heroLine1")}{" "}
                         <strong>
                             <AnimatedNumber
                                 value={expected}
@@ -172,7 +183,7 @@ export default function Improve() {
                             />
                             T
                         </strong>{" "}
-                        — AI can help you reach{" "}
+                        {t("improve.heroLine2")}{" "}
                         <strong className="improve-page__hero-line--gold">
                             <AnimatedNumber value={potential} decimals={1} />T
                         </strong>
@@ -184,14 +195,14 @@ export default function Improve() {
                                 {expected}T
                             </span>
                             <span className="improve-page__track-cap">
-                                Current
+                                {t("improve.trackCurrent")}
                             </span>
                         </span>
 
                         <div
                             className="improve-page__track-bar"
                             role="img"
-                            aria-label={`Current yield ${expected} ton of ${potential} ton potential`}
+                            aria-label={t("improve.ariaTrack", { cur: formatNumber(expected, { minimumFractionDigits: 1 }), pot: formatNumber(potential, { minimumFractionDigits: 1 }) })}
                         >
                             <div
                                 className="improve-page__track-fill"
@@ -208,18 +219,18 @@ export default function Improve() {
                                 {potential}T
                             </span>
                             <span className="improve-page__track-cap">
-                                Potential
+                                {t("improve.trackPotential")}
                             </span>
                         </span>
                     </div>
 
                     <div className="improve-page__gains">
                         <span className="improve-page__gain improve-page__gain--leaf">
-                            +{yieldGap}T possible
+                            +{formatNumber(yieldGap, { minimumFractionDigits: 1 })}T {t("improve.possible")}
                         </span>
                         <span className="improve-page__gain improve-page__gain--gold">
-                            +₹{potentialProfitGain.toLocaleString("en-IN")}{" "}
-                            possible
+                            +₹{formatNumber(potentialProfitGain)}{" "}
+                            {t("improve.possible")}
                         </span>
                     </div>
                 </div>
@@ -228,7 +239,7 @@ export default function Improve() {
             {/* 2. What do you want to improve? */}
             <section className="improve-page__goals section" {...reveal(2)}>
                 <h2 className="improve-page__section-title">
-                    What do you want to improve?
+                    {t("improve.whatImprove")}
                 </h2>
                 <div className="improve-page__goal-grid">
                     {goals.map((g) => (
@@ -262,7 +273,7 @@ export default function Improve() {
             {/* 3. AI Recommended Actions */}
             <section className="improve-page__actions section" {...reveal(3)}>
                 <h2 className="improve-page__section-title">
-                    Recommended Actions
+                    {t("improve.recommendedActions")}
                 </h2>
                 <div className="improve-page__action-grid">
                     {visibleRecs.map((rec) => {
@@ -297,7 +308,9 @@ export default function Improve() {
                                     <span
                                         className={`improve-page__action-pill improve-page__action-pill--${urgencyTone}`}
                                     >
-                                        {meta.urgency}
+                                        {URGENCY_KEY[meta.urgency]
+                                            ? t(URGENCY_KEY[meta.urgency])
+                                            : meta.urgency}
                                     </span>
                                 </div>
 

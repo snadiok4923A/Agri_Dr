@@ -21,8 +21,7 @@ export default function Fertilizer() {
                         {t("nav.fertilizer")}
                     </h1>
                     <p className="dashboard__section-subtitle">
-                        Growth stage-wise rice nutrition, application schedules,
-                        fertilizer costs, and expected yield improvements
+                        {t("fertilizer.subtitle")}
                     </p>
                 </div>
             </section>
@@ -51,9 +50,9 @@ export default function Fertilizer() {
                                             {app.product}
                                         </span>
                                         <span className="fertilizer-page__upcoming-detail">
-                                            {app.field} · Rice Variety:{" "}
+                                            {app.field} · {t("fertilizer.stage")}:{" "}
                                             <strong>{app.variety}</strong> (
-                                            {app.stage} Stage)
+                                            {app.stage} {t("fertilizer.stageSuffix")})
                                         </span>
                                     </div>
                                 </div>
@@ -69,7 +68,7 @@ export default function Fertilizer() {
                             <div className="fertilizer-page__upcoming-grid">
                                 <div>
                                     <span className="fertilizer-page__col-lbl">
-                                        Quantity to Apply
+                                        {t("fertilizer.quantity")}
                                     </span>
                                     <span className="fertilizer-page__col-val">
                                         {app.amount}
@@ -77,7 +76,7 @@ export default function Fertilizer() {
                                 </div>
                                 <div>
                                     <span className="fertilizer-page__col-lbl">
-                                        Input Cost
+                                        {t("fertilizer.inputCost")}
                                     </span>
                                     <span
                                         className="fertilizer-page__col-val"
@@ -88,7 +87,7 @@ export default function Fertilizer() {
                                 </div>
                                 <div>
                                     <span className="fertilizer-page__col-lbl">
-                                        Scheduled Due Date
+                                        {t("fertilizer.dueDate")}
                                     </span>
                                     <span className="fertilizer-page__col-val">
                                         <Clock size={12} /> {app.due}
@@ -99,7 +98,7 @@ export default function Fertilizer() {
                             <div className="fertilizer-page__benefit-banner">
                                 <TrendingUp size={14} color="var(--success)" />
                                 <span className="fertilizer-page__benefit-text">
-                                    <strong>Expected Yield Gain:</strong>{" "}
+                                    <strong>{t("fertilizer.yieldGain")}</strong>{" "}
                                     {app.expectedYieldBenefit}
                                 </span>
                             </div>
@@ -125,7 +124,7 @@ export default function Fertilizer() {
                                 </span>
                                 <span className="fertilizer-page__history-detail">
                                     {item.field} · {item.variety} ·{" "}
-                                    {item.amount} (Cost: {item.cost})
+                                    {item.amount} ({t("fertilizer.costOf")}: {item.cost})
                                 </span>
                             </div>
                             <div className="fertilizer-page__history-benefit">

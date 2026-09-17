@@ -28,7 +28,7 @@ export default function Header({ onMenuToggle }) {
   return (
     <header className="header">
       <div className="header__left">
-        <button className="header__menu-btn" onClick={onMenuToggle} aria-label="Toggle menu">
+        <button className="header__menu-btn" onClick={onMenuToggle} aria-label={t("common.toggleMenu")}>
           <Menu size={20} />
         </button>
       </div>
@@ -39,8 +39,8 @@ export default function Header({ onMenuToggle }) {
           <button
             className="header__voice-btn"
             onClick={stopVoiceMode}
-            aria-label="Stop Voice Mode"
-            title="Voice Mode active — click to stop"
+            aria-label={t("common.stopVoiceMode")}
+            title={t("common.voiceModeActive")}
           >
             <Mic size={15} />
             <span className="header__voice-dot" />
@@ -71,11 +71,11 @@ export default function Header({ onMenuToggle }) {
           )}
         </div>
 
-        <button className="header__icon-btn" onClick={toggleTheme} aria-label="Toggle theme">
+        <button className="header__icon-btn" onClick={toggleTheme} aria-label={t("common.toggleTheme")}>
           {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
         </button>
 
-        <button className="header__icon-btn header__notification" aria-label="Notifications">
+        <button className="header__icon-btn header__notification" aria-label={t("common.notifications")}>
           <Bell size={18} />
           <span className="header__notification-dot" />
         </button>

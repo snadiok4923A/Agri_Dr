@@ -10,6 +10,7 @@ import {
     ShieldAlert,
 } from "lucide-react";
 import { weatherData, farmData } from "../../data/mockData";
+import { useLanguage } from "../../hooks/useLanguage";
 import { WeatherSunCloudIllustration } from "./AgriIllustrations";
 import "./WeatherModal.css";
 
@@ -25,6 +26,7 @@ const dayIcon = (icon) => {
  * Opens over the dashboard (no navigation, no side panel).
  */
 export default function WeatherModal({ open, onClose }) {
+    const { t, formatNumber } = useLanguage();
     useEffect(() => {
         if (!open) return;
         const onKey = (e) => {
@@ -49,7 +51,7 @@ export default function WeatherModal({ open, onClose }) {
             onClick={onClose}
             role="dialog"
             aria-modal="true"
-            aria-label="Current Weather"
+            aria-label={t("weather.currentWeather")}
         >
             <div
                 className="wmodal"
@@ -57,11 +59,11 @@ export default function WeatherModal({ open, onClose }) {
             >
                 {/* ===== 1. Header ===== */}
                 <header className="wmodal__head">
-                    <span className="wmodal__head-title">Current Weather</span>
+                    <span className="wmodal__head-title">{t("weather.currentWeather")}</span>
                     <button
                         className="wmodal__close"
                         onClick={onClose}
-                        aria-label="Close weather"
+                        aria-label={t("weather.closeWeather")}
                     >
                         <X size={16} />
                     </button>
@@ -74,7 +76,7 @@ export default function WeatherModal({ open, onClose }) {
                     </span>
                     <div className="wmodal__main-data">
                         <span className="wmodal__temp">
-                            {cur.temperature}°C
+                            {formatNumber(cur.temperature)}°C
                         </span>
                         <span className="wmodal__cond">{cur.condition}</span>
                         <span className="wmodal__farm">{farmData.name}</span>
@@ -86,29 +88,29 @@ export default function WeatherModal({ open, onClose }) {
                     <div className="wmodal__metric">
                         <Thermometer size={15} />
                         <div>
-                            <strong>{cur.feelsLike}°C</strong>
-                            <span>Feels Like</span>
+                            <strong>{formatNumber(cur.feelsLike)}°C</strong>
+                            <span>{t("weather.feelsLike")}</span>
                         </div>
                     </div>
                     <div className="wmodal__metric">
                         <Droplets size={15} />
                         <div>
-                            <strong>{cur.humidity}%</strong>
-                            <span>Humidity</span>
+                            <strong>{formatNumber(cur.humidity)}%</strong>
+                            <span>{t("weather.humidity")}</span>
                         </div>
                     </div>
                     <div className="wmodal__metric">
                         <Wind size={15} />
                         <div>
-                            <strong>{cur.wind} km/h</strong>
-                            <span>Wind</span>
+                            <strong>{formatNumber(cur.wind)} km/h</strong>
+                            <span>{t("weather.wind")}</span>
                         </div>
                     </div>
                     <div className="wmodal__metric">
                         <Eye size={15} />
                         <div>
-                            <strong>{cur.visibility} km</strong>
-                            <span>Visibility</span>
+                            <strong>{formatNumber(cur.visibility)} km</strong>
+                            <span>{t("weather.visibility")}</span>
                         </div>
                     </div>
                 </div>
@@ -117,14 +119,14 @@ export default function WeatherModal({ open, onClose }) {
                 <div className="wmodal__advisory">
                     <ShieldAlert size={17} className="wmodal__advisory-ico" />
                     <div>
-                        <strong>Spraying Advisory</strong>
+                        <strong>{t("weather.sprayingAdvisory")}</strong>
                         <span>{impact.sprayAdvisory}</span>
                     </div>
                 </div>
 
                 {/* ===== 5. 7-Day Forecast ===== */}
                 <div className="wmodal__forecast">
-                    <span className="wmodal__forecast-title">7-Day Forecast</span>
+                    <span className="wmodal__forecast-title">{t("weather.forecast7Day")}</span>
                     <div className="wmodal__forecast-grid">
                         {weatherData.forecast.map((day, i) => {
                             const Icon = dayIcon(day.icon);
@@ -135,9 +137,9 @@ export default function WeatherModal({ open, onClose }) {
                                 >
                                     <span className="wmodal__day-name">
                                         {i === 0
-                                            ? "Today"
+                                            ? t("common.today")
                                             : i === 1
-                                              ? "Tomorrow"
+                                              ? t("common.tomorrow")
                                               : day.day}
                                     </span>
                                     <Icon
@@ -145,14 +147,14 @@ export default function WeatherModal({ open, onClose }) {
                                         className="wmodal__day-icon"
                                     />
                                     <span className="wmodal__day-hi">
-                                        {day.high}°
+                                        {formatNumber(day.high)}°
                                     </span>
                                     <span className="wmodal__day-lo">
-                                        {day.low}°
+                                        {formatNumber(day.low)}°
                                     </span>
                                     <span className="wmodal__day-rain">
                                         <Droplets size={10} />
-                                        {day.rain}%
+                                        {formatNumber(day.rain)}%
                                     </span>
                                 </div>
                             );

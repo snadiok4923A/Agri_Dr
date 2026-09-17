@@ -68,7 +68,7 @@ const mockDiagnosis = {
 };
 
 export default function AIDoctor() {
-    const { t, language } = useLanguage();
+    const { t, language, formatNumber } = useLanguage();
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState("");
     const [listening, setListening] = useState(false);
@@ -150,8 +150,7 @@ export default function AIDoctor() {
                 <div>
                     <h1 className="ai-doctor__title">{t("ai.askKrisiveda")}</h1>
                     <p className="ai-doctor__subtitle">
-                        Rice variety advice, disease diagnosis, medicine dosage,
-                        fertilizer calculations, and profit intelligence
+                        {t("ai.subtitle")}
                     </p>
                 </div>
             </section>
@@ -165,8 +164,7 @@ export default function AIDoctor() {
                         {t("ai.askKrisiveda")}
                     </h2>
                     <p className="ai-doctor__hero-subtitle">
-                        Ask any question regarding rice production, fertilizer
-                        schedules, medicine dosages, and expected profit
+                        {t("ai.heroSubtitle")}
                     </p>
                     <div className="ai-doctor__actions">
                         <button
@@ -233,8 +231,8 @@ export default function AIDoctor() {
                                             </div>
                                             <div className="ai-doctor__diagnosis-meta">
                                                 <span>
-                                                    Confidence:{" "}
-                                                    {msg.diagnosis.confidence}%
+                                                    {t("ai.confidence")}:{" "}
+                                                    {formatNumber(msg.diagnosis.confidence)}%
                                                 </span>
                                                 <span
                                                     style={{
@@ -273,9 +271,9 @@ export default function AIDoctor() {
                                                         marginTop: 4,
                                                     }}
                                                 >
-                                                    Dosage:{" "}
+                                                    {t("ai.dosageLabel")}:{" "}
                                                     {msg.diagnosis.dosage} ·
-                                                    Spend:{" "}
+                                                    {t("ai.spend")}:{" "}
                                                     {
                                                         msg.diagnosis
                                                             .treatmentCost
@@ -298,7 +296,7 @@ export default function AIDoctor() {
 
                                             <div className="ai-doctor__diagnosis-actions">
                                                 <strong>
-                                                    Treatment Steps:
+                                                    {t("ai.treatmentSteps")}
                                                 </strong>
                                                 <ol>
                                                     {msg.diagnosis.actions.map(
@@ -358,7 +356,7 @@ export default function AIDoctor() {
                     <div className="ai-doctor__scanning">
                         <div className="ai-doctor__scanning-animation" />
                         <span>
-                            Analyzing rice crop image & diagnosing symptoms...
+                            {t("ai.scanning")}
                         </span>
                     </div>
                 )}
@@ -368,8 +366,8 @@ export default function AIDoctor() {
                             className="ai-doctor__plus"
                             onClick={() => setPlusOpen(!plusOpen)}
                             aria-expanded={plusOpen}
-                            aria-label="More actions"
-                            title="More actions"
+                            aria-label={t("ai.moreActions")}
+                            title={t("ai.moreActions")}
                         >
                             <Plus size={19} />
                         </button>
@@ -395,7 +393,7 @@ export default function AIDoctor() {
                         onKeyDown={(e) =>
                             e.key === "Enter" && sendMessage(input)
                         }
-                        placeholder="Ask anything"
+                        placeholder={t("ai.askAnything")}
                         className="ai-doctor__chatbar-input"
                     />
                     <button
@@ -410,7 +408,7 @@ export default function AIDoctor() {
                         className="ai-doctor__chatbar-send"
                         onClick={() => sendMessage(input)}
                         disabled={!input.trim()}
-                        aria-label="Send"
+                        aria-label={t("ai.send")}
                     >
                         <Send size={16} />
                     </button>

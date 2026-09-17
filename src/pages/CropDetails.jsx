@@ -18,7 +18,7 @@ import "./CropDetails.css";
 export default function CropDetails() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { t } = useLanguage();
+    const { t, formatNumber } = useLanguage();
     const crop = crops.find((c) => c.id === id || c.fieldId === id) || crops[0];
     const fieldInfo = fields.find((f) => f.id === crop.fieldId) || fields[0];
 
@@ -55,8 +55,8 @@ export default function CropDetails() {
                         />
                     </div>
                     <span className="crop-details__crop-field">
-                        {crop.field} · {crop.area} Acres · Market Price: ₹
-                        {crop.marketPrice} / Quintal
+                        {crop.field} · {formatNumber(crop.area)} {t("dashboard.acres")} · {t("crops.marketPrice")}: ₹
+                        {formatNumber(crop.marketPrice)} {t("crops.perQuintal")}
                     </span>
                 </div>
             </section>
@@ -65,7 +65,7 @@ export default function CropDetails() {
             <section className="crop-details__stats section">
                 <div className="crop-details__day-stat">
                     <span className="crop-details__day-label">
-                        Day {crop.day} / {crop.totalDays} ({progress}%)
+                        {t("crops.dayOf")} {formatNumber(crop.day)} / {formatNumber(crop.totalDays)} ({formatNumber(progress)}%)
                     </span>
                     <div className="crop-details__day-bar">
                         <div
@@ -81,7 +81,7 @@ export default function CropDetails() {
                             display: "block",
                         }}
                     >
-                        Current Stage: {crop.stage}
+                        {t("crops.currentStage")}: {crop.stage}
                     </span>
                 </div>
                 <div className="crop-details__stat-card">
@@ -89,10 +89,10 @@ export default function CropDetails() {
                         {t("crops.expectedYield")}
                     </span>
                     <span className="crop-details__stat-value">
-                        {crop.expectedYield} Ton
+                        {formatNumber(crop.expectedYield)} {t("common.ton")}
                     </span>
                     <span style={{ fontSize: 11, color: "var(--text-muted)" }}>
-                        {(crop.expectedYield * 1000).toLocaleString()} kg target
+                        {formatNumber(crop.expectedYield * 1000)} {t("crops.kgTarget")}
                     </span>
                 </div>
                 <div className="crop-details__stat-card">
@@ -100,10 +100,10 @@ export default function CropDetails() {
                         {t("crops.estimatedCost")}
                     </span>
                     <span className="crop-details__stat-value">
-                        ₹{crop.estimatedCost.toLocaleString("en-IN")}
+                        ₹{formatNumber(crop.estimatedCost)}
                     </span>
                     <span style={{ fontSize: 11, color: "var(--text-muted)" }}>
-                        Input & labor
+                        {t("crops.inputLabor")}
                     </span>
                 </div>
                 <div className="crop-details__stat-card">
@@ -114,10 +114,10 @@ export default function CropDetails() {
                         className="crop-details__stat-value"
                         style={{ color: "var(--success)" }}
                     >
-                        ₹{crop.expectedProfit.toLocaleString("en-IN")}
+                        ₹{formatNumber(crop.expectedProfit)}
                     </span>
                     <span style={{ fontSize: 11, color: "var(--success)" }}>
-                        {crop.profitMargin}% Margin
+                        {formatNumber(crop.profitMargin)}% {t("crops.margin")}
                     </span>
                 </div>
             </section>
@@ -163,7 +163,7 @@ export default function CropDetails() {
             {/* Input Requirements (Medicine & Fertilizer) */}
             <section className="crop-details__advanced section">
                 <h2 className="crop-details__section-title">
-                    Required Agricultural Inputs
+                    {t("crops.requiredInputs")}
                 </h2>
                 <div className="crop-details__advanced-grid">
                     <div
@@ -181,7 +181,7 @@ export default function CropDetails() {
                         >
                             <Bug size={16} color="var(--warning)" />
                             <span className="crop-details__advanced-label">
-                                Medicine Requirement
+                                {t("crops.medicineRequirement")}
                             </span>
                         </div>
                         <span
@@ -191,9 +191,9 @@ export default function CropDetails() {
                             {fieldInfo.medicineRequirement.medicine}
                         </span>
                         <span className="crop-details__advanced-note">
-                            Purpose: {fieldInfo.medicineRequirement.purpose} ·
-                            Qty: {fieldInfo.medicineRequirement.quantity} ·
-                            Cost: ₹{fieldInfo.medicineRequirement.cost}
+                            {t("crops.purpose")}: {fieldInfo.medicineRequirement.purpose} ·
+                            {t("crops.qty")}: {fieldInfo.medicineRequirement.quantity} ·
+                            {t("crops.costLabel")}: ₹{formatNumber(fieldInfo.medicineRequirement.cost)}
                         </span>
                     </div>
 
@@ -212,7 +212,7 @@ export default function CropDetails() {
                         >
                             <FlaskConical size={16} color="var(--accent)" />
                             <span className="crop-details__advanced-label">
-                                Fertilizer Requirement
+                                {t("crops.fertilizerRequirement")}
                             </span>
                         </div>
                         <span
@@ -222,9 +222,9 @@ export default function CropDetails() {
                             {fieldInfo.fertilizerRequirement.fertilizer}
                         </span>
                         <span className="crop-details__advanced-note">
-                            Qty: {fieldInfo.fertilizerRequirement.quantity} ·
-                            Cost: ₹{fieldInfo.fertilizerRequirement.cost} ·
-                            Benefit:{" "}
+                            {t("crops.qty")}: {fieldInfo.fertilizerRequirement.quantity} ·
+                            {t("crops.costLabel")}: ₹{formatNumber(fieldInfo.fertilizerRequirement.cost)} ·
+                            {t("crops.benefit")}:{" "}
                             {fieldInfo.fertilizerRequirement.expectedBenefit}
                         </span>
                     </div>
@@ -244,19 +244,19 @@ export default function CropDetails() {
                         >
                             <Store size={16} color="var(--accent)" />
                             <span className="crop-details__advanced-label">
-                                Mandi Selling Intelligence
+                                {t("crops.mandiIntel")}
                             </span>
                         </div>
                         <span
                             className="crop-details__advanced-value"
                             style={{ fontSize: 16 }}
                         >
-                            ₹{crop.marketPrice} / Quintal
+                            ₹{formatNumber(crop.marketPrice)} {t("crops.perQuintal")}
                         </span>
                         <span className="crop-details__advanced-note">
-                            Expected Selling Value: ₹
-                            {crop.expectedRevenue.toLocaleString("en-IN")} (
-                            {crop.expectedYield} Ton)
+                            {t("crops.expectedSellingValue")}: ₹
+                            {formatNumber(crop.expectedRevenue)} (
+                            {formatNumber(crop.expectedYield)} {t("common.ton")})
                         </span>
                     </div>
 
@@ -271,21 +271,18 @@ export default function CropDetails() {
                         >
                             <TrendingUp size={16} color="var(--success)" />
                             <span className="crop-details__advanced-label">
-                                Yield Gap & Potential
+                                {t("crops.yieldGap")}
                             </span>
                         </div>
                         <span
                             className="crop-details__advanced-value"
                             style={{ fontSize: 16 }}
                         >
-                            {(crop.potentialYield - crop.expectedYield).toFixed(
-                                1,
-                            )}{" "}
-                            Ton Gap
+                            {formatNumber(+(crop.potentialYield - crop.expectedYield).toFixed(1), { minimumFractionDigits: 1 })}{" "}
+                            {t("crops.tonGap")}
                         </span>
                         <span className="crop-details__advanced-note">
-                            Potential: {crop.potentialYield} Ton · Recoverable
-                            with timely inputs
+                            {t("crops.potentialLabel")} {formatNumber(crop.potentialYield)} {t("common.ton")} · {t("crops.recoverable")}
                         </span>
                     </div>
                 </div>
@@ -294,7 +291,7 @@ export default function CropDetails() {
             {/* Financial Estimates */}
             <section className="crop-details__factors section">
                 <h2 className="crop-details__section-title">
-                    Production & Profit Efficiency
+                    {t("crops.profitEfficiency")}
                 </h2>
                 <div className="crop-details__factors-grid">
                     <div className="crop-details__factor">
@@ -303,7 +300,7 @@ export default function CropDetails() {
                                 (crop.expectedProfit / crop.expectedRevenue) *
                                     100,
                             )}
-                            label="Net Profit Margin"
+                            label={t("crops.netProfitMargin")}
                         />
                     </div>
                     <div className="crop-details__factor">
@@ -312,7 +309,7 @@ export default function CropDetails() {
                                 (crop.expectedYield / crop.potentialYield) *
                                     100,
                             )}
-                            label="Yield Realization Rate"
+                            label={t("crops.yieldRealization")}
                         />
                     </div>
                 </div>

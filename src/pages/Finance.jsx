@@ -16,7 +16,7 @@ import { TrendingUp, Coins, DollarSign, Wheat } from "lucide-react";
 import "./Finance.css";
 
 export default function Finance() {
-    const { t } = useLanguage();
+    const { t, formatNumber } = useLanguage();
     const { expenses, revenue, monthlyExpenses, varietyWiseProfit } =
         financeData;
 
@@ -26,8 +26,7 @@ export default function Finance() {
                 <div>
                     <h1 className="finance-page__title">{t("nav.finance")}</h1>
                     <p className="dashboard__section-subtitle">
-                        Rice production cost accounting, variety-wise revenue,
-                        net profit estimation, and profit margins
+                        {t("finance.subtitle")}
                     </p>
                 </div>
             </section>
@@ -40,10 +39,10 @@ export default function Finance() {
                     </span>
                     <span className="finance-page__summary-value">
                         {t("common.rupeeSymbol")}
-                        {expenses.total.toLocaleString("en-IN")}
+                        {formatNumber(expenses.total)}
                     </span>
                     <span className="finance-page__summary-sub">
-                        Across 8.6 Acres (₹15,813/ac)
+                        {t("finance.acresAt")}
                     </span>
                 </div>
                 <div className="finance-page__summary-card finance-page__summary-card--revenue">
@@ -52,10 +51,10 @@ export default function Finance() {
                     </span>
                     <span className="finance-page__summary-value">
                         {t("common.rupeeSymbol")}
-                        {revenue.expected.toLocaleString("en-IN")}
+                        {formatNumber(revenue.expected)}
                     </span>
                     <span className="finance-page__summary-sub">
-                        16.1 Tons total expected yield
+                        {t("finance.tonsTotal")}
                     </span>
                 </div>
                 <div className="finance-page__summary-card finance-page__summary-card--profit">
@@ -74,7 +73,7 @@ export default function Finance() {
                             {t("finance.estimatedProfit")}
                         </span>
                         <span className="finance-page__profit-badge">
-                            +{financeData.profitMargin}% Margin
+                            +{formatNumber(financeData.profitMargin)}% {t("finance.marginBadge")}
                         </span>
                     </div>
                     <span
@@ -82,10 +81,10 @@ export default function Finance() {
                         style={{ color: "var(--success)" }}
                     >
                         {t("common.rupeeSymbol")}
-                        {revenue.estimatedProfit.toLocaleString("en-IN")}
+                        {formatNumber(revenue.estimatedProfit)}
                     </span>
                     <span className="finance-page__summary-sub">
-                        Net after seeds, fert, med & labor
+                        {t("finance.netAfter")}
                     </span>
                 </div>
             </section>
@@ -93,19 +92,19 @@ export default function Finance() {
             {/* Variety-Wise Profit Table */}
             <section className="finance-page__variety-table-section section">
                 <h2 className="finance-page__section-title">
-                    Variety-wise Rice Production & Profit Breakdown
+                    {t("finance.varietyBreakdown")}
                 </h2>
                 <div className="finance-page__table-wrapper">
                     <table className="finance-page__table">
                         <thead>
                             <tr>
-                                <th>Rice Variety</th>
-                                <th>Field / Area</th>
-                                <th>Expected Yield</th>
-                                <th>Estimated Cost</th>
-                                <th>Expected Revenue</th>
-                                <th>Expected Profit</th>
-                                <th>Margin</th>
+                                <th>{t("crops.variety")}</th>
+                                <th>{t("crops.fieldArea")}</th>
+                                <th>{t("crops.expectedYield")}</th>
+                                <th>{t("crops.estimatedCost")}</th>
+                                <th>{t("crops.expectedRevenue")}</th>
+                                <th>{t("crops.expectedProfit")}</th>
+                                <th>{t("crops.margin")}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -115,12 +114,12 @@ export default function Finance() {
                                         <strong>{v.variety}</strong>
                                     </td>
                                     <td>
-                                        {v.field} ({v.area} ac)
+                                        {v.field} ({formatNumber(v.area)} ac)
                                     </td>
-                                    <td>{v.expectedYield} Ton</td>
-                                    <td>₹{v.cost.toLocaleString("en-IN")}</td>
+                                    <td>{formatNumber(v.expectedYield)} {t("common.ton")}</td>
+                                    <td>₹{formatNumber(v.cost)}</td>
                                     <td>
-                                        ₹{v.revenue.toLocaleString("en-IN")}
+                                        ₹{formatNumber(v.revenue)}
                                     </td>
                                     <td
                                         style={{
@@ -128,11 +127,11 @@ export default function Finance() {
                                             fontWeight: 700,
                                         }}
                                     >
-                                        ₹{v.profit.toLocaleString("en-IN")}
+                                        ₹{formatNumber(v.profit)}
                                     </td>
                                     <td>
                                         <span className="finance-page__margin-pill">
-                                            {v.margin}%
+                                            {formatNumber(v.margin)}%
                                         </span>
                                     </td>
                                 </tr>
@@ -145,9 +144,9 @@ export default function Finance() {
             <div className="finance-page__grid">
                 {/* Cost Breakdown */}
                 <section className="finance-page__breakdown section">
-                    <h2 className="finance-page__section-title">
-                        Production Cost Categories
-                    </h2>
+                <h2 className="finance-page__section-title">
+                    {t("finance.costCategories")}
+                </h2>
                     <div className="finance-page__chart-row">
                         <div className="finance-page__pie">
                             <ResponsiveContainer width={180} height={180}>
@@ -167,8 +166,8 @@ export default function Finance() {
                                     </Pie>
                                     <Tooltip
                                         formatter={(val) => [
-                                            `₹${val.toLocaleString("en-IN")}`,
-                                            "Cost",
+                                            `₹${formatNumber(val)}`,
+                                            t("finance.cost"),
                                         ]}
                                         contentStyle={{
                                             background: "var(--bg-surface)",
@@ -195,7 +194,7 @@ export default function Finance() {
                                     </span>
                                     <span className="finance-page__legend-value">
                                         {t("common.rupeeSymbol")}
-                                        {item.amount.toLocaleString("en-IN")}
+                                        {formatNumber(item.amount)}
                                     </span>
                                 </div>
                             ))}
@@ -205,9 +204,9 @@ export default function Finance() {
 
                 {/* Monthly Expense Schedule */}
                 <section className="finance-page__trend section">
-                    <h2 className="finance-page__section-title">
-                        Monthly Season Expenditure
-                    </h2>
+                <h2 className="finance-page__section-title">
+                    {t("finance.monthlyExpenditure")}
+                </h2>
                     <div className="finance-page__chart-container">
                         <ResponsiveContainer width="100%" height={220}>
                             <BarChart data={monthlyExpenses}>
@@ -234,8 +233,8 @@ export default function Finance() {
                                 />
                                 <Tooltip
                                     formatter={(val) => [
-                                        `₹${val.toLocaleString("en-IN")}`,
-                                        "Expenditure",
+                                        `₹${formatNumber(val)}`,
+                                        t("finance.expenditure"),
                                     ]}
                                     contentStyle={{
                                         background: "var(--bg-surface)",

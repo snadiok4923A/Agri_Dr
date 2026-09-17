@@ -23,20 +23,20 @@ export default function Settings() {
             </div>
             <div>
               <h2 className="settings-page__section-title">{t('settings.profile')}</h2>
-              <p className="settings-page__section-subtitle">Manage your account</p>
+              <p className="settings-page__section-subtitle">{t('settings.manageAccount')}</p>
             </div>
           </div>
           <div className="settings-page__section-content">
             <div className="settings-page__field">
-              <label className="settings-page__label">Name</label>
+              <label className="settings-page__label">{t('settings.name')}</label>
               <input className="settings-page__input" defaultValue={demoUser.name} />
             </div>
             <div className="settings-page__field">
-              <label className="settings-page__label">Farm Name</label>
+              <label className="settings-page__label">{t('settings.farmName')}</label>
               <input className="settings-page__input" defaultValue="Green Valley Farm" />
             </div>
             <div className="settings-page__field">
-              <label className="settings-page__label">Location</label>
+              <label className="settings-page__label">{t('settings.location')}</label>
               <input className="settings-page__input" defaultValue="West Bengal, India" />
             </div>
           </div>
@@ -50,7 +50,7 @@ export default function Settings() {
             </div>
             <div>
               <h2 className="settings-page__section-title">{t('settings.language')}</h2>
-              <p className="settings-page__section-subtitle">Choose your preferred language</p>
+              <p className="settings-page__section-subtitle">{t('settings.chooseLanguage')}</p>
             </div>
           </div>
           <div className="settings-page__section-content">
@@ -78,7 +78,7 @@ export default function Settings() {
             </div>
             <div>
               <h2 className="settings-page__section-title">{t('settings.appearance')}</h2>
-              <p className="settings-page__section-subtitle">Choose your theme</p>
+              <p className="settings-page__section-subtitle">{t('settings.chooseTheme')}</p>
             </div>
           </div>
           <div className="settings-page__section-content">

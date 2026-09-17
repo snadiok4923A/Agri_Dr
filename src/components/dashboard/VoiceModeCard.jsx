@@ -1,5 +1,6 @@
 import { Mic, Square } from "lucide-react";
 import { useVoiceMode } from "../../hooks/useVoiceMode";
+import { useLanguage } from "../../hooks/useLanguage";
 import "./DashboardFeatureCards.css";
 
 /**
@@ -7,21 +8,21 @@ import "./DashboardFeatureCards.css";
  * Mirrors the dashboard's glass card language (surface, border, radius,
  * typography). Activation is persistent: it stays on until stopped from
  * the card, the header icon, or a spoken stop command ("voice bondho").
+ * All labels resolve through the i18n system.
  */
 export default function VoiceModeCard() {
     const { active, status, start, stop, supported, transcript, lastCommand } =
         useVoiceMode();
+    const { t } = useLanguage();
 
     const listening = active && (status === "listening" || status === "starting");
     const restarting = active && status === "restarting";
 
     const statusLabel = !active
         ? null
-        : listening
-          ? "Listening…"
-          : restarting
-            ? "Listening…"
-            : "Starting…";
+        : listening || restarting
+          ? t("dashboard.listening")
+          : t("dashboard.starting");
 
     return (
         <div
@@ -33,7 +34,7 @@ export default function VoiceModeCard() {
                 <span className="feature-card__icon feature-card__icon--leaf">
                     <Mic size={18} />
                 </span>
-                <span className="feature-card__title">Voice Mode</span>
+                <span className="feature-card__title">{t("dashboard.voiceMode")}</span>
             </div>
 
             {active ? (
@@ -58,13 +59,13 @@ export default function VoiceModeCard() {
                         onClick={stop}
                     >
                         <Square size={13} />
-                        Stop Voice Mode
+                        {t("dashboard.stopVoiceMode")}
                     </button>
                 </>
             ) : (
                 <>
                     <p className="feature-card__sub">
-                        Control Krisiveda with your voice
+                        {t("dashboard.voiceControlSub")}
                     </p>
                     <button
                         type="button"
@@ -74,15 +75,15 @@ export default function VoiceModeCard() {
                         title={
                             supported
                                 ? undefined
-                                : "Voice control is not supported in this browser."
+                                : t("dashboard.voiceNotSupported")
                         }
                     >
                         <Mic size={14} />
-                        {supported ? "Start Voice Mode" : "Voice Unavailable"}
+                        {supported ? t("dashboard.startVoiceMode") : t("dashboard.voiceUnavailable")}
                     </button>
                     {!supported && (
                         <span className="feature-card__hint">
-                            Voice control is not supported in this browser.
+                            {t("dashboard.voiceNotSupported")}
                         </span>
                     )}
                 </>

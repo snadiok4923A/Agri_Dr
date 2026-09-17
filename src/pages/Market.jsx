@@ -19,7 +19,7 @@ import {
 import "./Market.css";
 
 export default function Market() {
-    const { t } = useLanguage();
+    const { t, formatNumber } = useLanguage();
 
     return (
         <div className="page-container market-page">
@@ -27,8 +27,7 @@ export default function Market() {
                 <div>
                     <h1 className="market-page__title">{t("nav.market")}</h1>
                     <p className="dashboard__section-subtitle">
-                        APMC Mandi spot rates, rice selling value calculation,
-                        and net profit projections
+                        {t("market.subtitle")}
                     </p>
                 </div>
             </section>
@@ -37,7 +36,7 @@ export default function Market() {
             <div className="market-page__advisory section">
                 <Sparkles size={18} className="market-page__advisory-icon" />
                 <div className="market-page__advisory-text">
-                    <strong>Mandi Intelligence:</strong>{" "}
+                    <strong>{t("market.mandiIntelligence")}</strong>{" "}
                     {marketData.mandiAdvisory}
                 </div>
             </div>
@@ -79,49 +78,43 @@ export default function Market() {
                         <div className="market-page__calc-box">
                             <div className="market-page__calc-row">
                                 <span className="market-page__calc-lbl">
-                                    Expected Farm Yield:
+                                    {t("market.farmYield")}
                                 </span>
                                 <span className="market-page__calc-val">
-                                    {crop.expectedProductionTons} Ton (
-                                    {(crop.expectedProductionTons * 10).toFixed(
-                                        0,
-                                    )}{" "}
-                                    Quintals)
+                                    {formatNumber(crop.expectedProductionTons)} {t("common.ton")} (
+                                    {formatNumber(+(crop.expectedProductionTons * 10).toFixed(0))}{" "}
+                                    {t("market.quintals")})
                                 </span>
                             </div>
                             <div className="market-page__calc-row">
                                 <span className="market-page__calc-lbl">
-                                    Estimated Selling Value:
+                                    {t("market.sellingValue")}
                                 </span>
                                 <span className="market-page__calc-val">
                                     ₹
-                                    {crop.estimatedSellingRevenue.toLocaleString(
-                                        "en-IN",
-                                    )}
+                                    {formatNumber(crop.estimatedSellingRevenue)}
                                 </span>
                             </div>
                             <div className="market-page__calc-row">
                                 <span className="market-page__calc-lbl">
-                                    Total Input Cost:
+                                    {t("market.inputCost")}
                                 </span>
                                 <span className="market-page__calc-val">
                                     ₹
-                                    {crop.estimatedCost.toLocaleString("en-IN")}
+                                    {formatNumber(crop.estimatedCost)}
                                 </span>
                             </div>
                             <div className="market-page__calc-row market-page__calc-row--profit">
                                 <span className="market-page__calc-lbl">
-                                    Expected Net Profit:
+                                    {t("market.netProfit")}
                                 </span>
                                 <span
                                     className="market-page__calc-val"
                                     style={{ color: "var(--success)" }}
                                 >
                                     ₹
-                                    {crop.expectedProfit.toLocaleString(
-                                        "en-IN",
-                                    )}{" "}
-                                    ({crop.profitMargin}%)
+                                    {formatNumber(crop.expectedProfit)}{" "}
+                                    ({formatNumber(crop.profitMargin)}%)
                                 </span>
                             </div>
                         </div>
@@ -153,8 +146,8 @@ export default function Market() {
                                     />
                                     <Tooltip
                                         formatter={(val) => [
-                                            `₹${val}/Q`,
-                                            "Mandi Rate",
+                                            `₹${formatNumber(val)}/Q`,
+                                            t("market.mandiRate"),
                                         ]}
                                         contentStyle={{
                                             background: "var(--bg-surface)",

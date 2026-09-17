@@ -11,7 +11,7 @@ import ProgressBar from "../components/common/ProgressBar";
 import "./Soil.css";
 
 export default function Soil() {
-    const { t } = useLanguage();
+    const { t, formatLabel } = useLanguage();
     const s = soilData.overall;
 
     return (
@@ -29,14 +29,13 @@ export default function Soil() {
                     <div>
                         <h1 className="soil-page__title">{t("nav.soil")}</h1>
                         <p className="dashboard__section-subtitle">
-                            Agronomic laboratory test profile, nutrient
-                            availability, and fertilizer guidance for rice yield
+                            {t("soil.subtitle")}
                         </p>
                     </div>
                     <div className="soil-page__lab-tag">
                         <FileText size={14} />
                         <span>
-                            Lab Test: {soilData.lastLabTestDate} ·{" "}
+                            {t("soil.labTest")}: {soilData.lastLabTestDate} ·{" "}
                             {soilData.testingAgency}
                         </span>
                     </div>
@@ -60,7 +59,7 @@ export default function Soil() {
                     >
                         <Sprout size={18} color="var(--accent)" />
                         <span className="soil-page__issue-label">
-                            Yield & Fertility Impact
+                            {t("soil.yieldImpact")}
                         </span>
                     </div>
                     <span className="soil-page__impact-text">
@@ -80,7 +79,7 @@ export default function Soil() {
             {/* Available Nutrients with Fertilizer Recommendations */}
             <section className="soil-page__nutrients section">
                 <h2 className="soil-page__section-title">
-                    NPK Nutrients & Fertilizer Requirements
+                    {t("soil.npk")}
                 </h2>
                 <div className="soil-page__nutrient-grid">
                     {soilData.nutrients.map((item, idx) => (
@@ -104,7 +103,7 @@ export default function Soil() {
                                 />
                             </div>
                             <div className="soil-page__nutrient-rec">
-                                <strong>Agronomic Guidance:</strong>{" "}
+                                <strong>{t("soil.guidance")}</strong>{" "}
                                 {item.recommendation}
                             </div>
                         </div>
@@ -115,7 +114,7 @@ export default function Soil() {
             {/* Field-by-Field Soil & Yield Profile */}
             <section className="soil-page__details section">
                 <h2 className="soil-page__section-title">
-                    Field-wise Agronomic Profile & Target Yield
+                    {t("soil.fieldProfiles")}
                 </h2>
                 <div className="soil-page__field-grid">
                     {Object.entries(soilData.fields).map(([id, soil]) => (
@@ -135,7 +134,7 @@ export default function Soil() {
                                     — {soil.variety}
                                 </h3>
                                 <span className="soil-page__field-target">
-                                    Target: {soil.yieldPotential}
+                                    {t("soil.target")}: {soil.yieldPotential}
                                 </span>
                             </div>
                             <div className="soil-page__field-data">
@@ -144,19 +143,19 @@ export default function Soil() {
                                     <strong>{soil.ph}</strong>
                                 </div>
                                 <div className="soil-page__data-pill">
-                                    <span>Nitrogen</span>
+                                    <span>{t("soil.nitrogen")}</span>
                                     <strong>{soil.nitrogen}</strong>
                                 </div>
                                 <div className="soil-page__data-pill">
-                                    <span>Phosphorus</span>
+                                    <span>{t("soil.phosphorus")}</span>
                                     <strong>{soil.phosphorus}</strong>
                                 </div>
                                 <div className="soil-page__data-pill">
-                                    <span>Potassium</span>
+                                    <span>{t("soil.potassium")}</span>
                                     <strong>{soil.potassium}</strong>
                                 </div>
                                 <div className="soil-page__data-pill">
-                                    <span>Organic C</span>
+                                    <span>{t("soil.organicC")}</span>
                                     <strong>{soil.organicMatter}</strong>
                                 </div>
                             </div>

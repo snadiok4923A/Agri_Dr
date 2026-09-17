@@ -20,7 +20,7 @@ import "./Disease.css";
  * existing data.
  */
 export default function Disease() {
-    const { t } = useLanguage();
+    const { t, formatLabel } = useLanguage();
     const navigate = useNavigate();
     const [filter, setFilter] = useState("all");
     const [selected, setSelected] = useState(null);
@@ -49,13 +49,12 @@ export default function Disease() {
             <section className="disease-page__header section">
                 <h1 className="disease-page__title">{t("nav.disease")}</h1>
                 <p className="disease-page__subtitle">
-                    Common rice diseases and their treatment — browse a disease
-                    to see medicine, dose and cost.
+                    {t("disease.subtitle")}
                 </p>
             </section>
 
             {/* Filters */}
-            <div className="disease-page__filters" role="tablist" aria-label="Filter diseases">
+            <div className="disease-page__filters" role="tablist" aria-label={t("common.filterDiseases")}>
                 {diseaseFilters.map((f) => (
                     <button
                         key={f.id}
@@ -67,7 +66,7 @@ export default function Disease() {
                         }`}
                         onClick={() => setFilter(f.id)}
                     >
-                        {f.label}
+                        {t(`filters.disease.${f.id}`)}
                     </button>
                 ))}
             </div>
@@ -98,29 +97,33 @@ export default function Disease() {
 
                         {/* TREATMENT row — medicine name, or the agronomist fallback */}
                         <div className="disease-page__card-treat">
-                            <span className="disease-page__label">Treatment</span>
+                            <span className="disease-page__label">{t("disease.treatment")}</span>
                             <span className="disease-page__treat-val">
-                                {d.medicine || "Ask an agronomist"}
+                                {d.medicine || t("disease.askAgronomist")}
                             </span>
                         </div>
 
-                        {/* TREATMENT COST row — approximate estimates marked with ≈ */}
+                        {/* TREATMENT COST row — approximate estimates marked with ≈;
+                            the "/ acre" unit is localized, the number stays data-true */}
                         <div className="disease-page__card-cost">
-                            <span className="disease-page__label">Treatment cost</span>
-                            <span className="disease-page__cost-val">{d.cost}</span>
+                            <span className="disease-page__label">{t("disease.treatmentCost")}</span>
+                            <span className="disease-page__cost-val">
+                                {formatLabel(String(d.cost).replace(/\/\s*acre$/, "")).trim()}{" "}
+                                / {t("units.acre")}
+                            </span>
                         </div>
 
                         <p className="disease-page__card-symptoms">{d.symptoms[0]}…</p>
 
                         <span className="disease-page__card-cta">
-                            View Details <ArrowRight size={13} />
+                            {t("disease.viewDetails")} <ArrowRight size={13} />
                         </span>
                     </button>
                 ))}
             </div>
 
             {visible.length === 0 && (
-                <p className="disease-page__empty">No diseases match this filter yet.</p>
+                <p className="disease-page__empty">{t("disease.empty")}</p>
             )}
 
             {/* ==================== Floating detail window ==================== */}
@@ -141,9 +144,9 @@ export default function Disease() {
                             type="button"
                             className="disease-page__modal-close"
                             onClick={() => setSelected(null)}
-                            aria-label="Close"
-                        >
-                            <X size={18} />
+                        aria-label={t("common.close")}
+                    >
+                        <X size={18} />
                         </button>
 
                         {/* Disease image */}
@@ -167,29 +170,30 @@ export default function Disease() {
                         {/* Recommended treatment — identical structure for every
                             disease: Medicine + Dose · Coverage · Treatment Cost. */}
                         <div className="disease-page__msection">
-                            <h4 className="disease-page__msection-title">Recommended Treatment</h4>
+                            <h4 className="disease-page__msection-title">{t("disease.recommendedTreatment")}</h4>
                             <div className="disease-page__fact">
-                                <span className="disease-page__fact-label">Medicine</span>
+                                <span className="disease-page__fact-label">{t("disease.medicine")}</span>
                                 <span className="disease-page__fact-val">
-                                    {selected.medicine || "Ask an agronomist"}
+                                    {selected.medicine || t("disease.askAgronomist")}
                                 </span>
                             </div>
                             <div className="disease-page__modal-stats">
                                 <div className="disease-page__mstat">
-                                    <span className="disease-page__mstat-label">Dose</span>
-                                    <span className="disease-page__mstat-val">{selected.dose}</span>
+                                    <span className="disease-page__mstat-label">{t("disease.dose")}</span>
+                                    <span className="disease-page__mstat-val">{formatLabel(selected.dose)}</span>
                                 </div>
                                 <div className="disease-page__mstat">
-                                    <span className="disease-page__mstat-label">Coverage</span>
+                                    <span className="disease-page__mstat-label">{t("disease.coverage")}</span>
                                     <span className="disease-page__mstat-val">
-                                        {selected.coverage}
+                                        {formatLabel(selected.coverage)}
                                         {selected.coverageNote ? ` (${selected.coverageNote})` : ""}
                                     </span>
                                 </div>
                                 <div className="disease-page__mstat">
-                                    <span className="disease-page__mstat-label">Treatment Cost</span>
+                                    <span className="disease-page__mstat-label">{t("disease.treatmentCost")}</span>
                                     <span className="disease-page__mstat-val disease-page__mstat-val--cost">
-                                        {selected.cost}
+                                        {formatLabel(String(selected.cost).replace(/\/\s*acre$/, "")).trim()}{" "}
+                                        / {t("units.acre")}
                                     </span>
                                 </div>
                             </div>
@@ -200,7 +204,7 @@ export default function Disease() {
 
                         {/* Symptoms */}
                         <div className="disease-page__msection">
-                            <h4 className="disease-page__msection-title">Symptoms</h4>
+                            <h4 className="disease-page__msection-title">{t("disease.symptoms")}</h4>
                             <ul className="disease-page__symptom-list">
                                 {selected.symptoms.map((s) => (
                                     <li key={s}>{s}</li>
@@ -210,7 +214,7 @@ export default function Disease() {
 
                         {/* Commonly seen in — relevant varieties for every disease */}
                         <div className="disease-page__msection">
-                            <h4 className="disease-page__msection-title">Commonly Seen In</h4>
+                            <h4 className="disease-page__msection-title">{t("disease.commonIn")}</h4>
                             <p className="disease-page__common-in">
                                 {(selected.commonIn || []).join(" · ")}
                             </p>
@@ -223,7 +227,7 @@ export default function Disease() {
                             onClick={() => navigate("/ai-doctor")}
                         >
                             <span>
-                                <strong>Have a question?</strong> Ask AI
+                                <strong>{t("disease.askAIQuestion")}</strong> {t("disease.askAIFooter")}
                             </span>
                             <Sparkles size={16} />
                         </button>

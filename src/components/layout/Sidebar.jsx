@@ -64,7 +64,7 @@ export default function Sidebar() {
         <div className="sidebar__divider" />
 
         <div className="sidebar__section">
-          {!collapsed && <div className="sidebar__section-label">Tools</div>}
+          {!collapsed && <div className="sidebar__section-label">{t('common.tools')}</div>}
           {subItems.map((item) => (
             <NavLink
               key={item.path}
@@ -113,7 +113,7 @@ export default function Sidebar() {
       <button
         className="sidebar__toggle"
         onClick={() => setCollapsed(!collapsed)}
-        aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        aria-label={collapsed ? t('common.expandSidebar') : t('common.collapseSidebar')}
       >
         {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
       </button>

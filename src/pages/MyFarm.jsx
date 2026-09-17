@@ -6,7 +6,7 @@ import StatusBadge from "../components/common/StatusBadge";
 import "./MyFarm.css";
 
 export default function MyFarm() {
-    const { t } = useLanguage();
+    const { t, formatNumber } = useLanguage();
     const navigate = useNavigate();
 
     return (
@@ -30,7 +30,7 @@ export default function MyFarm() {
                     </div>
                     <div className="myfarm__stat-content">
                         <span className="myfarm__stat-value">
-                            {farmData.totalLand} {t("dashboard.acres")}
+                            {formatNumber(farmData.totalLand)} {t("dashboard.acres")}
                         </span>
                         <span className="myfarm__stat-label">
                             {t("farm.totalLand")}
@@ -50,7 +50,7 @@ export default function MyFarm() {
                     </div>
                     <div className="myfarm__stat-content">
                         <span className="myfarm__stat-value">
-                            {farmData.expectedYield} {t("common.ton")}
+                            {formatNumber(farmData.expectedYield, { minimumFractionDigits: 1 })} {t("common.ton")}
                         </span>
                         <span className="myfarm__stat-label">
                             {t("farm.expectedProduction")}
@@ -70,7 +70,7 @@ export default function MyFarm() {
                     </div>
                     <div className="myfarm__stat-content">
                         <span className="myfarm__stat-value">
-                            ₹{(farmData.estimatedRevenue / 1000).toFixed(1)}k
+                            ₹{formatNumber(+(farmData.estimatedRevenue / 1000).toFixed(1), { minimumFractionDigits: 1 })}k
                         </span>
                         <span className="myfarm__stat-label">
                             {t("farm.estimatedRevenue")}
@@ -93,10 +93,10 @@ export default function MyFarm() {
                             className="myfarm__stat-value"
                             style={{ color: "var(--success)" }}
                         >
-                            ₹{(farmData.expectedProfit / 1000).toFixed(1)}k
+                            ₹{formatNumber(+(farmData.expectedProfit / 1000).toFixed(1), { minimumFractionDigits: 1 })}k
                         </span>
                         <span className="myfarm__stat-label">
-                            {t("farm.expectedProfit")} ({farmData.profitMargin}
+                            {t("farm.expectedProfit")} ({formatNumber(farmData.profitMargin)}
                             %)
                         </span>
                     </div>
@@ -121,7 +121,7 @@ export default function MyFarm() {
                                 className="myfarm__section-title"
                                 style={{ margin: 0 }}
                             >
-                                Farm Layout & Variety Production Map
+                                {t("farm.farmLayout")}
                             </h2>
                             <span
                                 style={{
@@ -129,18 +129,17 @@ export default function MyFarm() {
                                     color: "var(--text-muted)",
                                 }}
                             >
-                                Click any field parcel to view detailed variety
-                                production & profit
+                                {t("farm.mapHint")}
                             </span>
                         </div>
                         <div className="myfarm__map-legend">
                             <div className="myfarm__legend-item">
                                 <div className="myfarm__legend-dot myfarm__legend-dot--healthy" />
-                                <span>On Track</span>
+                                <span>{t("farm.onTrack")}</span>
                             </div>
                             <div className="myfarm__legend-item">
                                 <div className="myfarm__legend-dot myfarm__legend-dot--attention" />
-                                <span>Action Required</span>
+                                <span>{t("farm.actionRequired")}</span>
                             </div>
                         </div>
                     </div>
@@ -166,32 +165,29 @@ export default function MyFarm() {
                                             {field.name}
                                         </span>
                                         <span className="myfarm__map-field-area">
-                                            {field.area} Acres
+                                            {formatNumber(field.area)} {t("dashboard.acres")}
                                         </span>
                                     </div>
                                     <span className="myfarm__map-field-crop">
-                                        Variety:{" "}
+                                        {t("farm.variety")}{" "}
                                         <strong>{field.variety}</strong>
                                     </span>
                                     <div className="myfarm__map-field-yield-box">
                                         <span className="myfarm__map-field-yield-val">
-                                            {field.expectedYield} Ton
+                                            {formatNumber(field.expectedYield, { minimumFractionDigits: 1 })} {t("common.ton")}
                                         </span>
                                         <span className="myfarm__map-field-profit-val">
-                                            Profit: ₹
-                                            {(
-                                                field.expectedProfit / 1000
-                                            ).toFixed(1)}
+                                            {t("farm.profit")} ₹
+                                            {formatNumber(+(field.expectedProfit / 1000).toFixed(1), { minimumFractionDigits: 1 })}
                                             k
                                         </span>
                                     </div>
                                 </div>
                                 <div className="myfarm__map-field-bottom">
                                     <span>
-                                        {field.growthStage} (Day {field.cropAge}
-                                        )
+                                        {field.growthStage} ({t("crops.dayOf")} {formatNumber(field.cropAge)})
                                     </span>
-                                    <StatusBadge status={field.status} />
+                                    <StatusBadge status={field.status} t={t} />
                                 </div>
                             </div>
                         ))}
