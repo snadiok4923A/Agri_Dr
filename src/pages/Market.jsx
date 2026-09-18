@@ -1,25 +1,67 @@
+import { useMemo, useState } from "react";
 import { useLanguage } from "../hooks/useLanguage";
-import { marketData } from "../data/mockData";
-import {
-    TrendingUp,
-    TrendingDown,
-    Store,
-    Sparkles,
-    Coins,
-    DollarSign,
-} from "lucide-react";
-import {
-    LineChart,
-    Line,
-    XAxis,
-    YAxis,
-    Tooltip,
-    ResponsiveContainer,
-} from "recharts";
+import { marketPrices, marketFilters } from "../data/marketPrices";
+import { Search, X } from "lucide-react";
 import "./Market.css";
+
+/*
+ * Market Intelligence — minimal price directory.
+ *
+ * The page is a pure VIEW over src/data/marketPrices.js (data layer is
+ * separate, so a live mandi API can replace the module later). Each card
+ * shows exactly: variety + image, market price, market centre,
+ * state/district, modal price. Clicking a card opens the same fields in a
+ * floating glass modal — nothing more.
+ */
+
+function GrainFallback() {
+    return (
+        <svg viewBox="0 0 48 48" aria-hidden="true" className="market-page__card-fallback">
+            <path
+                d="M24 42c0-9 3-14 9-19-8 1-12 4-15 9 1-8-1-13-6-18 8 2 12 6 14 12 1-9 5-14 12-17-4 7-6 12-6 18-2-4-5-7-9-8 4 4 5 9 5 15"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+            />
+        </svg>
+    );
+}
 
 export default function Market() {
     const { t, formatNumber } = useLanguage();
+    const [query, setQuery] = useState("");
+    const [filter, setFilter] = useState("all");
+    const [selected, setSelected] = useState(null);
+
+    const filterLabels = {
+        all: t("market.filterAll"),
+        basmati: t("market.filterBasmati"),
+        traditional: t("market.filterTraditional"),
+        premium: t("market.filterPremium"),
+        other: t("market.filterOther"),
+    };
+
+    const activeFilter = useMemo(
+        () => marketFilters.find((f) => f.id === filter) || marketFilters[0],
+        [filter]
+    );
+
+    const results = useMemo(() => {
+        const q = query.trim().toLowerCase();
+        return marketPrices.filter((r) => {
+            if (!activeFilter.match(r)) return false;
+            if (!q) return true;
+            return (
+                r.name.toLowerCase().includes(q) ||
+                r.market.toLowerCase().includes(q) ||
+                r.district.toLowerCase().includes(q) ||
+                r.state.toLowerCase().includes(q)
+            );
+        });
+    }, [query, activeFilter]);
+
+    const price = (v) => `${t("common.rupeeSymbol")}${formatNumber(v)}`;
 
     return (
         <div className="page-container market-page">
@@ -32,168 +74,171 @@ export default function Market() {
                 </div>
             </section>
 
-            {/* Mandi Intelligence Advisory */}
-            <div className="market-page__advisory section">
-                <Sparkles size={18} className="market-page__advisory-icon" />
-                <div className="market-page__advisory-text">
-                    <strong>{t("market.mandiIntelligence")}</strong>{" "}
-                    {marketData.mandiAdvisory}
+            <div className="market-page__controls">
+                <div className="market-page__search">
+                    <Search size={16} />
+                    <input
+                        type="text"
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        placeholder={t("market.searchPlaceholder")}
+                    />
+                </div>
+                <div className="market-page__chips">
+                    {marketFilters.map((f) => (
+                        <button
+                            key={f.id}
+                            type="button"
+                            className={`market-page__chip${
+                                filter === f.id ? " market-page__chip--active" : ""
+                            }`}
+                            onClick={() => setFilter(f.id)}
+                        >
+                            {filterLabels[f.id]}
+                        </button>
+                    ))}
                 </div>
             </div>
 
-            <div className="market-page__grid">
-                {marketData.crops.map((crop, i) => (
-                    <div key={i} className="market-page__crop-card">
-                        <div className="market-page__crop-header">
-                            <div>
-                                <span className="market-page__crop-name">
-                                    {crop.name}
-                                </span>
-                                <div className="market-page__crop-price">
-                                    <span className="market-page__crop-amount">
-                                        {t("common.rupeeSymbol")}
-                                        {crop.price}
-                                    </span>
-                                    <span className="market-page__crop-unit">
-                                        / {t("common.quintal")}
-                                    </span>
+            {results.length === 0 ? (
+                <p className="market-page__empty">{t("market.noResults")}</p>
+            ) : (
+                <div className="market-page__grid">
+                    {results.map((r) => (
+                        <button
+                            key={r.id}
+                            type="button"
+                            className="market-page__card"
+                            onClick={() => setSelected(r)}
+                        >
+                            <div className="market-page__card-top">
+                                <div className="market-page__card-imgwrap">
+                                    {r.image ? (
+                                        <img
+                                            src={r.image}
+                                            alt={r.name}
+                                            loading="lazy"
+                                            onError={(e) => {
+                                                e.currentTarget.style.display = "none";
+                                            }}
+                                        />
+                                    ) : null}
+                                    {!r.image && <GrainFallback />}
                                 </div>
+                                <h3 className="market-page__card-name">{r.name}</h3>
                             </div>
-                            <div
-                                className={`market-page__crop-change market-page__crop-change--${crop.trend}`}
-                            >
-                                {crop.trend === "up" ? (
-                                    <TrendingUp size={14} />
-                                ) : (
-                                    <TrendingDown size={14} />
-                                )}
-                                <span>
-                                    {crop.change > 0 ? "+" : ""}
-                                    {crop.change}%
+
+                            <div className="market-page__card-price">
+                                <span className="market-page__card-label">
+                                    {t("market.marketPrice")}
+                                </span>
+                                <span className="market-page__card-value">
+                                    {price(r.marketPrice)}
+                                    <em> {t("market.perQuintal")}</em>
                                 </span>
                             </div>
+
+                            <div className="market-page__card-meta">
+                                <span className="market-page__card-label">
+                                    {t("market.marketCentre")}
+                                </span>
+                                <span className="market-page__card-meta-val">
+                                    {r.market}
+                                </span>
+                            </div>
+
+                            <div className="market-page__card-meta">
+                                <span className="market-page__card-label">
+                                    {t("market.stateDistrict")}
+                                </span>
+                                <span className="market-page__card-meta-val">
+                                    {r.state} / {r.district}
+                                </span>
+                            </div>
+
+                            <div className="market-page__card-modalprice">
+                                <span className="market-page__card-label">
+                                    {t("market.modalPrice")}
+                                </span>
+                                <span className="market-page__card-meta-val">
+                                    {price(r.modalPrice)} {t("market.perQuintal")}
+                                </span>
+                            </div>
+
+                            <span className="market-page__card-cta">
+                                {t("market.viewDetails")} →
+                            </span>
+                        </button>
+                    ))}
+                </div>
+            )}
+
+            {selected && (
+                <div
+                    className="market-page__overlay"
+                    onClick={() => setSelected(null)}
+                >
+                    <div
+                        className="market-page__dialog"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label={selected.name}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <button
+                            type="button"
+                            className="market-page__dialog-close"
+                            aria-label={t("common.close")}
+                            onClick={() => setSelected(null)}
+                        >
+                            <X size={18} />
+                        </button>
+
+                        <div className="market-page__dialog-imgwrap">
+                            {selected.image ? (
+                                <img src={selected.image} alt={selected.name} />
+                            ) : (
+                                <GrainFallback />
+                            )}
                         </div>
 
-                        {/* Farm Production & Profit Calculation Box */}
-                        <div className="market-page__calc-box">
-                            <div className="market-page__calc-row">
-                                <span className="market-page__calc-lbl">
-                                    {t("market.farmYield")}
-                                </span>
-                                <span className="market-page__calc-val">
-                                    {formatNumber(crop.expectedProductionTons)} {t("common.ton")} (
-                                    {formatNumber(+(crop.expectedProductionTons * 10).toFixed(0))}{" "}
-                                    {t("market.quintals")})
-                                </span>
-                            </div>
-                            <div className="market-page__calc-row">
-                                <span className="market-page__calc-lbl">
-                                    {t("market.sellingValue")}
-                                </span>
-                                <span className="market-page__calc-val">
-                                    ₹
-                                    {formatNumber(crop.estimatedSellingRevenue)}
-                                </span>
-                            </div>
-                            <div className="market-page__calc-row">
-                                <span className="market-page__calc-lbl">
-                                    {t("market.inputCost")}
-                                </span>
-                                <span className="market-page__calc-val">
-                                    ₹
-                                    {formatNumber(crop.estimatedCost)}
-                                </span>
-                            </div>
-                            <div className="market-page__calc-row market-page__calc-row--profit">
-                                <span className="market-page__calc-lbl">
-                                    {t("market.netProfit")}
-                                </span>
-                                <span
-                                    className="market-page__calc-val"
-                                    style={{ color: "var(--success)" }}
-                                >
-                                    ₹
-                                    {formatNumber(crop.expectedProfit)}{" "}
-                                    ({formatNumber(crop.profitMargin)}%)
-                                </span>
-                            </div>
+                        <h3 className="market-page__dialog-name">{selected.name}</h3>
+
+                        <div className="market-page__dialog-price">
+                            <span className="market-page__card-label">
+                                {t("market.marketPrice")}
+                            </span>
+                            <strong>
+                                {price(selected.marketPrice)}
+                                <em> {t("market.perQuintal")}</em>
+                            </strong>
                         </div>
 
-                        <div className="market-page__chart">
-                            <ResponsiveContainer width="100%" height={120}>
-                                <LineChart data={crop.priceHistory}>
-                                    <XAxis
-                                        dataKey="month"
-                                        tick={{
-                                            fontSize: "min(max(calc(10px * var(--ts-small, 1)), 8px), 17px)",
-                                            fill: "var(--chart-text)",
-                                        }}
-                                        axisLine={false}
-                                        tickLine={false}
-                                    />
-                                    <YAxis
-                                        domain={[
-                                            "dataMin - 50",
-                                            "dataMax + 50",
-                                        ]}
-                                        tick={{
-                                            fontSize: "min(max(calc(10px * var(--ts-small, 1)), 8px), 17px)",
-                                            fill: "var(--chart-text)",
-                                        }}
-                                        axisLine={false}
-                                        tickLine={false}
-                                        hide
-                                    />
-                                    <Tooltip
-                                        formatter={(val) => [
-                                            `₹${formatNumber(val)}/Q`,
-                                            t("market.mandiRate"),
-                                        ]}
-                                        contentStyle={{
-                                            background: "var(--bg-surface)",
-                                            border: "1px solid var(--border)",
-                                            borderRadius: "var(--radius-md)",
-                                            fontSize: "min(max(calc(12px * var(--ts-body, 1)), 9px), 24px)",
-                                        }}
-                                    />
-                                    <Line
-                                        type="monotone"
-                                        dataKey="price"
-                                        stroke={
-                                            crop.trend === "up"
-                                                ? "var(--accent)"
-                                                : "var(--danger)"
-                                        }
-                                        strokeWidth={2}
-                                        dot={false}
-                                    />
-                                </LineChart>
-                            </ResponsiveContainer>
+                        <div className="market-page__dialog-row">
+                            <span className="market-page__card-label">
+                                {t("market.marketCentre")}
+                            </span>
+                            <span>{selected.market}</span>
                         </div>
-
-                        <div className="market-page__markets">
-                            <h4 className="market-page__markets-title">
-                                {t("market.nearbyMarkets")}
-                            </h4>
-                            {crop.markets.map((market, j) => (
-                                <div
-                                    key={j}
-                                    className="market-page__market-row"
-                                >
-                                    <Store size={14} />
-                                    <span className="market-page__market-name">
-                                        {market.name}
-                                    </span>
-                                    <span className="market-page__market-price">
-                                        {t("common.rupeeSymbol")}
-                                        {market.price} / Q
-                                    </span>
-                                </div>
-                            ))}
+                        <div className="market-page__dialog-row">
+                            <span className="market-page__card-label">
+                                {t("market.stateDistrict")}
+                            </span>
+                            <span>
+                                {selected.state} / {selected.district}
+                            </span>
+                        </div>
+                        <div className="market-page__dialog-row">
+                            <span className="market-page__card-label">
+                                {t("market.modalPrice")}
+                            </span>
+                            <span>
+                                {price(selected.modalPrice)} {t("market.perQuintal")}
+                            </span>
                         </div>
                     </div>
-                ))}
-            </div>
+                </div>
+            )}
         </div>
     );
 }

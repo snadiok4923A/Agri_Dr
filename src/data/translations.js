@@ -333,7 +333,7 @@ export const translations = {
         market: {
             cropPrices: "Rice Variety Mandi Prices", nearbyMarkets: "Nearby APMC Mandis", priceTrend: "Price Trends (Apr - Sep)", bestTimeToSell: "Revenue & Profit Potential", comingSoon: "Market Intelligence Active",
             subtitle:
-                "APMC Mandi spot rates, rice selling value calculation, and net profit projections",
+                "Current rice market prices and mandi details",
             mandiIntelligence: "Mandi Intelligence:",
             farmYield: "Expected Farm Yield:",
             sellingValue: "Estimated Selling Value:",
@@ -341,6 +341,15 @@ export const translations = {
             netProfit: "Expected Net Profit:",
             mandiRate: "Mandi Rate",
             quintals: "Quintals",
+            marketPrice: "Market Price",
+            marketCentre: "Market / Market Centre",
+            stateDistrict: "State / District",
+            modalPrice: "Modal Price",
+            perQuintal: "/ Quintal",
+            searchPlaceholder: "Search rice variety...",
+            filterAll: "All", filterBasmati: "Basmati", filterTraditional: "Traditional", filterPremium: "Premium", filterOther: "Other",
+            noResults: "No rice varieties found",
+            viewDetails: "View Details",
         },
         insights: {
             yield: "Yield Comparison", cropHealth: "Rice Production Forecast", waterUsage: "Cost Efficiency", fertilizerCost: "Fertilizer & Medicine ROI", profit: "Profitability Analysis", recentActivity: "Recent Production Activities",
@@ -770,7 +779,7 @@ export const translations = {
         market: {
             cropPrices: "ধানের বর্তমান বাজার দর", nearbyMarkets: "নিকটবর্তী মান্ডি ও পাইকারি বাজার", priceTrend: "মূল্য প্রবণতা (এপ্রিল - সেপ্টেম্বর)", bestTimeToSell: "বিক্রয়মূল্য ও সম্ভাব্য লাভ", comingSoon: "বাজার তথ্য সক্রিয়",
             subtitle:
-                "এপিএমসি মান্ডির বর্তমান দর, বিক্রয়মূল্য গণনা ও নীট লাভের পূর্বাভাস",
+                "বর্তমান ধানের বাজার দর ও মান্ডির তথ্য",
             mandiIntelligence: "মান্ডি তথ্য:",
             farmYield: "প্রত্যাশিত খামার ফলন:",
             sellingValue: "আনুমানিক বিক্রয়মূল্য:",
@@ -778,6 +787,15 @@ export const translations = {
             netProfit: "প্রত্যাশিত নীট লাভ:",
             mandiRate: "মান্ডি দর",
             quintals: "কুইন্টাল",
+            marketPrice: "বাজার দর",
+            marketCentre: "বাজার / মান্ডি",
+            stateDistrict: "রাজ্য / জেলা",
+            modalPrice: "মোডাল দর",
+            perQuintal: "/ কুইন্টাল",
+            searchPlaceholder: "ধানের জাত খুঁজুন...",
+            filterAll: "সব", filterBasmati: "বাসমতী", filterTraditional: "ঐতিহ্যবাহী", filterPremium: "প্রিমিয়াম", filterOther: "অন্যান্য",
+            noResults: "কোনো ধানের জাত পাওয়া যায়নি",
+            viewDetails: "বিস্তারিত দেখুন",
         },
         insights: {
             yield: "ফলন তুলনা", cropHealth: "ধান উৎপাদন পূর্বাভাস", waterUsage: "খরচের দক্ষতা", fertilizerCost: "সার ও ঔষধের মুনাফা অনুপাত", profit: "লাভজনকতার বিশ্লেষণ", recentActivity: "সাম্প্রতিক খামার কার্যক্রম",
@@ -1207,7 +1225,7 @@ export const translations = {
         market: {
             cropPrices: "धान मंडी भाव", nearbyMarkets: "निकटतम मंडियां", priceTrend: "मूल्य रुझान (अप्रैल - सितंबर)", bestTimeToSell: "बिक्री मूल्य व अनुमानित लाभ", comingSoon: "मंडी जानकारी सक्रिय",
             subtitle:
-                "एपीएमसी मंडी भाव, बिक्री मूल्य गणना और शुद्ध मुनाफा अनुमान",
+                "वर्तमान चावल मंडी भाव और मंडी विवरण",
             mandiIntelligence: "मंडी जानकारी:",
             farmYield: "अपेक्षित खेत उपज:",
             sellingValue: "अनुमानित बिक्री मूल्य:",
@@ -1215,6 +1233,15 @@ export const translations = {
             netProfit: "अपेक्षित शुद्ध मुनाफा:",
             mandiRate: "मंडी दर",
             quintals: "क्विंटल",
+            marketPrice: "बाज़ार भाव",
+            marketCentre: "बाज़ार / मंडी",
+            stateDistrict: "राज्य / जिला",
+            modalPrice: "मोडल भाव",
+            perQuintal: "/ क्विंटल",
+            searchPlaceholder: "चावल की किस्म खोजें...",
+            filterAll: "सभी", filterBasmati: "बासमती", filterTraditional: "पारंपरिक", filterPremium: "प्रीमियम", filterOther: "अन्य",
+            noResults: "कोई चावल किस्म नहीं मिली",
+            viewDetails: "विवरण देखें",
         },
         insights: {
             yield: "उपज तुलना", cropHealth: "धान उत्पादन पूर्वानुमान", waterUsage: "लागत दक्षता", fertilizerCost: "खाद व दवा लाभ अनुपात", profit: "लाभप्रदता विश्लेषण", recentActivity: "हाल की उत्पादन गतिविधियां",
@@ -1644,7 +1671,7 @@ export const translations = {
         market: {
             cropPrices: "వరి రకం మండీ ధరలు", nearbyMarkets: "సమీప APMC మండీలు", priceTrend: "ధర ధోరణి (ఏప్రిల్ - సెప్టెంబర్)", bestTimeToSell: "అమ్మకపు విలువ & లాభం", comingSoon: "మార్కెట్ సమాచారం సక్రియం",
             subtitle:
-                "ఏపీఎంసీ మండీ ధరలు, వరి అమ్మకపు విలువ లెక్క మరియు నికర లాభ అంచనాలు",
+                "ప్రస్తుత వరి మార్కెట్ ధరలు మరియు మండీ వివరాలు",
             mandiIntelligence: "మండీ సమాచారం:",
             farmYield: "అంచనా పొల దిగుబడి:",
             sellingValue: "అంచనా అమ్మకపు విలువ:",
@@ -1652,6 +1679,15 @@ export const translations = {
             netProfit: "అంచనా నికర లాభం:",
             mandiRate: "మండీ రేటు",
             quintals: "క్వింటాల్స్",
+            marketPrice: "మార్కెట్ ధర",
+            marketCentre: "మార్కెట్ / మండీ",
+            stateDistrict: "రాష్ట్రం / జిల్లా",
+            modalPrice: "మోడల్ ధర",
+            perQuintal: "/ క్వింటాల్",
+            searchPlaceholder: "వరి రకాన్ని వెతకండి...",
+            filterAll: "అన్నీ", filterBasmati: "బాస్మతి", filterTraditional: "సాంప్రదాయ", filterPremium: "ప్రీమియం", filterOther: "ఇతర",
+            noResults: "వరి రకాలు కనబడలేదు",
+            viewDetails: "వివరాలు చూడండి",
         },
         insights: {
             yield: "దిగుబడి పోలిక", cropHealth: "వరి ఉత్పత్తి అంచనా", waterUsage: "ఖర్చు సామర్థ్యం", fertilizerCost: "ఎరువు & మందు ROI", profit: "లాభదాయకత విశ్లేషణ", recentActivity: "ఇటీవలి పొల కార్యకలాపాలు",
@@ -2081,7 +2117,7 @@ export const translations = {
         market: {
             cropPrices: "நெல் வகை மண்டி விலைகள்", nearbyMarkets: "அருகிலுள்ள APMC மண்டிகள்", priceTrend: "விலை போக்கு (ஏப்ரல் - செப்டம்பர்)", bestTimeToSell: "விற்பனை மதிப்பு & லாபம்", comingSoon: "சந்தை தகவல் செயலில்",
             subtitle:
-                "ஏபிஎம்சி மண்டி விலைகள், நெல் விற்பனை மதிப்பு கணக்கீடு மற்றும் நிகர லாப மதிப்பீடுகள்",
+                "தற்போதைய நெல் சந்தை விலைகள் மற்றும் மண்டி விவரங்கள்",
             mandiIntelligence: "மண்டி தகவல்:",
             farmYield: "எதிர்பார்க்கும் பண்ணை மகசூல்:",
             sellingValue: "மதிப்பிடப்பட்ட விற்பனை மதிப்பு:",
@@ -2089,6 +2125,15 @@ export const translations = {
             netProfit: "எதிர்பார்க்கும் நிகர லாபம்:",
             mandiRate: "மண்டி விலை",
             quintals: "குவிண்டால்",
+            marketPrice: "சந்தை விலை",
+            marketCentre: "சந்தை / மண்டி",
+            stateDistrict: "மாநிலம் / மாவட்டம்",
+            modalPrice: "மோடல் விலை",
+            perQuintal: "/ குவிண்டால்",
+            searchPlaceholder: "நெல் ரகத்தைத் தேடுங்கள்...",
+            filterAll: "அனைத்தும்", filterBasmati: "பாஸ்மதி", filterTraditional: "பாரம்பரிய", filterPremium: "பிரீமியம்", filterOther: "மற்றவை",
+            noResults: "நெல் ரகங்கள் எதுவும் கிடைக்கவில்லை",
+            viewDetails: "விவரங்களைப் பார்க்கவும்",
         },
         insights: {
             yield: "மகசூல் ஒப்பீடு", cropHealth: "நெல் உற்பத்தி முன்னறிவிப்பு", waterUsage: "செலவு திறன்", fertilizerCost: "உர & மருந்து ROI", profit: "லாபத்தன்மை பகுப்பாய்வு", recentActivity: "சமீபத்திய பண்ணை செயல்பாடுகள்",
