@@ -6,7 +6,6 @@ import useMediaQuery from "../hooks/useMediaQuery";
 import {
     farmData,
     crops,
-    weatherData,
     analyticsData,
 } from "../data/mockData";
 import {
@@ -18,6 +17,8 @@ import {
     ScanLine,
     Pill,
     ArrowRight,
+    MapPinOff,
+    CloudOff,
 } from "lucide-react";
 import { AreaChart, Area, ResponsiveContainer, XAxis, Tooltip } from "recharts";
 import {
@@ -29,6 +30,7 @@ import WeatherModal from "../components/common/WeatherModal";
 import VoiceModeCard from "../components/dashboard/VoiceModeCard";
 import MarketCard from "../components/dashboard/MarketCard";
 import { useVoiceMode, VOICE_OPEN_WEATHER_EVENT } from "../hooks/useVoiceMode";
+import { useWeather } from "../hooks/useWeather";
 import "./Dashboard.css";
 
 // Large plant logo for the Expected/Potential hero card — public asset,
@@ -52,6 +54,11 @@ const sectionVariants = {
 export default function Dashboard() {
     const { t, formatNumber, formatLabel } = useLanguage();
     const navigate = useNavigate();
+    // Real weather state — location permission → Open-Meteo fetch → this card.
+    // The card stays a pure presentation of `weather`; all fetching lives in
+    // the services layer (spec §24).
+    const { status: weatherStatus, weather, retryLocation } = useWeather();
+    const weatherReady = weatherStatus === "ready" && !!weather;
     // Mobile breakpoint — switches Voice Mode + Market into the side-by-side
     // pair below Crop Diagnosis without touching the desktop grid pairing.
     const isMobile = useMediaQuery("(max-width: 900px)");
@@ -261,37 +268,89 @@ export default function Dashboard() {
                 </div>
 
                 {/* Weather card — icon top-center, prominent temp, condition,
-                    humidity/wind bottom. No location text. */}
+                    humidity/wind bottom. Values come from the real Open-Meteo
+                    response for the user's actual coordinates — never hard-coded
+                    (demo numbers appear only as pre-data placeholder states). */}
                 <div
                     className="dashboard-weather-card"
-                    onClick={() => setWeatherOpen(true)}
+                    onClick={() => weatherReady && setWeatherOpen(true)}
                     role="button"
                     tabIndex={0}
                     title={t("dashboard.viewWeather")}
                 >
                     <span className="dashboard-weather-card__label">{t("dashboard.weather")}</span>
-                    <div className="dashboard-weather-card__icon">
-                        <WeatherConditionIllustration
-                            condition={weatherData.current.condition}
-                            size={56}
-                        />
-                    </div>
-                    <div className="dashboard-weather-card__temp">
-                        {formatNumber(weatherData.current.temperature)}°C
-                    </div>
-                    <div className="dashboard-weather-card__cond">
-                        {weatherData.current.condition}
-                    </div>
-                    <div className="dashboard-weather-card__meta">
-                        <span className="dashboard-weather-card__meta-item">
-                            <span className="dashboard-weather-card__meta-ico">💧</span>
-                            {formatNumber(weatherData.current.humidity)}%
-                        </span>
-                        <span className="dashboard-weather-card__meta-item">
-                            <span className="dashboard-weather-card__meta-ico">💨</span>
-                            {formatNumber(weatherData.current.wind)} km/h
-                        </span>
-                    </div>
+
+                    {weatherReady ? (
+                        <>
+                            <div className="dashboard-weather-card__icon">
+                                <WeatherConditionIllustration
+                                    condition={weather.current.conditionKey}
+                                    size={56}
+                                />
+                            </div>
+                            <div className="dashboard-weather-card__temp">
+                                {formatNumber(Math.round(weather.current.temperature))}°C
+                            </div>
+                            <div className="dashboard-weather-card__cond">
+                                {t(
+                                    `weather.cond${weather.current.conditionKey
+                                        .charAt(0)
+                                        .toUpperCase()}${weather.current.conditionKey.slice(1)}`,
+                                )}
+                            </div>
+                            <div className="dashboard-weather-card__meta">
+                                <span className="dashboard-weather-card__meta-item">
+                                    <span className="dashboard-weather-card__meta-ico">💧</span>
+                                    {formatNumber(Math.round(weather.current.humidity))}%
+                                </span>
+                                <span className="dashboard-weather-card__meta-item">
+                                    <span className="dashboard-weather-card__meta-ico">💨</span>
+                                    {formatNumber(Math.round(weather.current.wind))} km/h
+                                </span>
+                            </div>
+                        </>
+                    ) : weatherStatus === "loading" ||
+                      weatherStatus === "locating" ||
+                      weatherStatus === "idle" ? (
+                        /* Fetching — same card shape, subtle pulse, no fake values */
+                        <div className="dashboard-weather-card__state">
+                            <div className="dashboard-weather-card__state-icon dashboard-weather-card__state-icon--loading">
+                                <WeatherConditionIllustration
+                                    condition="partlyCloudy"
+                                    size={56}
+                                />
+                            </div>
+                            <span className="dashboard-weather-card__state-text">
+                                {t("weather.weatherLoading")}
+                            </span>
+                        </div>
+                    ) : (
+                        /* Permission denied / unsupported / network or API error */
+                        <div className="dashboard-weather-card__state">
+                            <div className="dashboard-weather-card__state-icon">
+                                {weatherStatus === "denied" || weatherStatus === "unsupported" ? (
+                                    <MapPinOff size={30} />
+                                ) : (
+                                    <CloudOff size={30} />
+                                )}
+                            </div>
+                            <span className="dashboard-weather-card__state-text">
+                                {weatherStatus === "denied" || weatherStatus === "unsupported"
+                                    ? t("weather.locationNeeded")
+                                    : t("weather.weatherUnavailable")}
+                            </span>
+                            <button
+                                className="dashboard-weather-card__retry"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    retryLocation();
+                                }}
+                            >
+                                <RotateCcw size={13} />
+                                {t("weather.retryLocation")}
+                            </button>
+                        </div>
+                    )}
                 </div>
             </motion.section>
 

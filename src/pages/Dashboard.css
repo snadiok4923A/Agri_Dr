@@ -349,6 +349,85 @@
     background: transparent;
 }
 
+/* Weather card loading / permission-denied / error states — same card shape,
+   same tokens; only the content swaps so no fake demo values ever show. */
+.dashboard-weather-card__state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 8px;
+    min-height: 0;
+    padding: 4px 10px;
+}
+
+.dashboard-weather-card__state-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+}
+
+.dashboard-weather-card__state-icon--loading svg {
+    opacity: 0.55;
+    animation: weather-state-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes weather-state-pulse {
+    0%,
+    100% {
+        opacity: 0.4;
+        transform: scale(0.97);
+    }
+    50% {
+        opacity: 0.75;
+        transform: scale(1);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dashboard-weather-card__state-icon--loading svg {
+        animation: none;
+        opacity: 0.55;
+    }
+}
+
+.dashboard-weather-card__state-text {
+    font-size: min(max(calc(12.5px * var(--ts-small, 1)), 9px), 20px);
+    font-weight: 600;
+    color: var(--text-secondary);
+    line-height: 1.35;
+    max-width: 100%;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.dashboard-weather-card__retry {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 11px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--bg-elevated, rgba(255, 255, 255, 0.05));
+    color: var(--accent);
+    font-size: min(max(calc(11.5px * var(--ts-small, 1)), 9px), 18px);
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.dashboard-weather-card__retry:hover {
+    background: rgba(74, 222, 128, 0.12);
+    border-color: var(--accent);
+}
+
 /* Illustrations never exceed their container */
 .dashboard-ring-artwork svg {
     max-width: 100%;

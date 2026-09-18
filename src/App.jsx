@@ -3,6 +3,7 @@ import { ThemeProvider } from './hooks/useTheme';
 import { LanguageProvider } from './hooks/useLanguage';
 import { TextSizeProvider } from './hooks/useTextSize';
 import { VoiceModeProvider } from './hooks/useVoiceMode';
+import { WeatherProvider } from './hooks/useWeather';
 import Layout from './components/layout/Layout';
 import Dashboard from './pages/Dashboard';
 import MyFarm from './pages/MyFarm';
@@ -26,6 +27,7 @@ export default function App() {
         {/* VoiceModeProvider lives INSIDE the Router so voice commands can
             drive react-router navigation directly. */}
         <BrowserRouter basename="/Agri_Dr">
+          <WeatherProvider>
           <VoiceModeProvider>
             <Routes>
               <Route path="/" element={<Layout />}>
@@ -47,6 +49,7 @@ export default function App() {
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </VoiceModeProvider>
+          </WeatherProvider>
         </BrowserRouter>
       </LanguageProvider>
       </TextSizeProvider>

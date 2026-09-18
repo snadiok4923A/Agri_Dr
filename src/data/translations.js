@@ -137,7 +137,62 @@ export const translations = {
             wind: "Wind",
             visibility: "Visibility",
             sprayingAdvisory: "Spraying Advisory",
+            advisoryHigh: "High rain chance ({n}% today) — avoid spraying",
+            advisoryModerate: "Moderate rain chance ({n}%) — watch the sky before spraying",
+            advisoryLow: "Low rain chance ({n}%) — good conditions for spraying",
             forecast7Day: "7-Day Forecast",
+            condClear: "Clear Sky",
+
+            condMainlyClear: "Mainly Clear",
+
+            condPartlyCloudy: "Partly Cloudy",
+
+            condOvercast: "Overcast",
+
+            condFog: "Fog",
+
+            condDrizzle: "Drizzle",
+
+            condFreezingDrizzle: "Freezing Drizzle",
+
+            condRain: "Rain",
+
+            condFreezingRain: "Freezing Rain",
+
+            condSnowfall: "Snowfall",
+
+            condSnowGrains: "Snow Grains",
+
+            condRainShowers: "Rain Showers",
+
+            condSnowShowers: "Snow Showers",
+
+            condThunderstorm: "Thunderstorm",
+
+            condThunderstormHail: "Thunderstorm with Hail",
+
+            weatherLoading: "Loading weather...",
+
+            locationNeeded: "Location access needed",
+
+            weatherUnavailable: "Unable to load weather",
+
+            retryLocation: "Retry Location",
+
+            daySun: "Sun",
+
+            dayMon: "Mon",
+
+            dayTue: "Tue",
+
+            dayWed: "Wed",
+
+            dayThu: "Thu",
+
+            dayFri: "Fri",
+
+            daySat: "Sat",
+
         },
         crops: {
             compareSub: "Compare rice varieties by price, cost & profit.",
@@ -519,7 +574,62 @@ export const translations = {
             wind: "বাতাস",
             visibility: "দৃশ্যমানতা",
             sprayingAdvisory: "স্প্রে পরামর্শ",
+            advisoryHigh: "আজ {n}% বৃষ্টির সম্ভাবনা — স্প্রে করা এড়িয়ে চলুন",
+            advisoryModerate: "মাঝারি বৃষ্টির সম্ভাবনা ({n}%) — স্প্রে করার আগে আকাশ দেখুন",
+            advisoryLow: "বৃষ্টির সম্ভাবনা কম ({n}%) — স্প্রে করার জন্য ভালো সময়",
             forecast7Day: "৭ দিনের পূর্বাভাস",
+            condClear: "পরিষ্কার আকাশ",
+
+            condMainlyClear: "প্রায় পরিষ্কার",
+
+            condPartlyCloudy: "আংশিক মেঘলা",
+
+            condOvercast: "সম্পূর্ণ মেঘলা",
+
+            condFog: "কুয়াশা",
+
+            condDrizzle: "গুঁড়ি গুঁড়ি বৃষ্টি",
+
+            condFreezingDrizzle: "হিমশীতল গুঁড়ি বৃষ্টি",
+
+            condRain: "বৃষ্টি",
+
+            condFreezingRain: "হিমশীতল বৃষ্টি",
+
+            condSnowfall: "তুষারপাত",
+
+            condSnowGrains: "তুষারকণা",
+
+            condRainShowers: "বৃষ্টির ঝাপটা",
+
+            condSnowShowers: "তুষার ঝাপটা",
+
+            condThunderstorm: "বজ্রঝড়",
+
+            condThunderstormHail: "শিলাবৃষ্টিসহ বজ্রঝড়",
+
+            weatherLoading: "আবহাওয়া লোড হচ্ছে...",
+
+            locationNeeded: "লোকেশনের অনুমতি প্রয়োজন",
+
+            weatherUnavailable: "আবহাওয়া লোড করা যায়নি",
+
+            retryLocation: "লোকেশন আবার চেষ্টা করুন",
+
+            daySun: "রবি",
+
+            dayMon: "সোম",
+
+            dayTue: "মঙ্গল",
+
+            dayWed: "বুধ",
+
+            dayThu: "বৃহঃ",
+
+            dayFri: "শুক্র",
+
+            daySat: "শনি",
+
         },
         crops: {
             compareSub: "দাম, খরচ ও লাভের ভিত্তিতে ধানের জাত তুলনা করুন।",
@@ -901,7 +1011,62 @@ export const translations = {
             wind: "हवा",
             visibility: "दृश्यता",
             sprayingAdvisory: "छिड़काव सलाह",
+            advisoryHigh: "आज {n}% बारिश की संभावना — छिड़काव से बचें",
+            advisoryModerate: "मध्यम बारिश संभावना ({n}%) — छिड़काव से पहले आसमान देखें",
+            advisoryLow: "बारिश की संभावना कम ({n}%) — छिड़काव के लिए अच्छा समय",
             forecast7Day: "७-दिन का पूर्वानुमान",
+            condClear: "साफ आसमान",
+
+            condMainlyClear: "लगभग साफ",
+
+            condPartlyCloudy: "आंशिक बादल",
+
+            condOvercast: "घने बादल",
+
+            condFog: "कोहरा",
+
+            condDrizzle: "बूंदाबांदी",
+
+            condFreezingDrizzle: "जमने वाली बूंदाबांदी",
+
+            condRain: "बारिश",
+
+            condFreezingRain: "जमने वाली बारिश",
+
+            condSnowfall: "हिमपात",
+
+            condSnowGrains: "बर्फ के कण",
+
+            condRainShowers: "बौछारें",
+
+            condSnowShowers: "बर्फ की बौछारें",
+
+            condThunderstorm: "आंधी-तूफान",
+
+            condThunderstormHail: "ओलावृष्टि के साथ तूफान",
+
+            weatherLoading: "मौसम लोड हो रहा है...",
+
+            locationNeeded: "लोकेशन की अनुमति चाहिए",
+
+            weatherUnavailable: "मौसम लोड नहीं हो सका",
+
+            retryLocation: "लोकेशन पुनः प्रयास",
+
+            daySun: "रवि",
+
+            dayMon: "सोम",
+
+            dayTue: "मंगल",
+
+            dayWed: "बुध",
+
+            dayThu: "गुरु",
+
+            dayFri: "शुक्र",
+
+            daySat: "शनि",
+
         },
         crops: {
             compareSub: "भाव, लागत व मुनाफे के आधार पर धान की किस्मों की तुलना करें।",
@@ -1283,7 +1448,62 @@ export const translations = {
             wind: "గాలి",
             visibility: "దృశ్యమానత",
             sprayingAdvisory: "పిచికారీ సలహా",
+            advisoryHigh: "ఈరోజు {n}% వర్ష అవకాశం — పిచికారీ మానుకోండి",
+            advisoryModerate: "మధ్యస్థ వర్ష అవకాశం ({n}%) — పిచికారీ ముందు ఆకాశం చూడండి",
+            advisoryLow: "వర్ష అవకాశం తక్కువ ({n}%) — పిచికారీకి మంచి సమయం",
             forecast7Day: "౭-రోజుల అంచనా",
+            condClear: "స్పష్టమైన ఆకాశం",
+
+            condMainlyClear: "దాదాపు స్పష్టం",
+
+            condPartlyCloudy: "పాక్షికంగా మేఘావృతం",
+
+            condOvercast: "పూర్తిగా మేఘావృతం",
+
+            condFog: "మంచు పొగ",
+
+            condDrizzle: "జల్లు",
+
+            condFreezingDrizzle: "గడ్డకట్టే జల్లు",
+
+            condRain: "వర్షం",
+
+            condFreezingRain: "గడ్డకట్టే వర్షం",
+
+            condSnowfall: "హిమపాతం",
+
+            condSnowGrains: "హిమ కణాలు",
+
+            condRainShowers: "వర్ష ధారలు",
+
+            condSnowShowers: "హిమ ధారలు",
+
+            condThunderstorm: "ఉరుముల తుఫాను",
+
+            condThunderstormHail: "వడగళ్లతో కూడిన తుఫాను",
+
+            weatherLoading: "వాతావరణం లోడ్ అవుతోంది...",
+
+            locationNeeded: "లొకేషన్ అనుమతి అవసరం",
+
+            weatherUnavailable: "వాతావరణం లోడ్ కాలేదు",
+
+            retryLocation: "లొకేషన్ మళ్లీ ప్రయత్నించండి",
+
+            daySun: "ఆది",
+
+            dayMon: "సోమ",
+
+            dayTue: "మంగళ",
+
+            dayWed: "బుధ",
+
+            dayThu: "గురు",
+
+            dayFri: "శుక్ర",
+
+            daySat: "శని",
+
         },
         crops: {
             compareSub: "ధర, ఖర్చు & లాభం ప్రకారం వరి రకాలను పోల్చండి.",
@@ -1665,7 +1885,62 @@ export const translations = {
             wind: "காற்று",
             visibility: "தெரிவுநிலை",
             sprayingAdvisory: "தெளிப்பு ஆலோசனை",
+            advisoryHigh: "இன்று {n}% மழை வாய்ப்பு — தெளிப்பதைத் தவிர்க்கவும்",
+            advisoryModerate: "மிதமான மழை வாய்ப்பு ({n}%) — தெளிக்கும் முன் வானத்தைப் பாருங்கள்",
+            advisoryLow: "மழை வாய்ப்பு குறைவு ({n}%) — தெளிப்பதற்கு நல்ல நேரம்",
             forecast7Day: "௭-நாள் முன்னறிவிப்பு",
+            condClear: "தெளிவான வானம்",
+
+            condMainlyClear: "வானம் தெளிவு",
+
+            condPartlyCloudy: "பகுதி மேகமூட்டம்",
+
+            condOvercast: "முழு மேகமூட்டம்",
+
+            condFog: "மூட்டம்",
+
+            condDrizzle: "துளிமழை",
+
+            condFreezingDrizzle: "உறைந்த துளிமழை",
+
+            condRain: "மழை",
+
+            condFreezingRain: "உறைந்த மழை",
+
+            condSnowfall: "பனிப்பொழிவு",
+
+            condSnowGrains: "பனித்துளிகள்",
+
+            condRainShowers: "மழைப் பொழிவு",
+
+            condSnowShowers: "பனி மழை",
+
+            condThunderstorm: "இடி மழை",
+
+            condThunderstormHail: "ஆலங்கட்டி மழையுடன் இடி",
+
+            weatherLoading: "வானிலை ஏற்றப்படுகிறது...",
+
+            locationNeeded: "இருப்பிட அனுமதி தேவை",
+
+            weatherUnavailable: "வானிலையை ஏற்ற முடியவில்லை",
+
+            retryLocation: "இருப்பிடத்தை மீண்டும் முயற்சிக்கவும்",
+
+            daySun: "ஞாயி",
+
+            dayMon: "திங்",
+
+            dayTue: "செவ்",
+
+            dayWed: "புத",
+
+            dayThu: "வியா",
+
+            dayFri: "வெள்ளி",
+
+            daySat: "சனி",
+
         },
         crops: {
             compareSub: "விலை, செலவு & லாப அடிப்படையில் நெல் வகைகளை ஒப்பிடுங்கள்.",

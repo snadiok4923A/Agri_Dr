@@ -41,7 +41,11 @@ function interpolate(template, params) {
 export function LanguageProvider({ children }) {
   const [language, setLanguage] = useState(() => {
     const saved = localStorage.getItem('krisiveda-lang');
-    return LANGUAGES.some((l) => l.code === saved) ? saved : 'en';
+    const code = LANGUAGES.some((l) => l.code === saved) ? saved : 'en';
+    // Reflect the restored language on <html> immediately (not just after a
+    // user-driven change) so assistive tech / font selection are correct.
+    if (typeof document !== 'undefined') document.documentElement.setAttribute('lang', code);
+    return code;
   });
 
   const active = useMemo(

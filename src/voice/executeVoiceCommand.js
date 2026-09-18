@@ -10,7 +10,7 @@
  * visual feedback is created lazily on first use and reused afterwards.
  */
 
-import { weatherData } from "../data/mockData";
+import { getCachedWeather } from "../services/weatherService";
 
 /* ------------------------------------------------------------------ *
  * Toast feedback ("Opening Market…", "Command not recognized", …)
@@ -54,20 +54,23 @@ const NAV_ROUTES = {
 };
 
 /* ------------------------------------------------------------------ *
- * Live weather values for SHOW_* intents (existing data only)
+ * Live weather values for SHOW_* intents — read from the SAME cached
+ * Open-Meteo response the Weather Card renders, so spoken values always
+ * match what's on screen (never the old demo numbers).
  * ------------------------------------------------------------------ */
 function weatherValue(intent) {
-    const c = weatherData?.current;
+    const c = getCachedWeather()?.current;
     if (!c) return null;
+    const r = (n) => Math.round(n);
     switch (intent) {
         case "SHOW_TEMPERATURE":
-            return `${c.temperature}°C`;
+            return `${r(c.temperature)}°C`;
         case "SHOW_HUMIDITY":
-            return `${c.humidity}%`;
+            return `${r(c.humidity)}%`;
         case "SHOW_WIND":
-            return `${c.wind} km/h`;
+            return `${r(c.wind)} km/h`;
         case "SHOW_RAIN_PROBABILITY":
-            return `${c.rainProbability}%`;
+            return `${r(c.rainProbability)}%`;
         default:
             return null;
     }

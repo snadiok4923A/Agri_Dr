@@ -181,15 +181,38 @@ export function AgriActionIcon({ type, size = 24 }) {
 }
 
 /* Dynamic weather illustration — picks a polished gradient icon for the
-   current condition: sunny, cloudy, partly cloudy (default) or rainy.
-   Used by the dashboard Weather card so the art always matches the data. */
+   current condition. Accepts either a conditionKey from the WMO mapping
+   (clear / mainlyClear / partlyCloudy / overcast / fog / drizzle / rain /
+   rainShowers / thunderstorm / snowfall / …) or a legacy English condition
+   string. Used by the dashboard Weather card so the art always matches the
+   real weather data. */
 export function WeatherConditionIllustration({ condition = '', size = 44, className = '' }) {
   const c = String(condition).toLowerCase();
-  const kind =
-    c.includes('rain') || c.includes('drizzle') || c.includes('shower') ? 'rain'
+  const KEYS = {
+    clear: 'sun',
+    mainlyClear: 'sun',
+    partlyCloudy: 'partly',
+    overcast: 'cloud',
+    fog: 'fog',
+    drizzle: 'rain',
+    freezingDrizzle: 'rain',
+    rain: 'rain',
+    freezingRain: 'rain',
+    rainShowers: 'rain',
+    snowfall: 'snow',
+    snowGrains: 'snow',
+    snowShowers: 'snow',
+    thunderstorm: 'thunder',
+    thunderstormHail: 'thunder',
+  };
+  const kind = KEYS[c] ||
+    (c.includes('thunder') ? 'thunder'
+    : c.includes('fog') ? 'fog'
+    : c.includes('snow') ? 'snow'
+    : c.includes('rain') || c.includes('drizzle') || c.includes('shower') ? 'rain'
     : c.includes('sun') && !c.includes('part') ? 'sun'
     : c.includes('cloud') && !c.includes('part') && !c.includes('sun') ? 'cloud'
-    : 'partly';
+    : 'partly');
 
   return (
     <svg
@@ -268,6 +291,55 @@ export function WeatherConditionIllustration({ condition = '', size = 44, classN
             <line x1="22" y1="46" x2="19" y2="54" />
             <line x1="32" y1="46" x2="29" y2="56" />
             <line x1="42" y1="46" x2="39" y2="54" />
+          </g>
+        </g>
+      )}
+
+      {kind === 'thunder' && (
+        <g>
+          <path
+            d="M18 40 H46 C52 40 56 35.5 56 30 C56 25 52.2 21.2 47.6 21 C46.8 14.4 41.2 9 34 9 C28 9 23 12.8 21.2 18 C15.4 18.6 11 23.4 11 29 C11 35 15.5 40 18 40 Z"
+            fill="url(#wciCloud)"
+            filter="drop-shadow(0 2px 4px rgba(0,0,0,0.08))"
+          />
+          <path
+            d="M34 38 L26 52 L32 52 L29 61 L40 47 L33.5 47 L38 38 Z"
+            fill="url(#wciSun)"
+            stroke="#D97706"
+            strokeWidth="1"
+            strokeLinejoin="round"
+          />
+        </g>
+      )}
+
+      {kind === 'fog' && (
+        <g>
+          <path
+            d="M20 34 H46 C51.5 34 55 30 55 25.5 C55 21 51.5 17.5 47.4 17.3 C46.6 11.5 41.5 7 35 7 C29.5 7 25 10.5 23.4 15.4 C18 16 14 20.4 14 25.5 C14 30.8 17.8 34 20 34 Z"
+            fill="url(#wciCloud)"
+            filter="drop-shadow(0 2px 4px rgba(0,0,0,0.08))"
+          />
+          <g stroke="url(#wciRain)" strokeWidth="3" strokeLinecap="round" opacity="0.75">
+            <line x1="14" y1="42" x2="50" y2="42" />
+            <line x1="20" y1="50" x2="44" y2="50" />
+            <line x1="24" y1="58" x2="40" y2="58" />
+          </g>
+        </g>
+      )}
+
+      {kind === 'snow' && (
+        <g>
+          <path
+            d="M18 40 H46 C52 40 56 35.5 56 30 C56 25 52.2 21.2 47.6 21 C46.8 14.4 41.2 9 34 9 C28 9 23 12.8 21.2 18 C15.4 18.6 11 23.4 11 29 C11 35 15.5 40 18 40 Z"
+            fill="url(#wciCloud)"
+            filter="drop-shadow(0 2px 4px rgba(0,0,0,0.08))"
+          />
+          <g fill="#BAE6FD" stroke="#7DD3FC" strokeWidth="1">
+            <circle cx="22" cy="48" r="2.6" />
+            <circle cx="33" cy="52" r="2.6" />
+            <circle cx="43" cy="47" r="2.6" />
+            <circle cx="28" cy="58" r="2.2" />
+            <circle cx="38" cy="59" r="2.2" />
           </g>
         </g>
       )}
