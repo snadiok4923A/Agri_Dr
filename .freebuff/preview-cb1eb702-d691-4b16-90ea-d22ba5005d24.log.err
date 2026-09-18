@@ -1,0 +1,89 @@
+[2m10:34:52 PM[22m [31m[1m[vite][22m[39m [31mInternal server error: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] [0mExpected `,` or `)` but found `Identifier`
+    [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/pages/Market.jsx:47:2 [38;5;246m][0m
+    [38;5;246m│[0m
+ [38;5;246m39 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249mr[0m[38;5;249me[0m[38;5;249mt[0m[38;5;249mu[0m[38;5;249mr[0m[38;5;249mn[0m[38;5;249m [0m(
+ [38;5;240m   │[0m            ┬  
+ [38;5;240m   │[0m            ╰── Opened here
+ [38;5;240m   │[0m 
+ [38;5;246m47 │[0m [38;5;249m [0mVarietyImage[38;5;249m [0m[38;5;249m=[0m[38;5;249m [0m[38;5;249mV[0m[38;5;249ma[0m[38;5;249mr[0m[38;5;249mi[0m[38;5;249me[0m[38;5;249mt[0m[38;5;249my[0m[38;5;249mI[0m[38;5;249mm[0m[38;5;249ma[0m[38;5;249mg[0m[38;5;249me[0m[38;5;249m;[0m
+ [38;5;240m   │[0m  ──────┬─────  
+ [38;5;240m   │[0m        ╰─────── `,` or `)` expected
+[38;5;246m────╯[0m
+[39m
+  Plugin: [35mvite:oxc[39m
+  File: [36mC:/Users/Sandipan Paul/Documents/DOCS/Project/Webside for this/Agri_de/src/pages/Market.jsx[39m
+      at transformWithOxc (file:///C:/Users/Sandipan%20Paul/Documents/DOCS/Project/Webside%20for%20this/Agri_de/node_modules/vite/dist/node/chunks/node.js:4103:19)
+      at TransformPluginContext.transform (file:///C:/Users/Sandipan%20Paul/Documents/DOCS/Project/Webside%20for%20this/Agri_de/node_modules/vite/dist/node/chunks/node.js:4174:26)
+      at EnvironmentPluginContainer.transform (file:///C:/Users/Sandipan%20Paul/Documents/DOCS/Project/Webside%20for%20this/Agri_de/node_modules/vite/dist/node/chunks/node.js:30932:51)
+      at async loadAndTransform (file:///C:/Users/Sandipan%20Paul/Documents/DOCS/Project/Webside%20for%20this/Agri_de/node_modules/vite/dist/node/chunks/node.js:20671:26)
+      at async viteTransformMiddleware (file:///C:/Users/Sandipan%20Paul/Documents/DOCS/Project/Webside%20for%20this/Agri_de/node_modules/vite/dist/node/chunks/node.js:25205:20)
+[2m10:35:39 PM[22m [31m[1m[vite][22m[39m [31mInternal server error: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] [0mExpected `>` but found `<`
+     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/pages/Market.jsx:376:41 [38;5;246m][0m
+     [38;5;246m│[0m
+ [38;5;246m376 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m<[38;5;249m/[0m[38;5;249mY[0m[38;5;249mA[0m[38;5;249mx[0m[38;5;249mi[0m[38;5;249ms[0m[38;5;249m>[0m
+ [38;5;240m    │[0m                                         ┬  
+ [38;5;240m    │[0m                                         ╰── `>` expected
+[38;5;246m─────╯[0m
+[39m
+  Plugin: [35mvite:oxc[39m
+  File: [36mC:/Users/Sandipan Paul/Documents/DOCS/Project/Webside for this/Agri_de/src/pages/Market.jsx[39m
+      at transformWithOxc (file:///C:/Users/Sandipan%20Paul/Documents/DOCS/Project/Webside%20for%20this/Agri_de/node_modules/vite/dist/node/chunks/node.js:4103:19)
+      at TransformPluginContext.transform (file:///C:/Users/Sandipan%20Paul/Documents/DOCS/Project/Webside%20for%20this/Agri_de/node_modules/vite/dist/node/chunks/node.js:4174:26)
+      at EnvironmentPluginContainer.transform (file:///C:/Users/Sandipan%20Paul/Documents/DOCS/Project/Webside%20for%20this/Agri_de/node_modules/vite/dist/node/chunks/node.js:30932:51)
+      at async loadAndTransform (file:///C:/Users/Sandipan%20Paul/Documents/DOCS/Project/Webside%20for%20this/Agri_de/node_modules/vite/dist/node/chunks/node.js:20671:26)
+      at async viteTransformMiddleware (file:///C:/Users/Sandipan%20Paul/Documents/DOCS/Project/Webside%20for%20this/Agri_de/node_modules/vite/dist/node/chunks/node.js:25205:20)
+[2m10:35:49 PM[22m [31m[1m[vite][22m[39m [31mInternal server error: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] [0mExpected `>` but found `<`
+     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/pages/Market.jsx:376:41 [38;5;246m][0m
+     [38;5;246m│[0m
+ [38;5;246m376 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m<[38;5;249m/[0m[38;5;249mY[0m[38;5;249mA[0m[38;5;249mx[0m[38;5;249mi[0m[38;5;249ms[0m[38;5;249m>[0m
+ [38;5;240m    │[0m                                         ┬  
+ [38;5;240m    │[0m                                         ╰── `>` expected
+[38;5;246m─────╯[0m
+[39m
+  Plugin: [35mvite:oxc[39m
+  File: [36mC:/Users/Sandipan Paul/Documents/DOCS/Project/Webside for this/Agri_de/src/pages/Market.jsx[39m
+      at transformWithOxc (file:///C:/Users/Sandipan%20Paul/Documents/DOCS/Project/Webside%20for%20this/Agri_de/node_modules/vite/dist/node/chunks/node.js:4103:19)
+      at TransformPluginContext.transform (file:///C:/Users/Sandipan%20Paul/Documents/DOCS/Project/Webside%20for%20this/Agri_de/node_modules/vite/dist/node/chunks/node.js:4174:26)
+      at EnvironmentPluginContainer.transform (file:///C:/Users/Sandipan%20Paul/Documents/DOCS/Project/Webside%20for%20this/Agri_de/node_modules/vite/dist/node/chunks/node.js:30932:51)
+      at async loadAndTransform (file:///C:/Users/Sandipan%20Paul/Documents/DOCS/Project/Webside%20for%20this/Agri_de/node_modules/vite/dist/node/chunks/node.js:20671:26)
+      at async viteTransformMiddleware (file:///C:/Users/Sandipan%20Paul/Documents/DOCS/Project/Webside%20for%20this/Agri_de/node_modules/vite/dist/node/chunks/node.js:25205:20)
+[2m10:37:34 PM[22m [31m[1m[vite][22m[39m [31mInternal server error: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] [0mExpected `>` but found `<`
+     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/pages/Market.jsx:406:41 [38;5;246m][0m
+     [38;5;246m│[0m
+ [38;5;246m406 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m<[38;5;249m/[0m[38;5;249mY[0m[38;5;249mA[0m[38;5;249mx[0m[38;5;249mi[0m[38;5;249ms[0m[38;5;249m>[0m
+ [38;5;240m    │[0m                                         ┬  
+ [38;5;240m    │[0m                                         ╰── `>` expected
+[38;5;246m─────╯[0m
+[39m
+  Plugin: [35mvite:oxc[39m
+  File: [36mC:/Users/Sandipan Paul/Documents/DOCS/Project/Webside for this/Agri_de/src/pages/Market.jsx[39m
+      at transformWithOxc (file:///C:/Users/Sandipan%20Paul/Documents/DOCS/Project/Webside%20for%20this/Agri_de/node_modules/vite/dist/node/chunks/node.js:4103:19)
+      at TransformPluginContext.transform (file:///C:/Users/Sandipan%20Paul/Documents/DOCS/Project/Webside%20for%20this/Agri_de/node_modules/vite/dist/node/chunks/node.js:4174:26)
+      at EnvironmentPluginContainer.transform (file:///C:/Users/Sandipan%20Paul/Documents/DOCS/Project/Webside%20for%20this/Agri_de/node_modules/vite/dist/node/chunks/node.js:30932:51)
+      at async loadAndTransform (file:///C:/Users/Sandipan%20Paul/Documents/DOCS/Project/Webside%20for%20this/Agri_de/node_modules/vite/dist/node/chunks/node.js:20671:26)
+      at async viteTransformMiddleware (file:///C:/Users/Sandipan%20Paul/Documents/DOCS/Project/Webside%20for%20this/Agri_de/node_modules/vite/dist/node/chunks/node.js:25205:20)
+[2m10:37:39 PM[22m [31m[1m[vite][22m[39m [31mInternal server error: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] [0mExpected `>` but found `<`
+     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/pages/Market.jsx:406:41 [38;5;246m][0m
+     [38;5;246m│[0m
+ [38;5;246m406 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m<[38;5;249m/[0m[38;5;249mY[0m[38;5;249mA[0m[38;5;249mx[0m[38;5;249mi[0m[38;5;249ms[0m[38;5;249m>[0m
+ [38;5;240m    │[0m                                         ┬  
+ [38;5;240m    │[0m                                         ╰── `>` expected
+[38;5;246m─────╯[0m
+[39m
+  Plugin: [35mvite:oxc[39m
+  File: [36mC:/Users/Sandipan Paul/Documents/DOCS/Project/Webside for this/Agri_de/src/pages/Market.jsx[39m
+      at transformWithOxc (file:///C:/Users/Sandipan%20Paul/Documents/DOCS/Project/Webside%20for%20this/Agri_de/node_modules/vite/dist/node/chunks/node.js:4103:19)
+      at TransformPluginContext.transform (file:///C:/Users/Sandipan%20Paul/Documents/DOCS/Project/Webside%20for%20this/Agri_de/node_modules/vite/dist/node/chunks/node.js:4174:26)
+      at EnvironmentPluginContainer.transform (file:///C:/Users/Sandipan%20Paul/Documents/DOCS/Project/Webside%20for%20this/Agri_de/node_modules/vite/dist/node/chunks/node.js:30932:51)
+      at async loadAndTransform (file:///C:/Users/Sandipan%20Paul/Documents/DOCS/Project/Webside%20for%20this/Agri_de/node_modules/vite/dist/node/chunks/node.js:20671:26)
+      at async viteTransformMiddleware (file:///C:/Users/Sandipan%20Paul/Documents/DOCS/Project/Webside%20for%20this/Agri_de/node_modules/vite/dist/node/chunks/node.js:25205:20)

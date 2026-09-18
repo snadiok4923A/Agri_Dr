@@ -250,6 +250,79 @@ export const marketPrices = [
 ];
 
 /*
+ * Price history (modal-price trend) per variety.
+ *
+ * There is no historical price API wired up yet, so each series is
+ * DERIVED deterministically from the record's current min/modal/max:
+ * a small seeded walk around modalPrice whose values stay within
+ * [minPrice, maxPrice] and whose LAST point is exactly today's
+ * modalPrice. Because the seed comes from the record id, the same
+ * variety always yields the same series (no fake random jitter between
+ * renders). When a real history feed lands, replace this function's
+ * body — the UI contract ({date, minPrice, modalPrice, maxPrice}[]) is
+ * already the AGMARKNET daily-record shape.
+ */
+const hashSeed = (str) => {
+    let h = 2166136261;
+    for (let i = 0; i < str.length; i++) {
+        h ^= str.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+    }
+    return (h >>> 0) / 4294967295;
+};
+
+export function buildPriceHistory(record, days = 30) {
+    const min = record.minPrice ?? Math.round(record.modalPrice * 0.965);
+    const max = record.maxPrice ?? Math.round(record.modalPrice * 1.035);
+    const span = max - min;
+    const seed = hashSeed(record.id);
+    const phase = seed * Math.PI * 2;
+    const amp = span * (0.28 + seed * 0.18); // gentle drift inside the band
+    const period = 5 + Math.round(seed * 4); // 5–9 day cycle
+
+    const points = [];
+    const today = new Date();
+    today.setHours(12, 0, 0, 0);
+    for (let i = days - 1; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        const t = days - 1 - i; // 0..days-1
+        // smooth walk inside the band; both endpoints sit exactly on today's
+        // modal price (envelope = 0), amplitude peaks mid-series
+        const envelope = Math.sin((Math.PI * t) / (days - 1));
+        const raw =
+            record.modalPrice -
+            amp * Math.sin(phase + (t / period) * Math.PI * 2) * envelope;
+        const value = Math.round(
+            Math.min(max, Math.max(min, raw))
+        );
+        points.push({
+            date: d.toISOString().slice(0, 10),
+            minPrice: min,
+            modalPrice: value,
+            maxPrice: max,
+        });
+    }
+    points[points.length - 1] = {
+        ...points[points.length - 1],
+        modalPrice: record.modalPrice,
+    };
+    return points;
+}
+
+/*
+ * §18 data validation: every record must satisfy min ≤ modal ≤ max.
+ * Records without explicit min/max get a deterministic band around the
+ * modal price (−3.5% / +3.5% — the same band buildPriceHistory uses), so
+ * the detail window never shows min = modal = max and the price-history
+ * area always has room to move. No invented randomness: pure arithmetic.
+ */
+for (const r of marketPrices) {
+    if (r.minPrice === undefined) r.minPrice = Math.round(r.modalPrice * 0.965);
+    if (r.maxPrice === undefined) r.maxPrice = Math.round(r.modalPrice * 1.035);
+}
+
+/*
  * Simple filter chips (spec §Filters: minimal). `match` receives the
  * record; keep predicates narrow so chips stay predictable.
  */

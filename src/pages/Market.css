@@ -300,6 +300,185 @@
     color: var(--text-secondary);
 }
 
+/* Two-column info cells: market centre | state/district, min | max */
+.market-page__dialog-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.market-page__dialog-cell {
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.045);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.market-page__dialog-cell-val {
+    font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
+    font-weight: 600;
+    color: var(--text-primary);
+    overflow-wrap: anywhere;
+}
+
+/* ==================== Price history ==================== */
+.market-page__history {
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.market-page__history-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.market-page__history-title {
+    font-size: min(max(calc(10.5px * var(--ts-small, 1)), 8px), 18px);
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.market-page__range {
+    display: flex;
+    gap: 4px;
+    padding: 3px;
+    border-radius: var(--radius-full);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.market-page__range-btn {
+    padding: 4px 12px;
+    border: none;
+    border-radius: var(--radius-full);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: min(max(calc(11.5px * var(--ts-small, 1)), 9px), 18px);
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.market-page__range-btn--active {
+    background: var(--accent-soft, rgba(52, 211, 153, 0.16));
+    color: var(--accent);
+}
+
+.market-page__chart {
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 8px 6px 2px;
+}
+
+/* Tooltip (hover + touch) */
+.market-page__tip {
+    background: rgba(10, 18, 15, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 10px;
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    font-size: min(max(calc(11px * var(--ts-small, 1)), 8px), 18px);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.market-page__tip-date {
+    color: var(--text-muted);
+    font-weight: 700;
+    font-size: min(max(calc(10px * var(--ts-small, 1)), 8px), 18px);
+}
+
+.market-page__tip-row--dim {
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+/* ==================== Modal animations (subtle scale + fade) ==================== */
+.market-page__overlay--open {
+    animation: marketOverlayIn 0.18s ease both;
+}
+
+.market-page__dialog--open {
+    animation: marketDialogIn 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.market-page__overlay--closing {
+    animation: marketOverlayOut 0.16s ease both;
+}
+
+.market-page__dialog--closing {
+    animation: marketDialogOut 0.16s ease both;
+}
+
+@keyframes marketOverlayIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes marketDialogIn {
+    from {
+        opacity: 0;
+        transform: scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes marketOverlayOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes marketDialogOut {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.97);
+    }
+}
+
+/* Keep the dialog clear of the mobile bottom navigation */
+@media (max-width: 700px) {
+    .market-page__overlay {
+        padding: 16px 14px calc(76px + env(safe-area-inset-bottom));
+        align-items: flex-end;
+    }
+
+    .market-page__dialog {
+        width: 100%;
+        max-height: calc(100dvh - 110px);
+    }
+}
+
+
 /* ==================== Responsive ==================== */
 @media (max-width: 1100px) {
     .market-page__grid {
@@ -346,5 +525,14 @@
 
     .market-page__dialog {
         padding: 20px;
+        gap: 12px;
+    }
+
+    .market-page__dialog-grid {
+        gap: 8px;
+    }
+
+    .market-page__chart {
+        padding: 6px 2px 0;
     }
 }
