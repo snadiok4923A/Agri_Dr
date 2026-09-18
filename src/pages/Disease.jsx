@@ -1,13 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../hooks/useLanguage";
 import {
-    diseaseLibrary,
-    diseaseFilters,
-    matchesDiseaseFilter,
+    searchDiseases,
 } from "../data/diseaseLibrary";
 import DiseaseIllustration from "../components/common/DiseaseIllustration";
-import { X, Sparkles, ArrowRight } from "lucide-react";
+import { X, Sparkles, ArrowRight, Search } from "lucide-react";
 import "./Disease.css";
 
 /**
@@ -18,12 +16,29 @@ import "./Disease.css";
  * diseases (same interaction as the Rice Varieties page), opens a floating
  * glass detail window, and reads treatment info derived from the app's
  * existing data.
+ *
+ * Discovery is by SEARCH ONLY: the old severity/type filter chips were
+ * removed. A single instant multi-field search box (name · scientific ·
+ * symptoms · keywords · affected part · category) is the primary tool —
+ * farmers type what they see, not a textbook name.
  */
+
+/*
+ * Focused-empty suggestions (spec §Suggestions): tiny, tappable terms.
+ * Labels resolve through the i18n table (disease.searchTerms.*).
+ */
+const SUGGESTION_TERMS = ["leaf", "spots", "yellow", "sheath", "stem"];
+
 export default function Disease() {
-    const { t, formatLabel } = useLanguage();
+    const { t, formatLabel, formatNumber } = useLanguage();
     const navigate = useNavigate();
-    const [filter, setFilter] = useState("all");
+    const [query, setQuery] = useState("");
     const [selected, setSelected] = useState(null);
+
+    /* Instant local filtering (spec §Performance): pure dataset search,
+     * no API per keystroke. */
+    const visible = useMemo(() => searchDiseases(query), [query]);
+    const searching = query.trim().length > 0;
 
     // Lock body scroll while the modal is open
     useEffect(() => {
@@ -41,8 +56,6 @@ export default function Disease() {
         return () => window.removeEventListener("keydown", onKey);
     }, [selected]);
 
-    const visible = diseaseLibrary.filter((d) => matchesDiseaseFilter(d, filter));
-
     return (
         <div className="page-container disease-page">
             {/* Header */}
@@ -53,22 +66,54 @@ export default function Disease() {
                 </p>
             </section>
 
-            {/* Filters */}
-            <div className="disease-page__filters" role="tablist" aria-label={t("common.filterDiseases")}>
-                {diseaseFilters.map((f) => (
-                    <button
-                        key={f.id}
-                        type="button"
-                        role="tab"
-                        aria-selected={filter === f.id}
-                        className={`disease-page__filter${
-                            filter === f.id ? " disease-page__filter--active" : ""
-                        }`}
-                        onClick={() => setFilter(f.id)}
-                    >
-                        {t(`filters.disease.${f.id}`)}
-                    </button>
-                ))}
+            {/* Search — the only discovery tool (filter chips removed):
+                instant, multi-field, farmer-friendly. */}
+            <div className="disease-page__searchwrap">
+                <div className="disease-page__search">
+                    <Search size={17} className="disease-page__search-icon" />
+                    <input
+                        type="text"
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        placeholder={t("disease.searchPlaceholder")}
+                        aria-label={t("disease.searchPlaceholder")}
+                    />
+                    {searching && (
+                        <button
+                            type="button"
+                            className="disease-page__search-clear"
+                            aria-label={t("common.close")}
+                            onClick={() => setQuery("")}
+                        >
+                            <X size={14} />
+                        </button>
+                    )}
+                </div>
+
+                {/* Subtle suggestions while focused-but-empty (§Suggestions) */}
+                {!searching && (
+                    <p className="disease-page__search-hint">
+                        {t("disease.searchHint")}{' '}
+                        {SUGGESTION_TERMS.map((s) => (
+                            <button
+                                key={s}
+                                type="button"
+                                className="disease-page__search-term"
+                                onClick={() => setQuery(s)}
+                            >
+                                {t(`disease.searchTerms.${s}`)}
+                            </button>
+                        ))}
+                    </p>
+                )}
+
+                {/* Small result indicator while searching (§Result count) */}
+                {searching && visible.length > 0 && (
+                    <p className="disease-page__result-count">
+                        {t("disease.resultCount")
+                            .replace("{n}", formatNumber(visible.length))}
+                    </p>
+                )}
             </div>
 
             {/* Cards grid */}
@@ -123,7 +168,11 @@ export default function Disease() {
             </div>
 
             {visible.length === 0 && (
-                <p className="disease-page__empty">{t("disease.empty")}</p>
+                <div className="disease-page__empty">
+                    <Search size={22} />
+                    <strong>{t("disease.noMatch")}</strong>
+                    <span>{t("disease.emptyHint")}</span>
+                </div>
             )}
 
             {/* ==================== Floating detail window ==================== */}

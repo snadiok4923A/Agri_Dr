@@ -15,36 +15,122 @@
     margin-top: 4px;
 }
 
-/* ==================== Filters ==================== */
-.disease-page__filters {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+/* ==================== Search — the only discovery tool ==================== */
+.disease-page__searchwrap {
     margin: 18px 0 20px;
 }
 
-.disease-page__filter {
-    padding: 7px 14px;
-    font-size: min(max(calc(12.5px * var(--ts-body, 1)), 9px), 24px);
-    font-weight: 600;
-    color: var(--text-secondary);
-    background: var(--bg-surface);
+.disease-page__search {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 520px;
+    padding: 11px 16px;
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border: 1px solid var(--border);
     border-radius: var(--radius-full);
+    transition: border-color var(--transition-fast);
+}
+
+.disease-page__search:focus-within {
+    border-color: rgba(111, 207, 142, 0.55);
+}
+
+.disease-page__search-icon {
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+.disease-page__search input {
+    flex: 1;
+    min-width: 0;
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text-primary);
+    font-size: min(max(calc(14px * var(--ts-body, 1)), 9px), 24px);
+    font-family: inherit;
+}
+
+.disease-page__search input::placeholder {
+    color: var(--text-muted);
+}
+
+.disease-page__search-clear {
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+.disease-page__search-clear:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.14);
+}
+
+.disease-page__search-hint {
+    margin-top: 10px;
+    font-size: min(max(calc(12px * var(--ts-small, 1)), 8px), 18px);
+    color: var(--text-muted);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}
+
+.disease-page__search-term {
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border);
+    background: var(--bg-surface);
+    color: var(--text-secondary);
+    font-size: min(max(calc(11.5px * var(--ts-small, 1)), 8px), 18px);
+    font-weight: 600;
     cursor: pointer;
     font-family: inherit;
     transition: all var(--transition-fast);
 }
 
-.disease-page__filter:hover {
+.disease-page__search-term:hover {
     border-color: rgba(111, 207, 142, 0.45);
     color: var(--text-primary);
 }
 
-.disease-page__filter--active {
-    color: var(--leaf);
-    background: var(--leaf-soft);
-    border-color: rgba(111, 207, 142, 0.5);
+.disease-page__result-count {
+    margin-top: 10px;
+    font-size: min(max(calc(12px * var(--ts-small, 1)), 8px), 18px);
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+/* ==================== Empty state ==================== */
+.disease-page__empty {
+    padding: 48px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.disease-page__empty strong {
+    font-size: min(max(calc(15px * var(--ts-body, 1)), 9px), 24px);
+    font-weight: 700;
+    color: var(--text-secondary);
+}
+
+.disease-page__empty span {
+    font-size: min(max(calc(12.5px * var(--ts-small, 1)), 8px), 18px);
 }
 
 /* ==================== Grid ==================== */
@@ -491,13 +577,6 @@
 .disease-page__ask-ai:hover {
     border-color: rgba(111, 207, 142, 0.6);
     box-shadow: 0 4px 18px rgba(111, 207, 142, 0.12);
-}
-
-.disease-page__empty {
-    padding: 40px 0;
-    text-align: center;
-    color: var(--text-muted);
-    font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
 }
 
 /* ==================== Disease artwork sizing ==================== */

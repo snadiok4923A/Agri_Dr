@@ -295,26 +295,178 @@ export const diseaseLibrary = [
     },
 ];
 
-/**
- * Filters: severity levels (per the provided list) + the type filters the
- * original data supported. Viral / nematode / nutritional diseases are
- * covered by the severity filters.
+/*
+ * Farmer keyword layer — extra searchable terms per disease.
+ *
+ * The page's ONLY discovery tool is search (the old severity/type filter
+ * chips were removed), so farmers must find a disease by typing what they
+ * see, not by knowing the textbook name. These keywords add:
+ *   · affected plant parts (leaf / stem / panicle / root …)
+ *   · farmer phrasings and common words ("spots on leaf", "leaf turning yellow")
+ *   · Bengali symptom words so Bengali-mode searches match too
+ * Nothing here claims detection — they are pure library-search terms.
  */
-export const diseaseFilters = [
-    { id: "all", label: "All" },
-    { id: "critical", label: "Critical" },
-    { id: "high", label: "High" },
-    { id: "moderate", label: "Moderate" },
-    { id: "low", label: "Low" },
-    { id: "fungal", label: "Fungal" },
-    { id: "bacterial", label: "Bacterial" },
-    { id: "pest", label: "Pest" },
-];
+const farmerKeywords = {
+    "leaf-blast": {
+        parts: ["leaf", "panicle", "node"],
+        keywords: [
+            "blast", "rice blast", "leaf blast", "diamond shaped spot",
+            "spots on leaf", "brown lesion", "eye shaped spot", "leaf lesions",
+            "\u09ac\u09cd\u09b2\u09be\u09b8\u09cd\u099f", "\u09aa\u09be\u09a4\u09be\u09af\u09bc \u09a6\u09be\u0997", "\u09aa\u09be\u09a4\u09be \u09aa\u09cb\u09dc\u09be \u09a6\u09be\u0997",
+        ],
+    },
+    "brown-plant-hopper": {
+        parts: ["stem", "base", "tillers"],
+        keywords: [
+            "hopper", "pest", "insect", "hopperburn", "yellowing tillers",
+            "insect attack at base", "\u09aa\u09cb\u0995\u09be", "\u09ac\u09be\u09a6\u09be\u09ae\u09bf \u09aa\u09cb\u0995\u09be", "\u0997\u09cb\u09dc\u09be\u09af\u09bc \u09aa\u09cb\u0995\u09be",
+        ],
+    },
+    "sheath-blight": {
+        parts: ["sheath", "leaf", "stem"],
+        keywords: [
+            "sheath", "leaf sheath", "snake skin spots", "water line patches",
+            "\u09b6\u09bf\u09a5", "\u09aa\u09be\u09a4\u09be\u09b0 \u0997\u09cb\u09dc\u09be\u09af\u09bc \u09a6\u09be\u0997", "\u09b8\u09be\u09aa\u09c7\u09b0 \u099a\u09be\u09ae\u09dc\u09be\u09b0 \u09ae\u09a4\u09cb \u09a6\u09be\u0997",
+        ],
+    },
+    "brown-spot": {
+        parts: ["leaf", "grain"],
+        keywords: [
+            "brown spot", "leaf spot", "round brown spots", "spots on leaf",
+            "\u09ac\u09be\u09a6\u09be\u09ae\u09bf \u09a6\u09be\u0997", "\u0997\u09cb\u09b2 \u09a6\u09be\u0997", "\u09aa\u09be\u09a4\u09be\u09af\u09bc \u09a6\u09be\u0997",
+        ],
+    },
+    "false-smut": {
+        parts: ["grain", "panicle"],
+        keywords: [
+            "smut", "spore balls", "green black grains", "grain problem",
+            "\u09a6\u09be\u09a8\u09be \u0995\u09be\u09b2\u09cb", "\u09b6\u09c0\u09b7\u09c7 \u09a6\u09be\u0997", "\u0995\u09be\u09b2\u09cb \u09a6\u09be\u09a8\u09be",
+        ],
+    },
+    "bakanae": {
+        parts: ["seedling", "root", "whole plant"],
+        keywords: [
+            "foot rot", "bakanae", "abnormally tall", "thin plants", "seedling rot",
+            "\u0997\u09be\u099b \u09b2\u09ae\u09cd\u09ac\u09be \u09b9\u0993\u09af\u09bc\u09be", "\u099a\u09bf\u0995\u09a3 \u099a\u09be\u09b0\u09be",
+        ],
+    },
+    "bacterial-leaf-blight": {
+        parts: ["leaf", "blade"],
+        keywords: [
+            "blb", "bacterial", "leaf blight", "yellow leaf", "leaf turning yellow",
+            "water soaked streaks", "\u09aa\u09be\u09a4\u09be \u09b9\u09b2\u09c1\u09a6", "\u09aa\u09be\u09a4\u09be\u09b0 \u09ae\u09be\u09dd\u09c7 \u09a6\u09be\u0997",
+        ],
+    },
+    "bacterial-leaf-streak": {
+        parts: ["leaf", "blade"],
+        keywords: [
+            "bls", "bacterial", "leaf streak", "yellow streaks between veins",
+            "\u09aa\u09be\u09a4\u09be\u09af\u09bc \u09b9\u09b2\u09c1\u09a6 \u09a6\u09be\u0997",
+        ],
+    },
+    "rice-tungro": {
+        parts: ["leaf", "whole plant"],
+        keywords: [
+            "tungro", "virus", "stunted plant", "yellow orange leaf tips", "leafhopper",
+            "\u0997\u09be\u099b \u09ac\u09be\u09ae\u09a8", "\u09aa\u09be\u09a4\u09be \u09b9\u09b2\u09c1\u09a6 \u0995\u09ae\u09b2\u09be",
+        ],
+    },
+    "rice-yellow-dwarf": {
+        parts: ["leaf", "whole plant", "tillers"],
+        keywords: [
+            "dwarf", "phytoplasma", "excessive tillering", "bushy plant", "yellow",
+            "\u09ac\u09be\u09ae\u09a8\u09a4\u09be", "\u09ac\u09c7\u09b6\u09bf \u099a\u09be\u09b0\u09be",
+        ],
+    },
+    "ufra": {
+        parts: ["stem", "panicle", "leaf"],
+        keywords: [
+            "ufra", "nematode", "twisted leaves", "poor panicle emergence", "stem problem",
+            "\u09aa\u09be\u09a4\u09be \u09ae\u09cb\u099a\u09dc\u09be\u09a8\u09cb", "\u09b6\u09c0\u09b7 \u09a8\u09be \u0986\u09b8\u09be", "\u0995\u09c3\u09ae\u09bf",
+        ],
+    },
+    "root-knot": {
+        parts: ["root", "whole plant"],
+        keywords: [
+            "root knot", "root galls", "root swelling", "nematode", "root problem",
+            "\u09b6\u09bf\u0995\u09dc\u09c7 \u0997\u09bf\u09df\u09be\u099f", "\u09ae\u09c2\u09b2 \u09b0\u09cb\u0997",
+        ],
+    },
+    "khaira": {
+        parts: ["leaf", "whole plant"],
+        keywords: [
+            "khaira", "zinc deficiency", "rusty brown patches", "stunted growth",
+            "\u09ae\u09b0\u099a\u09c7 \u09a6\u09be\u0997", "\u09a6\u09b8\u09cd\u09a4\u09be \u0998\u09be\u099f\u09cd\u099f\u09bf",
+        ],
+    },
+    "iron-toxicity": {
+        parts: ["leaf", "root"],
+        keywords: [
+            "bronzing", "iron toxicity", "purplish brown leaves", "acidic soil",
+            "\u09ae\u09b0\u099a\u09c7", "\u09b2\u09cb\u09b9\u09be \u09ac\u09c7\u09b6\u09bf",
+        ],
+    },
+};
 
-export function matchesDiseaseFilter(disease, filterId) {
-    if (filterId === "all") return true;
-    if (["critical", "high", "moderate", "low"].includes(filterId)) {
-        return disease.harmLevel.toLowerCase() === filterId;
+for (const d of diseaseLibrary) {
+    const k = farmerKeywords[d.id] || { parts: [], keywords: [] };
+    d.affectedPart = k.parts;
+    d.keywords = k.keywords;
+}
+
+/*
+ * Local, instant search across EVERY farmer-facing field:
+ * name · scientificName · category · symptoms · preview ·
+ * affectedPart · keywords. Pure string matching on the existing dataset —
+ * no API calls, no diagnosis claims (spec §Performance / §Safety).
+ *
+ * Matching rules (farmer-friendly, §Fuzzy / Partial):
+ *   1. full phrase substring hit → always matches
+ *   2. otherwise single-word queries match as partial substrings
+ *      ("bla"/"she"/"brown"), while multi-word queries need at
+ *      least TWO of the words to appear — so "yellow leaf" stays
+ *      precise instead of matching every leaf disease
+ * Results are ranked by how many query words matched.
+ */
+const normalizeSearch = (s) =>
+    String(s)
+        .toLowerCase()
+        .replace(/[^\p{L}\p{N}\s]/gu, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+
+const searchIndex = new Map(
+    diseaseLibrary.map((d) => [
+        d.id,
+        normalizeSearch(
+            [
+                d.name,
+                d.scientificName,
+                d.category,
+                d.harmLevel,
+                d.preview || "",
+                ...(d.symptoms || []),
+                ...(d.affectedPart || []),
+                ...(d.keywords || []),
+            ].join(" \u00b7 ")
+        ),
+    ])
+);
+
+export function searchDiseases(query) {
+    const q = normalizeSearch(query);
+    if (!q) return [...diseaseLibrary];
+    const words = q.split(" ").filter(Boolean);
+    const needed = words.length === 1 ? 1 : 2;
+    const scored = [];
+    for (const d of diseaseLibrary) {
+        const hay = searchIndex.get(d.id) || "";
+        if (hay.includes(q)) {
+            scored.push([d, words.length]);
+            continue;
+        }
+        const hits = words.filter((w) => hay.includes(w)).length;
+        if (hits >= needed) scored.push([d, hits]);
     }
-    return disease.category === filterId;
+    return scored.sort((a, b) => b[1] - a[1]).map(([d]) => d);
 }
