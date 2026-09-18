@@ -11,6 +11,7 @@
  */
 
 import { getCachedWeather } from "../services/weatherService";
+import { closeTopOverlay } from "./overlayBus";
 
 /* ------------------------------------------------------------------ *
  * Toast feedback ("Opening Market…", "Command not recognized", …)
@@ -76,6 +77,29 @@ function weatherValue(intent) {
     }
 }
 
+/** DOM events pages listen to for voice-driven React state changes. */
+export const VOICE_OPEN_DISEASE_EVENT = "krisiveda:voice-open-disease";
+export const VOICE_OPEN_MARKET_EVENT = "krisiveda:voice-open-market";
+export const VOICE_FILTER_MARKET_EVENT = "krisiveda:voice-filter-market";
+export const VOICE_OPEN_SIDEBAR_EVENT = "krisiveda:voice-open-sidebar";
+
+/** Navigate (if needed), then dispatch a detail event after the paint. */
+function navigateThenEvent(actions, path, eventName, detail) {
+    const dispatch = () =>
+        window.dispatchEvent(new CustomEvent(eventName, { detail }));
+    if (typeof actions.navigate === "function") {
+        // Router state is the source of truth for the current path.
+        if (actions.currentPath !== path) {
+            actions.navigate(path);
+            setTimeout(dispatch, 350);
+        } else {
+            dispatch();
+        }
+    } else {
+        dispatch();
+    }
+}
+
 /**
  * executeVoiceCommand — performs the action for a parsed command.
  *
@@ -93,6 +117,24 @@ function weatherValue(intent) {
 export function executeVoiceCommand(parsed, actions) {
     if (!parsed?.intent) return false;
     const { intent, entity, feedback } = parsed;
+
+    /* --- 0. CLOSE — highest priority (§18–§22) ---
+     * Closes ONLY the active temporary UI via registered React state.
+     * §21: when nothing temporary is open, DO NOTHING — no navigation,
+     * no feedback, no page change. */
+    if (intent === "CLOSE_ACTIVE_OVERLAY") {
+        const closed = closeTopOverlay();
+        if (closed) showToast(feedback || "Closed");
+        // Consumed either way — never falls through to "not recognized".
+        return true;
+    }
+
+    /* --- 0b. Mobile sidebar (§13/§38) — opens the drawer, no navigation --- */
+    if (intent === "OPEN_SIDEBAR") {
+        window.dispatchEvent(new CustomEvent(VOICE_OPEN_SIDEBAR_EVENT));
+        showToast(feedback || "Opening menu…");
+        return true;
+    }
 
     /* --- 1. Plain navigation --- */
     const route = NAV_ROUTES[intent];
@@ -128,10 +170,35 @@ export function executeVoiceCommand(parsed, actions) {
             return true;
         }
 
-        /* --- 3. Rice variety entities --- */
-        case "OPEN_RICE_VARIETY_DETAILS":
+        /* --- 3. Rice variety entities ---
+         * Specific variety → Market page + its floating price window.
+         * Broad family ("basmati") → Market page with the Basmati filter. */
+        case "OPEN_MARKET_VARIETY":
             if (entity?.type === "variety" && entity.id) {
-                actions.navigate?.(`/crops/${entity.id}`);
+                navigateThenEvent(actions, "/market", VOICE_OPEN_MARKET_EVENT, {
+                    id: entity.id,
+                });
+                showToast(`Opening ${entity.name}…`);
+                return true;
+            }
+            return false;
+
+        case "OPEN_MARKET_FILTERED":
+            if (entity?.type === "variety") {
+                navigateThenEvent(actions, "/market", VOICE_FILTER_MARKET_EVENT, {
+                    filter: entity.id === "basmati-1121" ? "basmati" : "all",
+                });
+                showToast("Opening Market Intelligence…");
+                return true;
+            }
+            return false;
+
+        /* --- 3b. Specific disease → Disease page + its floating window --- */
+        case "OPEN_DISEASE_DETAIL":
+            if (entity?.type === "disease" && entity.id) {
+                navigateThenEvent(actions, "/disease", VOICE_OPEN_DISEASE_EVENT, {
+                    id: entity.id,
+                });
                 showToast(`Opening ${entity.name}…`);
                 return true;
             }

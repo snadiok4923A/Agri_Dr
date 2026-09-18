@@ -69,7 +69,7 @@ export function createVoiceRecognitionService({
         const rec = new SR();
         rec.continuous = true; // keep listening across utterances
         rec.interimResults = true; // live "Listening…" feedback
-        rec.maxAlternatives = 1;
+        rec.maxAlternatives = 3; // §30: alternatives help ambiguous commands
         rec.lang = currentLang;
 
         rec.onstart = () => {
@@ -80,11 +80,19 @@ export function createVoiceRecognitionService({
         rec.onresult = (event) => {
             let interim = "";
             let finalText = "";
+            let finalAlts = [];
             for (let i = event.resultIndex; i < event.results.length; i++) {
                 const result = event.results[i];
                 const text = result[0]?.transcript || "";
-                if (result.isFinal) finalText += text;
-                else interim += text;
+                if (result.isFinal) {
+                    finalText += text;
+                    // Collect up to 3 recognition alternatives (§30) — the
+                    // parser tries them in order when the first is unclear.
+                    for (let j = 0; j < result.length && j < 3; j++) {
+                        const alt = result[j]?.transcript?.trim();
+                        if (alt && !finalAlts.includes(alt)) finalAlts.push(alt);
+                    }
+                } else interim += text;
             }
             if (interim.trim()) {
                 try {
@@ -96,7 +104,7 @@ export function createVoiceRecognitionService({
             const final = finalText.trim();
             if (final) {
                 try {
-                    handlers.onFinal?.(final);
+                    handlers.onFinal?.(final, finalAlts);
                 } catch {
                     /* noop */
                 }

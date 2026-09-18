@@ -3,9 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../hooks/useLanguage";
 import {
     searchDiseases,
+    diseaseLibrary,
 } from "../data/diseaseLibrary";
 import DiseaseIllustration from "../components/common/DiseaseIllustration";
 import { X, Sparkles, ArrowRight, Search } from "lucide-react";
+import { registerOverlay } from "../voice/overlayBus";
+import { VOICE_OPEN_DISEASE_EVENT } from "../voice/executeVoiceCommand";
 import "./Disease.css";
 
 /**
@@ -55,6 +58,25 @@ export default function Disease() {
         window.addEventListener("keydown", onKey);
         return () => window.removeEventListener("keydown", onKey);
     }, [selected]);
+
+    // Voice integration (§8): "leaf blast" / "leafe blust" opens the Disease
+    // page with that disease's floating window; "close" closes the modal.
+    useEffect(() => {
+        const openDisease = (e) => {
+            const rec = diseaseLibrary.find((d) => d.id === e.detail?.id);
+            if (rec) setSelected(rec);
+        };
+        window.addEventListener(VOICE_OPEN_DISEASE_EVENT, openDisease);
+        const unregister = registerOverlay({
+            isOpen: () =>
+                document.querySelector(".disease-page__overlay") !== null,
+            close: () => setSelected(null),
+        });
+        return () => {
+            window.removeEventListener(VOICE_OPEN_DISEASE_EVENT, openDisease);
+            unregister();
+        };
+    }, []);
 
     return (
         <div className="page-container disease-page">

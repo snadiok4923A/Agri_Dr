@@ -41,8 +41,22 @@ const SR_LANGS = {
     ta: "ta-IN",
 };
 
+/**
+ * §2/§3 — ALL speech locales we rotate through. The SPOKEN language is
+ * independent of the website language: recognition starts at the app's
+ * locale but automatically rotates (bn → hi → te → ta → en …) whenever a
+ * transcript matches no command, so a Bengali sentence is understood even
+ * in English mode and vice-versa. The last SUCCESSFUL locale becomes the
+ * primary guess (sticky), which is the practical multi-locale strategy for
+ * the Web Speech API — no user-visible language switch needed.
+ */
+const SR_LOCALES = ["en-IN", "bn-IN", "hi-IN", "te-IN", "ta-IN"];
+
 /** DOM event used to open the Dashboard's floating Weather modal from voice. */
 export const VOICE_OPEN_WEATHER_EVENT = "krisiveda:voice-open-weather";
+
+/** DOM event used to open the mobile drawer (sidebar) from voice (§13/§38). */
+export const VOICE_OPEN_SIDEBAR_EVENT = "krisiveda:voice-open-sidebar";
 
 export function VoiceModeProvider({ children }) {
     const [active, setActive] = useState(false);
@@ -61,6 +75,9 @@ export function VoiceModeProvider({ children }) {
     const activeRef = useRef(false);
     const serviceRef = useRef(null);
     const stopRef = useRef(null);
+    // Multilingual rotation state (§2/§3).
+    const localeIndexRef = useRef(0);
+    const rotatingRef = useRef(false);
 
     useEffect(() => {
         activeRef.current = active;
@@ -70,6 +87,7 @@ export function VoiceModeProvider({ children }) {
         setActive(false);
         setStatus("idle");
         setTranscript("");
+        rotatingRef.current = false;
         try {
             serviceRef.current?.stop();
         } catch {
@@ -81,8 +99,11 @@ export function VoiceModeProvider({ children }) {
     const start = useCallback(() => {
         if (!supported) return;
         setTranscript("");
+        // First guess = the app's current language (§2: most likely locale).
+        const primary = SR_LOCALES.indexOf(SR_LANGS[language] || "en-IN");
+        localeIndexRef.current = primary >= 0 ? primary : 0;
         setActive(true);
-    }, [supported]);
+    }, [supported, language]);
 
     const toggle = useCallback(() => {
         if (active) stop();
@@ -90,15 +111,33 @@ export function VoiceModeProvider({ children }) {
     }, [active, start, stop]);
 
     /* ---------- Handle one finalized utterance ---------- */
-    const handleFinalTranscript = useCallback((text) => {
+    const handleFinalTranscript = useCallback((text, alternatives = []) => {
         setTranscript(text);
-        const parsed = parseVoiceCommand(text);
+        // §30: try the top transcript first, then recognition alternatives —
+        // the first alternative that matches a command wins.
+        const candidates = [text, ...alternatives.filter((a) => a && a !== text)];
+        let parsed = null;
+        for (const candidate of candidates) {
+            parsed = parseVoiceCommand(candidate);
+            if (parsed) break;
+        }
         if (!parsed) {
-            // Unknown command: keep listening, show friendly feedback.
             setLastCommand({ text, intent: null, at: Date.now() });
+            // §2/§3 fallback: rotate recognition to the next supported
+            // locale so the next attempt (repeat/continuation) is heard in
+            // another language. The Web Speech API cannot re-recognize past
+            // audio, so the rotation is what makes mixed-language use
+            // practical. After a full cycle we wrap to the app language.
+            if (activeRef.current && !rotatingRef.current) {
+                rotatingRef.current = true;
+                localeIndexRef.current = (localeIndexRef.current + 1) % SR_LOCALES.length;
+                serviceRef.current?.setLang(SR_LOCALES[localeIndexRef.current]);
+            }
             showUnknownCommandFeedback();
             return;
         }
+        // Success: this locale understood the farmer — keep it primary.
+        rotatingRef.current = false;
         setLastCommand({ text, intent: parsed.intent, at: Date.now() });
         const handled = executeVoiceCommand(parsed, actionsRef.current);
         if (!handled) showUnknownCommandFeedback();
@@ -154,6 +193,7 @@ export function VoiceModeProvider({ children }) {
 
         actionsRef.current = {
             navigate,
+            currentPath: location.pathname,
             navigateBack: () => navigate(-1),
             openWeather: openWeatherModal,
             setTheme,

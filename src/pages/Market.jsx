@@ -1,7 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLanguage } from "../hooks/useLanguage";
 import { marketPrices, marketFilters, buildPriceHistory } from "../data/marketPrices";
 import { Search, X } from "lucide-react";
+import { registerOverlay } from "../voice/overlayBus";
+import {
+    VOICE_OPEN_MARKET_EVENT,
+    VOICE_FILTER_MARKET_EVENT,
+} from "../voice/executeVoiceCommand";
 import {
     ResponsiveContainer,
     AreaChart,
@@ -122,6 +127,9 @@ export default function Market() {
     /* §17 close behaviors: Escape on desktop; overlay click handled in JSX.
      * Closing plays a subtle fade/scale-out (§16) before unmount. */
     const [closing, setClosing] = useState(false);
+    // Latest animated-closer, updated every render — the overlay-bus entry
+    // registered on mount must never call a stale stateful closure.
+    const closeRef = useRef(null);
     const closeWithAnim = () => {
         if (!selected || closing) return;
         setClosing(true);
@@ -130,6 +138,7 @@ export default function Market() {
             setClosing(false);
         }, 160);
     };
+    closeRef.current = closeWithAnim;
 
     useEffect(() => {
         if (!selected) return undefined;
@@ -140,6 +149,38 @@ export default function Market() {
         return () => window.removeEventListener("keydown", onKey);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selected, closing]);
+
+    // Voice integration (§10/§11): "traditional basmati price" opens the
+    // Market page with that variety's floating price window; "basmati dam
+    // koto" shows all Basmati cards; "close" closes the price window.
+    useEffect(() => {
+        const openVariety = (e) => {
+            const rec = marketPrices.find((r) => r.id === e.detail?.id);
+            if (rec) {
+                setRange("7d");
+                setSelected(rec);
+            }
+        };
+        const applyFilter = (e) => {
+            if (e.detail?.filter) setFilter(e.detail.filter);
+        };
+        window.addEventListener(VOICE_OPEN_MARKET_EVENT, openVariety);
+        window.addEventListener(VOICE_FILTER_MARKET_EVENT, applyFilter);
+        const unregister = registerOverlay({
+            isOpen: () =>
+                document.querySelector(".market-page__dialog") !== null,
+            // Always call the LATEST closer — the animated close depends on
+            // state (selected/closing) that this mount-time closure can't
+            // see, so it's reached through a ref updated every render.
+            close: () => closeRef.current?.(),
+        });
+        return () => {
+            window.removeEventListener(VOICE_OPEN_MARKET_EVENT, openVariety);
+            window.removeEventListener(VOICE_FILTER_MARKET_EVENT, applyFilter);
+            unregister();
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     return (
         <div className="page-container market-page">

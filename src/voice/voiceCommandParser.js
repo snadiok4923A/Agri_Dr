@@ -3,145 +3,38 @@
  * NO AI, NO API: speech text in → { intent, confidence, entity } out.
  *
  * Pipeline (per the spec):
- *   speech text → normalizeTranscript() → alias normalization →
- *   priority matching → { intent, confidence, originalText, entity }
+ *   speech text → normalizeTranscript() → layered matching →
+ *   { intent, confidence, originalText, entity, matchedPhrase }
  *
- * Matching priority:
- *   1. exact phrase match
- *   2. specific multi-word phrases (longest first)
- *   3. entity + action combos (variety names, languages)
- *   4. general commands
- *   5. single-keyword fallback (conservative)
+ * Matching priority (§22/§23):
+ *   1. CLOSE (boosted — "close" must always mean close)
+ *   2. exact phrase match
+ *   3. specific multi-word phrases (longest first)
+ *   4. SPECIFIC entity: disease / market variety (open its floating window)
+ *   5. broad variety family ("basmati" → filtered Market page)
+ *   6. language change
+ *   7. general commands
+ *   8. single-keyword fallback (fuzzy, conservative)
  */
 
 import {
     VOICE_COMMANDS,
     LANGUAGE_ALIASES,
-    getVarietyAliases,
 } from "./voiceCommands";
+import {
+    findDiseaseEntity,
+    findMarketEntity,
+    isBroadMarketAlias,
+} from "./voiceEntities";
+import { normalizeTranscript } from "./voiceNormalize";
+
+export { normalizeTranscript };
 
 /* ------------------------------------------------------------------ *
- * Normalization
+ * Normalization lives in voiceNormalize.js (shared with voiceEntities.js).
  * ------------------------------------------------------------------ */
 
-/**
- * Words the browser's recognizers commonly garble. Mapping them early keeps
- * the phrase tables small and match rates high — still 100% rule-based.
- */
-const TOKEN_FIXES = new Map([
-    // action verbs (SR variants + Hinglish spelling)
-    ["dakhao", "dekhaao"],
-    ["dekhao", "dekhaao"],
-    ["dekha", "dekhaao"],
-    ["dekho", "dekhaao"],
-    ["dikha", "dekhaao"],
-    ["dikhaao", "dekhaao"],
-    ["dekh", "dekhaao"],
-    ["khol", "kholo"],
-    ["kholo", "kholo"],
-    ["kholo", "kholo"],
-    ["khol", "kholo"],
-    ["kardo", "karo"],
-    ["koro", "karo"],
-    ["koru", "karo"],
-    ["bondho", "band"],
-    ["bandh", "band"],
-    ["bondh", "band"],
-    ["chalu", "chalu"],
-    ["chaalu", "chalu"],
-    ["suru", "chalu"],
-    ["shuru", "chalu"],
-    // nouns
-    ["vaj", "voice"],
-    ["vois", "voice"],
-    ["waiz", "voice"],
-    ["market", "market"],
-    ["bazar", "market"],
-    ["bajaar", "market"],
-    ["moshom", "weather"],
-    ["mausam", "weather"],
-    ["abohawa", "weather"],
-    ["abohawaa", "weather"],
-    ["aabhawa", "weather"],
-    ["dhaan", "rice"],
-    ["dhan", "rice"],
-    ["chaser", "crop"],
-    ["fosol", "crop"],
-    ["phasal", "crop"],
-    ["jomi", "land"],
-    ["jameen", "land"],
-    ["zameen", "land"],
-    ["ghor", "farm"],
-    ["khet", "farm"],
-    ["kheth", "farm"],
-    ["sar", "fertilizer"],
-    ["khaad", "fertilizer"],
-    ["khad", "fertilizer"],
-    ["oshud", "medicine"],
-    ["ausadh", "medicine"],
-    ["rog", "disease"],
-    ["roag", "disease"],
-    ["roog", "disease"],
-    ["matha", "soil"],
-    ["mati", "soil"],
-    ["mitti", "soil"],
-    ["labh", "profit"],
-    ["laabh", "profit"],
-    ["khoroch", "cost"],
-    ["kharch", "cost"],
-    ["kharcha", "cost"],
-    ["dam", "price"],
-    ["daam", "price"],
-    ["koto", "koto"],
-    ["kotha", "koto"],
-    ["kitna", "koto"],
-    ["kitne", "koto"],
-    ["jomir", "land"],
-    ["ghorer", "farm"],
-    ["dhaner", "rice"],
-    ["bajarer", "market"],
-    ["mathar", "soil"],
-    ["arer", "of"],
-    ["er", "of"],
-    ["r", "of"],
-    ["ta", "the"],
-    ["ti", "the"],
-]);
 
-/** Words with no matching value — dropped entirely during normalization. */
-const NOISE_TOKENS = new Set(["the", "a", "an", "of", "to", "please", "amake", "kore"]);
-
-/** Collapse letter→digit spacing so "ir 64" == "ir64". Digit→letter spacing
- * ("64 price") must stay intact — only letters-before-digits collapse. */
-function collapseAlnumSpaces(text) {
-    return text.replace(/([a-z])\s+(?=\d)/g, "$1");
-}
-
-/**
- * normalizeTranscript — lowercase, strip punctuation, collapse spaces,
- * apply token fixes. This is the ONLY entry point for raw speech text.
- */
-export function normalizeTranscript(raw) {
-    let text = String(raw || "")
-        .toLowerCase()
-        .trim()
-        // remove punctuation (keep letters + COMBINING MARKS + digits + spaces;
-        // \p{M} is essential for Bengali/Hindi — vowel signs are marks, not letters)
-        .replace(/[^\p{L}\p{M}\p{N}\s]/gu, " ")
-        .replace(/\s+/g, " ")
-        .trim();
-
-    if (!text) return "";
-
-    // Latin-script token fixes (Bengali script passes through untouched)
-    text = text
-        .split(" ")
-        .map((tok) => TOKEN_FIXES.get(tok) ?? tok)
-        .filter((tok) => tok && !NOISE_TOKENS.has(tok))
-        .join(" ");
-
-    return collapseAlnumSpaces(text);
-}
 
 /** Apply the same normalization to a stored alias/phrase at build time. */
 const norm = normalizeTranscript;
@@ -179,6 +72,27 @@ function editDistance(a, b) {
 }
 
 /* ------------------------------------------------------------------ *
+ * §5 — bare-word registry: one meaningful word IS the command.
+ * A bare word only matches when it is the ENTIRE utterance, so a word
+ * inside a longer sentence can never trigger navigation on its own.
+ * ------------------------------------------------------------------ */
+const BARE_WORDS = [
+    ["weather", "OPEN_WEATHER", 95],
+    ["market", "OPEN_MARKET", 95],
+    ["disease", "OPEN_DISEASE_MEDICINE", 95],
+    ["doctor", "OPEN_AI_DOCTOR", 95],
+    ["farm", "OPEN_MY_FARM", 92],
+    ["soil", "OPEN_SOIL_FERTILITY", 95],
+    ["fertilizer", "OPEN_FERTILIZER_PLAN", 95],
+    ["profit", "OPEN_COST_PROFIT", 95],
+    ["cost", "OPEN_COST_PROFIT", 92],
+    ["insights", "OPEN_INSIGHTS", 95],
+    ["varieties", "OPEN_RICE_VARIETIES", 92],
+    ["settings", "OPEN_SETTINGS", 95],
+    ["rice", "OPEN_RICE_VARIETIES", 90],
+];
+
+/* ------------------------------------------------------------------ *
  * Parser
  * ------------------------------------------------------------------ */
 
@@ -204,7 +118,9 @@ const DETAIL_WORDS = [
  *
  * intent: string constant (e.g. "OPEN_MARKET")
  * confidence: "high" (exact/long phrase) | "medium" (short/fuzzy)
- * entity: { type: "variety", id, name } | { type: "language", code } | null
+ * entity: { type: "variety", id, name, broad } |
+ *         { type: "disease", id, name } |
+ *         { type: "language", code } | null
  */
 export function parseVoiceCommand(rawTranscript) {
     const originalText = String(rawTranscript || "").trim();
@@ -226,7 +142,7 @@ export function parseVoiceCommand(rawTranscript) {
         }
     };
 
-    /* ---- 1+2. Static command table (ordered: voice control → specific → general) ---- */
+    /* ---- 1+2. Static command table (CLOSE sits first in the table) ---- */
     for (const cmd of VOICE_COMMANDS) {
         for (const phrase of cmd.phrases) {
             const p = norm(phrase);
@@ -249,30 +165,64 @@ export function parseVoiceCommand(rawTranscript) {
         }
     }
 
-    /* ---- 3a. Variety entities (from the app's REAL data) ---- */
-    const varieties = getVarietyAliases();
-    for (const v of varieties) {
-        for (const alias of v.aliases) {
-            const a = norm(alias);
-            if (!a || !containsPhrase(text, a)) continue;
-
-            const hasPrice = PRICE_WORDS.some((w) => containsPhrase(text, w));
-            const hasDetail = DETAIL_WORDS.some((w) => containsPhrase(text, w));
-            const isWholeUtterance = text === a;
-
-            if (hasPrice) {
-                // "basmati price", "ir64 er dam koto" → market page
-                consider(9000, "OPEN_MARKET", "high", { type: "variety", id: v.id, name: v.name }, alias, "Opening Market Intelligence…");
-            } else if (hasDetail || isWholeUtterance) {
-                // "show IR64", "swarna dekhaao", "black rice" → variety details
-                consider(8500, "OPEN_RICE_VARIETY_DETAILS", "high", { type: "variety", id: v.id, name: v.name }, alias, null);
-            }
-            // a bare variety name buried inside an unrelated sentence does NOT match
-            break;
-        }
+    /* ---- 4a. SPECIFIC disease ("leaf blast", "leafe blust ta ki") ---- */
+    const diseaseHit = findDiseaseEntity(text);
+    if (diseaseHit) {
+        const { entity, score, alias } = diseaseHit;
+        consider(
+            9000 + score,
+            "OPEN_DISEASE_DETAIL",
+            "high",
+            { type: "disease", id: entity.id, name: entity.name },
+            alias,
+            `Opening ${entity.name}…`,
+        );
     }
 
-    /* ---- 3b. Language entities ---- */
+    /* ---- 4b/5. Market variety ("traditional basmati price") ---- */
+    const marketHit = findMarketEntity(text);
+    if (marketHit) {
+        const { entity, score, alias } = marketHit;
+        const hasPrice = PRICE_WORDS.some((w) => containsPhrase(text, w));
+        const hasDetail = DETAIL_WORDS.some((w) => containsPhrase(text, w));
+        const isWholeUtterance = text === norm(alias);
+        const broad = isBroadMarketAlias(alias);
+
+        if (broad) {
+            // family name ("basmati", "basmotir dam koto") → filtered market
+            consider(
+                9000 + score,
+                "OPEN_MARKET_FILTERED",
+                "high",
+                { type: "variety", id: entity.id, name: entity.name, broad: true },
+                alias,
+                "Opening Market Intelligence…",
+            );
+        } else if (hasPrice || hasDetail || isWholeUtterance) {
+            // specific variety → Market page + its floating price window
+            consider(
+                9000 + score,
+                "OPEN_MARKET_VARIETY",
+                "high",
+                { type: "variety", id: entity.id, name: entity.name },
+                alias,
+                `Opening ${entity.name}…`,
+            );
+        } else if (text.split(" ").length === 1) {
+            // bare specific variety name ("swarna") → its price window
+            consider(
+                8500 + score,
+                "OPEN_MARKET_VARIETY",
+                "high",
+                { type: "variety", id: entity.id, name: entity.name },
+                alias,
+                `Opening ${entity.name}…`,
+            );
+        }
+        // a variety name buried in an unrelated sentence does NOT match
+    }
+
+    /* ---- 6. Language entities ---- */
     for (const lang of LANGUAGE_ALIASES) {
         for (const alias of lang.aliases) {
             const a = norm(alias);
@@ -286,28 +236,34 @@ export function parseVoiceCommand(rawTranscript) {
         }
     }
 
-    /* ---- 5. Conservative single-keyword fuzzy fallback ---- */
-    // Only fires when nothing matched above, the utterance is a SINGLE token,
-    // and the token is within edit distance 1 of a distinctive keyword.
+    /* ---- 8. Bare single-word utterances (§5) + conservative fuzzy ---- */
     if (!best) {
         const tokens = text.split(" ");
-        if (tokens.length === 1 && tokens[0].length >= 4) {
-            const token = tokens[0];
-            const fallbacks = [
-                ["market", "OPEN_MARKET"],
-                ["weather", "OPEN_WEATHER"],
-                ["insights", "OPEN_INSIGHTS"],
-                ["settings", "OPEN_SETTINGS"],
-                ["dashboard", "OPEN_OVERVIEW"],
-                ["doctor", "OPEN_AI_DOCTOR"],
-                ["fertilizer", "OPEN_FERTILIZER_PLAN"],
-                ["humidity", "SHOW_HUMIDITY"],
-                ["temperature", "SHOW_TEMPERATURE"],
-            ];
-            for (const [kw, intent] of fallbacks) {
-                if (editDistance(token, kw) <= 1) {
-                    consider(100, intent, "medium", null, token);
+        if (tokens.length === 1) {
+            const tok = tokens[0];
+            for (const [w, intent, score] of BARE_WORDS) {
+                if (text === w) {
+                    consider(score * 100, intent, "high", null, w, null);
                     break;
+                }
+            }
+            if (!best && tok.length >= 4) {
+                const fallbacks = [
+                    ["market", "OPEN_MARKET"],
+                    ["weather", "OPEN_WEATHER"],
+                    ["insights", "OPEN_INSIGHTS"],
+                    ["settings", "OPEN_SETTINGS"],
+                    ["dashboard", "OPEN_OVERVIEW"],
+                    ["doctor", "OPEN_AI_DOCTOR"],
+                    ["fertilizer", "OPEN_FERTILIZER_PLAN"],
+                    ["humidity", "SHOW_HUMIDITY"],
+                    ["temperature", "SHOW_TEMPERATURE"],
+                ];
+                for (const [kw, intent] of fallbacks) {
+                    if (editDistance(tok, kw) <= 1) {
+                        consider(100, intent, "medium", null, tok);
+                        break;
+                    }
                 }
             }
         }

@@ -30,6 +30,7 @@ import WeatherModal from "../components/common/WeatherModal";
 import VoiceModeCard from "../components/dashboard/VoiceModeCard";
 import MarketCard from "../components/dashboard/MarketCard";
 import { useVoiceMode, VOICE_OPEN_WEATHER_EVENT } from "../hooks/useVoiceMode";
+import { registerOverlay } from "../voice/overlayBus";
 import { useWeather } from "../hooks/useWeather";
 import "./Dashboard.css";
 
@@ -81,10 +82,17 @@ export default function Dashboard() {
         window.addEventListener(VOICE_OPEN_WEATHER_EVENT, openWeather);
         window.addEventListener("krisiveda:voice-take-photo", takePhoto);
         window.addEventListener("krisiveda:voice-upload-photo", uploadPhoto);
+        // §19/§20: the weather modal registers with the voice overlay bus so
+        // "close" closes it and restores the dashboard underneath.
+        const unregister = registerOverlay({
+            isOpen: () => document.querySelector(".wmodal__overlay") !== null,
+            close: () => setWeatherOpen(false),
+        });
         return () => {
             window.removeEventListener(VOICE_OPEN_WEATHER_EVENT, openWeather);
             window.removeEventListener("krisiveda:voice-take-photo", takePhoto);
             window.removeEventListener("krisiveda:voice-upload-photo", uploadPhoto);
+            unregister();
         };
     }, []);
 
