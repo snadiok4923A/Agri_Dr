@@ -7,14 +7,25 @@
  * never reload the page (spec §12/§13). Coordinates stay in memory —
  * never persisted (spec §23).
  *
- * Status machine:
- *   "idle"       → before the first attempt
- *   "locating"   → asking the browser for coordinates
- *   "loading"    → coordinates known, fetching Open-Meteo
- *   "ready"      → real data available
- *   "denied"     → user refused the permission prompt (location permission needed)
- *   "unsupported"→ browser has no Geolocation API
- *   "error"      → timeout / position unavailable / network or API failure
+ * SEPARATED STATES (spec §8/§9 — no single generic loading/error flag):
+ *
+ *   phase: "locating"   → navigator.geolocation is running (permission
+ *                         dialog may be open — card shows "Detecting
+ *                         location...", NEVER an error)          (§1/§3)
+ *          "loading"    → coordinates in hand, Open-Meteo in flight
+ *          "ready"      → real weather on screen
+ *          "locError"   → geolocation callback actually rejected    (§6/§7)
+ *          "wxError"    → coordinates valid, Open-Meteo failed
+ *
+ *   locationError → one of PERMISSION_DENIED | POSITION_UNAVAILABLE |
+ *                   TIMEOUT | UNSUPPORTED (drives the §14/§15/§16 message)
+ *   weatherError  → NETWORK_ERROR | API_ERROR_* | API_MALFORMED
+ *
+ * RACE PROTECTION (spec §10): every async step checks a generation token —
+ * a retry bumps the token so a stale in-flight geolocation/weather result
+ * from a previous attempt can never overwrite newer state. The permission
+ * dialog, re-renders, double effects and duplicate geolocation calls
+ * (coalesced in locationService) are all covered.
  */
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
@@ -27,79 +38,99 @@ const REFRESH_INTERVAL_MS = 10 * 60 * 1000;
 const WeatherContext = createContext(null);
 
 export function WeatherProvider({ children }) {
-    const [status, setStatus] = useState("idle");
+    const [phase, setPhase] = useState("locating"); // §1: "Detecting location..." from first paint
     const [weather, setWeather] = useState(null);
-    const [errorCode, setErrorCode] = useState(null); // LOCATION_ERRORS.* | NETWORK_ERROR | API_*
-    const inFlightRef = useRef(false);
+    const [locationError, setLocationError] = useState(null);
+    const [weatherError, setWeatherError] = useState(null);
+
+    /** Bumped on every (re)start; stale async results are dropped. */
+    const genRef = useRef(0);
+    /** Mount guard for React 18 StrictMode double-effect (spec §10). */
+    const bootstrappedRef = useRef(false);
     const lastFetchRef = useRef(0);
 
-    const load = useCallback(async ({ force = false } = {}) => {
-        if (inFlightRef.current) return;
-        inFlightRef.current = true;
-        setErrorCode(null);
+    /**
+     * run — one complete location → weather pipeline.
+     * Returns true if this invocation is still the current one.
+     */
+    const run = useCallback(async ({ force = false } = {}) => {
+        const gen = ++genRef.current;
+        const isCurrent = () => genRef.current === gen;
 
+        setLocationError(null);
+        setWeatherError(null);
+
+        // ---------- 1. LOCATION (§2: wait for the actual callback) ----------
+        // Retry passes force: it must start a FRESH geolocation request —
+        // never join an old pending one (e.g. a parked permission prompt).
+        setPhase("locating");
+        let coords = null;
         try {
-            // 1. Location (skipped only if we already have coordinates in memory)
-            let coords = null;
-            try {
-                coords = await getCurrentLocation({ timeoutMs: 10000 });
-            } catch (err) {
-                setStatus(err === LOCATION_ERRORS.PERMISSION_DENIED ? "denied" : err === LOCATION_ERRORS.UNSUPPORTED ? "unsupported" : "error");
-                setErrorCode(err);
-                return;
-            }
+            coords = await getCurrentLocation({ force });
+        } catch (err) {
+            if (!isCurrent()) return false; // stale attempt — ignore
+            const code =
+                err === LOCATION_ERRORS.UNSUPPORTED
+                    ? LOCATION_ERRORS.UNSUPPORTED
+                    : err?.code || String(err);
+            setLocationError(code);
+            setPhase("locError");
+            return false;
+        }
 
-            // 2. Weather by coordinates
-            setStatus("loading");
-            try {
-                const data = await fetchWeather(coords, {
-                    force,
-                    maxAgeMs: REFRESH_INTERVAL_MS,
-                });
-                setWeather(data);
-                lastFetchRef.current = Date.now();
-                setStatus("ready");
-            } catch (err) {
-                // Keep showing the last good data if a refresh fails mid-session
-                setWeather((prev) => {
-                    if (prev) {
-                        setStatus("ready");
-                        return prev;
-                    }
-                    return prev;
-                });
-                setStatus((s) => (s === "ready" ? s : "error"));
-                setErrorCode(err?.message || String(err));
-            }
-        } finally {
-            inFlightRef.current = false;
+        if (!isCurrent()) return false; // retry superseded us mid-flight
+
+        // ---------- 2. WEATHER (§19: only after valid lat/lng) ----------
+        setPhase("loading");
+        console.log("Fetching weather...");
+        try {
+            const data = await fetchWeather(coords, { force, maxAgeMs: REFRESH_INTERVAL_MS });
+            if (!isCurrent()) return false;
+            setWeather(data);
+            lastFetchRef.current = Date.now();
+            setPhase("ready");
+            console.log("Weather loaded");
+            return true;
+        } catch (err) {
+            if (!isCurrent()) return false;
+            setWeatherError(err?.message || String(err));
+            setPhase("wxError");
+            return false;
         }
     }, []);
 
-    // One fetch on mount — dashboard load only (spec §14)
+    // One pipeline on mount — dashboard load only (spec §14).
     useEffect(() => {
+        if (bootstrappedRef.current) return; // StrictMode/double-effect guard
+        bootstrappedRef.current = true;
         if (!isGeolocationSupported()) {
-            setStatus("unsupported");
-            setErrorCode(LOCATION_ERRORS.UNSUPPORTED);
+            setLocationError(LOCATION_ERRORS.UNSUPPORTED);
+            setPhase("locError");
             return;
         }
-        load();
-    }, [load]);
+        run();
+    }, [run]);
 
-    /** Retry Location — re-asks for coordinates + reloads weather (spec §12). */
+    /**
+     * retryLocation (§11) — clear previous error → loading state → request
+     * geolocation again → wait for the success callback → fetch weather.
+     * The generation bump invalidates any still-running earlier attempt.
+     */
     const retryLocation = useCallback(() => {
-        load({ force: true });
-    }, [load]);
+        run({ force: true });
+    }, [run]);
 
     /** Refresh weather (no page reload); force-bypasses the cache interval. */
     const refreshWeather = useCallback(() => {
-        load({ force: true });
-    }, [load]);
+        run({ force: true });
+    }, [run]);
 
     const value = {
-        status,
+        phase, // "locating" | "loading" | "ready" | "locError" | "wxError"
+        status: phase, // legacy alias for existing consumers
         weather,
-        errorCode,
+        locationError,
+        weatherError,
         isStale: weather ? Date.now() - lastFetchRef.current > REFRESH_INTERVAL_MS : false,
         retryLocation,
         refreshWeather,

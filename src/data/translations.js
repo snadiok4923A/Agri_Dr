@@ -173,6 +173,14 @@ export const translations = {
 
             weatherLoading: "Loading weather...",
 
+            locating: "Detecting location...",
+
+            locationDenied: "Location permission is required to show local weather.",
+
+            locationUnavailable: "Unable to detect your location. Please try again.",
+
+            locationTimeout: "Location request timed out. Please try again.",
+
             locationNeeded: "Location access needed",
 
             weatherUnavailable: "Unable to load weather",
@@ -631,6 +639,14 @@ export const translations = {
             condThunderstormHail: "শিলাবৃষ্টিসহ বজ্রঝড়",
 
             weatherLoading: "আবহাওয়া লোড হচ্ছে...",
+
+            locating: "লোকেশন শনাক্ত করা হচ্ছে...",
+
+            locationDenied: "স্থানীয় আবহাওয়া দেখাতে লোকেশনের অনুমতি প্রয়োজন।",
+
+            locationUnavailable: "আপনার লোকেশন শনাক্ত করা যায়নি। আবার চেষ্টা করুন।",
+
+            locationTimeout: "লোকেশনের অনুরোধের সময় শেষ হয়ে গেছে। আবার চেষ্টা করুন।",
 
             locationNeeded: "লোকেশনের অনুমতি প্রয়োজন",
 
@@ -1091,6 +1107,14 @@ export const translations = {
 
             weatherLoading: "मौसम लोड हो रहा है...",
 
+            locating: "लोकेशन पता कर रहे हैं...",
+
+            locationDenied: "स्थानीय मौसम दिखाने के लिए लोकेशन की अनुमति आवश्यक है।",
+
+            locationUnavailable: "आपकी लोकेशन पता नहीं लगाई जा सकी। कृपया पुनः प्रयास करें।",
+
+            locationTimeout: "लोकेशन अनुरोध का समय समाप्त हो गया। कृपया पुनः प्रयास करें।",
+
             locationNeeded: "लोकेशन की अनुमति चाहिए",
 
             weatherUnavailable: "मौसम लोड नहीं हो सका",
@@ -1550,6 +1574,14 @@ export const translations = {
 
             weatherLoading: "వాతావరణం లోడ్ అవుతోంది...",
 
+            locating: "లొకేషన్ గుర్తిస్తోంది...",
+
+            locationDenied: "స్థానిక వాతావరణం చూపించడానికి లొకేషన్ అనుమతి అవసరం.",
+
+            locationUnavailable: "మీ లొకేషన్ గుర్తించడం సాధ్యం కాలేదు. దయచేసి మళ్లీ ప్రయత్నించండి.",
+
+            locationTimeout: "లొకేషన్ అభ్యర్థన సమయం ముగిసింది. దయచేసి మళ్లీ ప్రయత్నించండి.",
+
             locationNeeded: "లొకేషన్ అనుమతి అవసరం",
 
             weatherUnavailable: "వాతావరణం లోడ్ కాలేదు",
@@ -2008,6 +2040,14 @@ export const translations = {
             condThunderstormHail: "ஆலங்கட்டி மழையுடன் இடி",
 
             weatherLoading: "வானிலை ஏற்றப்படுகிறது...",
+
+            locating: "இருப்பிடம் கண்டறியப்படுகிறது...",
+
+            locationDenied: "உள்ளூர் வானிலையைக் காட்ட இருப்பிட அனுமதி தேவை.",
+
+            locationUnavailable: "உங்கள் இருப்பிடத்தைக் கண்டறிய முடியவில்லை. மீண்டும் முயற்சிக்கவும்.",
+
+            locationTimeout: "இருப்பிட கோரிக்கை நேரம் முடிந்தது. மீண்டும் முயற்சிக்கவும்.",
 
             locationNeeded: "இருப்பிட அனுமதி தேவை",
 

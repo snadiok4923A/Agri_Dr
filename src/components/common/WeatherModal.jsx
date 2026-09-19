@@ -60,7 +60,7 @@ const dayIcon = (conditionKey) => {
  */
 export default function WeatherModal({ open, onClose }) {
     const { t, formatNumber } = useLanguage();
-    const { status, weather } = useWeather();
+    const { status, weather, locationError } = useWeather();
     const ready = status === "ready" && !!weather;
 
     useEffect(() => {
@@ -219,7 +219,7 @@ export default function WeatherModal({ open, onClose }) {
                 ) : (
                     /* Loading / denied / error — same modal shell, honest state */
                     <div className="wmodal__state">
-                        {status === "loading" || status === "locating" || status === "idle" ? (
+                        {status === "loading" ? (
                             <>
                                 <span className="wmodal__state-icon wmodal__state-icon--loading">
                                     <WeatherConditionIllustration condition="partlyCloudy" size={64} />
@@ -228,15 +228,30 @@ export default function WeatherModal({ open, onClose }) {
                                     {t("weather.weatherLoading")}
                                 </span>
                             </>
+                        ) : status === "locating" || status === "idle" ? (
+                            <>
+                                <span className="wmodal__state-icon wmodal__state-icon--loading">
+                                    <WeatherConditionIllustration condition="partlyCloudy" size={64} />
+                                </span>
+                                <span className="wmodal__state-text">
+                                    {t("weather.locating")}
+                                </span>
+                            </>
                         ) : (
                             <>
                                 <span className="wmodal__state-icon">
                                     <CloudRain size={34} />
                                 </span>
                                 <span className="wmodal__state-text">
-                                    {status === "denied" || status === "unsupported"
-                                        ? t("weather.locationNeeded")
-                                        : t("weather.weatherUnavailable")}
+                                    {status === "wxError"
+                                        ? t("weather.weatherUnavailable")
+                                        : locationError === "PERMISSION_DENIED"
+                                          ? t("weather.locationDenied")
+                                          : locationError === "TIMEOUT"
+                                            ? t("weather.locationTimeout")
+                                            : locationError === "UNSUPPORTED"
+                                              ? t("weather.locationNeeded")
+                                              : t("weather.locationUnavailable")}
                                 </span>
                             </>
                         )}

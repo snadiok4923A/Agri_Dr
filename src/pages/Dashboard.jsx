@@ -58,8 +58,16 @@ export default function Dashboard() {
     // Real weather state — location permission → Open-Meteo fetch → this card.
     // The card stays a pure presentation of `weather`; all fetching lives in
     // the services layer (spec §24).
-    const { status: weatherStatus, weather, retryLocation } = useWeather();
+    const { status: weatherStatus, weather, locationError, retryLocation } = useWeather();
     const weatherReady = weatherStatus === "ready" && !!weather;
+    const locationMsg =
+        locationError === "PERMISSION_DENIED"
+            ? t("weather.locationDenied")
+            : locationError === "TIMEOUT"
+              ? t("weather.locationTimeout")
+              : locationError === "UNSUPPORTED"
+                ? t("weather.locationNeeded")
+                : t("weather.locationUnavailable");
     // Mobile breakpoint — switches Voice Mode + Market into the side-by-side
     // pair below Crop Diagnosis without touching the desktop grid pairing.
     const isMobile = useMediaQuery("(max-width: 900px)");
@@ -317,10 +325,8 @@ export default function Dashboard() {
                                 </span>
                             </div>
                         </>
-                    ) : weatherStatus === "loading" ||
-                      weatherStatus === "locating" ||
-                      weatherStatus === "idle" ? (
-                        /* Fetching — same card shape, subtle pulse, no fake values */
+                    ) : weatherStatus === "loading" ? (
+                        /* Weather fetch in flight — coordinates already known */
                         <div className="dashboard-weather-card__state">
                             <div className="dashboard-weather-card__state-icon dashboard-weather-card__state-icon--loading">
                                 <WeatherConditionIllustration
@@ -332,20 +338,35 @@ export default function Dashboard() {
                                 {t("weather.weatherLoading")}
                             </span>
                         </div>
+                    ) : weatherStatus === "locating" || weatherStatus === "idle" ? (
+                        /* Geolocation running (the permission dialog may be
+                           open) — ALWAYS a locating state, never an error,
+                           until the callback actually returns (§1/§3/§7). */
+                        <div className="dashboard-weather-card__state">
+                            <div className="dashboard-weather-card__state-icon dashboard-weather-card__state-icon--loading">
+                                <WeatherConditionIllustration
+                                    condition="partlyCloudy"
+                                    size={56}
+                                />
+                            </div>
+                            <span className="dashboard-weather-card__state-text">
+                                {t("weather.locating")}
+                            </span>
+                        </div>
                     ) : (
                         /* Permission denied / unsupported / network or API error */
                         <div className="dashboard-weather-card__state">
                             <div className="dashboard-weather-card__state-icon">
-                                {weatherStatus === "denied" || weatherStatus === "unsupported" ? (
+                                {weatherStatus === "locError" ? (
                                     <MapPinOff size={30} />
                                 ) : (
                                     <CloudOff size={30} />
                                 )}
                             </div>
                             <span className="dashboard-weather-card__state-text">
-                                {weatherStatus === "denied" || weatherStatus === "unsupported"
-                                    ? t("weather.locationNeeded")
-                                    : t("weather.weatherUnavailable")}
+                                {weatherStatus === "wxError"
+                                    ? t("weather.weatherUnavailable")
+                                    : locationMsg}
                             </span>
                             <button
                                 className="dashboard-weather-card__retry"
