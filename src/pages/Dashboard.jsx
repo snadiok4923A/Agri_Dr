@@ -55,13 +55,63 @@ const sectionVariants = {
 };
 
 export default function Dashboard() {
-    const { t, formatNumber } = useLanguage();
+    const { t, formatNumber, language } = useLanguage();
     const navigate = useNavigate();
     // Real weather state — location permission → Open-Meteo fetch → this card.
     // The card stays a pure presentation of `weather`; all fetching lives in
     // the services layer (spec §24).
     const { status: weatherStatus, weather, locationError, retryLocation } = useWeather();
     const weatherReady = weatherStatus === "ready" && !!weather;
+
+    /* Weather-condition → background-gradient group (§ centralized map).
+       Driven by the REAL WMO conditionKey from weatherService, never by
+       the displayed text. Intensity rises with cloud/rain severity. */
+    const WX_BG_GROUP = {
+        clear: "clear",
+        mainlyClear: "clear",
+        partlyCloudy: "partly",
+        fog: "cloudy",
+        overcast: "rainy",
+        drizzle: "rainy",
+        freezingDrizzle: "rainy",
+        rain: "rainy",
+        freezingRain: "rainy",
+        snowfall: "rainy",
+        snowGrains: "rainy",
+        rainShowers: "rainy",
+        snowShowers: "rainy",
+        thunderstorm: "rainy",
+        thunderstormHail: "rainy",
+    };
+    const wxBgClass = weatherReady
+        ? `wx-bg--${WX_BG_GROUP[weather.current.conditionKey] || "partly"}`
+        : "";
+
+    /* Condition text auto-fit: shrinks the condition's font just enough
+       that ANY condition (English or Bengali) stays on ONE line, fully
+       inside the card. Pure layout measurement — no data/API logic.
+       No ellipsis, no clipping: the size converges until it fits. */
+    const condRef = useRef(null);
+    useEffect(() => {
+        const el = condRef.current;
+        if (!el) return;
+        const fit = () => {
+            const avail = el.parentElement.clientWidth;
+            if (!avail) return;
+            el.style.fontSize = "";
+            let size = parseFloat(getComputedStyle(el).fontSize);
+            let guard = 0;
+            while (el.scrollWidth > avail && size > 9 && guard < 40) {
+                size -= 0.5;
+                el.style.fontSize = `${size}px`;
+                guard += 1;
+            }
+        };
+        fit();
+        const ro = new ResizeObserver(fit);
+        ro.observe(el.parentElement);
+        return () => ro.disconnect();
+    }, [weatherReady, weather, language]);
     const locationMsg =
         locationError === "PERMISSION_DENIED"
             ? t("weather.locationDenied")
@@ -314,7 +364,7 @@ export default function Dashboard() {
                     response for the user's actual coordinates — never hard-coded
                     (demo numbers appear only as pre-data placeholder states). */}
                 <div
-                    className="dashboard-weather-card"
+                    className={`dashboard-weather-card ${wxBgClass}`}
                     onClick={() => weatherReady && setWeatherOpen(true)}
                     role="button"
                     tabIndex={0}
@@ -340,7 +390,10 @@ export default function Dashboard() {
                             {/* MIDDLE ROW — the condition is the card's main
                                 secondary information and owns the row */}
                             <div className="dashboard-weather-card__mid">
-                                <span className="dashboard-weather-card__cond">
+                                <span
+                                    className="dashboard-weather-card__cond"
+                                    ref={condRef}
+                                >
                                     {t(
                                         `weather.cond${weather.current.conditionKey
                                             .charAt(0)

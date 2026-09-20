@@ -265,6 +265,67 @@
     border-color: var(--leaf);
 }
 
+/* =====================================================================
+   WEATHER-CONDITION DIAGONAL GRADIENT — a soft tint anchored at the
+   upper-left corner (via a ::before layer, BELOW all content), fading
+   toward the middle. The right side keeps the neutral card surface so
+   the temperature stays clear. Intensity is mapped from the real WMO
+   conditionKey (rainy > cloudy/partly > clear); transitions stay smooth
+   when the condition changes. Dark theme opts out — its glass surface
+   over the aurora is untouched.
+   ===================================================================== */
+.dashboard-weather-card[class*="wx-bg--"]::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: 0;
+    transition: opacity 600ms ease;
+}
+
+/* Ensure card children render above the gradient layer */
+.dashboard-weather-card > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* Dark theme opts out — its frosted glass over the aurora is the
+   established look; no weather tint there. */
+[data-theme="dark"] .dashboard-weather-card[class*="wx-bg--"]::before {
+    content: none;
+}
+
+/* CLEAR — very soft pale-blue daylight tint */
+.dashboard-weather-card.wx-bg--clear::before {
+    background: linear-gradient(
+        135deg,
+        rgba(96, 165, 250, 0.10),
+        rgba(96, 165, 250, 0.045) 38%,
+        rgba(255, 255, 255, 0) 68%
+    );
+}
+
+/* PARTLY CLOUDY — whisper of gray, noticeably lighter than rainy */
+.dashboard-weather-card.wx-bg--partly::before {
+    background: linear-gradient(
+        135deg,
+        rgba(100, 116, 110, 0.075),
+        rgba(100, 116, 110, 0.035) 38%,
+        rgba(255, 255, 255, 0) 68%
+    );
+}
+
+/* OVERCAST / RAIN — slightly stronger cool-gray tint */
+.dashboard-weather-card.wx-bg--rainy::before {
+    background: linear-gradient(
+        135deg,
+        rgba(71, 85, 92, 0.13),
+        rgba(71, 85, 92, 0.06) 42%,
+        rgba(255, 255, 255, 0) 72%
+    );
+}
+
 /* Large condition icon — left anchor of the top row, vertically centered
    against the temperature block. Size comes from the JSX (66px); the
    min-height keeps the row's rhythm steady across conditions. */
@@ -314,24 +375,28 @@
     filter: drop-shadow(0 4px 9px rgba(0, 0, 0, 0.3));
 }
 
-/* Temperature — the card's primary visual element */
+/* Temperature — the card's primary visual element. Weight moderated
+   from 900 to 700 (prominent, not black-weight). Color unchanged. */
 .dashboard-weather-card__temp {
     font-size: max(min(calc(34px * var(--ts-display, 1)), 50px), 14px);
-    font-weight: 900;
+    font-weight: 700;
     letter-spacing: -0.02em;
     color: var(--text-primary);
     line-height: 1;
 }
 
 /* ==================== Reference-card rows ==================== */
-/* TOP ROW — icon left · temperature + live clock right.
-   Center alignment balances the large icon against the temp+clock block. */
+/* TOP ROW — icon left-leaning, temperature right-leaning, slightly
+   outward from center as one balanced unit (NOT dead-center, NOT pinned
+   to the edges). 10px keeps them comfortably close. */
 .dashboard-weather-card__top {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     gap: 10px;
+    padding: 0 6px;
     width: 100%;
+    box-sizing: border-box;
 }
 
 .dashboard-weather-card__tempblock {
@@ -352,17 +417,20 @@
     margin-top: 0;
 }
 
-/* Big condition — single line, using the full row width (the old
-   right-hand cell is gone). Flex row + nowrap keeps multi-word
-   conditions (PARTLY CLOUDY / আংশিক মেঘলা) on one line; ellipsis is
-   only a last-resort safety net for extreme strings. */
+/* Big condition — ONE line, centered, always fully inside the card.
+   The auto-fit loop in Dashboard.jsx shrinks the font until the text
+   fits the full row width (no ellipsis, no clipping, no wrap); the
+   inline font-size it sets wins over this CSS baseline. */
 .dashboard-weather-card__cond {
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
     align-items: baseline;
+    justify-content: center;
     column-gap: 0.32em;
     white-space: nowrap;
+    overflow: hidden;
+    width: 100%;
     font-size: max(min(calc(24px * var(--ts-mid, 1)), 32px), 13px);
     font-weight: 600;
     text-transform: uppercase;
@@ -371,15 +439,14 @@
     color: var(--text-primary);
     min-width: 0;
     max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
-/* Right-column metric cell: small label on top, value under it */
+/* Bottom metric cell: label centered directly above its value — both
+   share one center axis so the pair reads as a balanced block */
 .dashboard-weather-card__cell {
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
+    align-items: center;
     gap: 3px;
     min-width: 0;
 }
