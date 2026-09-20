@@ -58,3 +58,29 @@
     font-size: min(max(calc(10px * var(--ts-small, 1)), 8px), 17px);
   }
 }
+
+/* ==================== Light theme ==================== */
+/* Frosted-glass parity for the light (coffee) theme: the CONTENT BEHIND
+   the bar is strongly blurred via backdrop-filter — never filter: blur,
+   which would soften the icons and labels themselves. The surface tint is
+   noticeably more opaque so busy page content cannot ghost through, while
+   everything painted above it (icons, labels, active pill) stays fully
+   sharp and opaque. Dark theme is deliberately left untouched. */
+[data-theme="light"] .mobile-nav {
+  background: color-mix(in srgb, var(--sidebar-bg) 90%, transparent);
+  -webkit-backdrop-filter: blur(24px) saturate(1.1);
+  backdrop-filter: blur(24px) saturate(1.1);
+  border-top-color: rgba(41, 38, 31, 0.12);
+  box-shadow: 0 -8px 32px rgba(41, 38, 31, 0.14);
+}
+
+/* Inactive labels: one step crisper on the light surface (muted →
+   secondary). Scoped with :not(--active) so this can never outweigh the
+   green active state — icon sizes, text sizes and spacing unchanged. */
+[data-theme="light"] .mobile-nav__item:not(.mobile-nav__item--active) {
+  color: var(--text-secondary);
+}
+
+[data-theme="light"] .mobile-nav__item:not(.mobile-nav__item--active):hover {
+  color: var(--text-primary);
+}
