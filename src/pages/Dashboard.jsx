@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import { useLanguage } from "../hooks/useLanguage";
@@ -16,7 +16,6 @@ import {
     RotateCcw,
     ScanLine,
     Pill,
-    ArrowRight,
     MapPinOff,
     CloudOff,
 } from "lucide-react";
@@ -27,6 +26,7 @@ import {
 } from "../components/common/AgriIllustrations";
 import AnimatedNumber from "../components/common/AnimatedNumber";
 import WeatherModal from "../components/common/WeatherModal";
+import CameraModal from "../components/common/CameraModal";
 import VoiceModeCard from "../components/dashboard/VoiceModeCard";
 import MarketCard from "../components/dashboard/MarketCard";
 import { useVoiceMode, VOICE_OPEN_WEATHER_EVENT } from "../hooks/useVoiceMode";
@@ -53,7 +53,7 @@ const sectionVariants = {
 };
 
 export default function Dashboard() {
-    const { t, formatNumber, formatLabel } = useLanguage();
+    const { t, formatNumber } = useLanguage();
     const navigate = useNavigate();
     // Real weather state — location permission → Open-Meteo fetch → this card.
     // The card stays a pure presentation of `weather`; all fetching lives in
@@ -81,11 +81,12 @@ export default function Dashboard() {
         return t("dashboard.greetingEvening");
     })();
 
-    // Voice-driven dashboard actions: floating weather modal + camera/upload
-    // triggers on the Crop Diagnosis card.
+    // Voice-driven dashboard actions: floating weather modal + the crop
+    // diagnosis floating workflow. "Take photo" opens the camera stage of
+    // the workflow (§28) — never the file picker.
     useEffect(() => {
         const openWeather = () => setWeatherOpen(true);
-        const takePhoto = () => cameraInputRef.current?.click();
+        const takePhoto = () => setDiagFlow("camera");
         const uploadPhoto = () => uploadInputRef.current?.click();
         window.addEventListener(VOICE_OPEN_WEATHER_EVENT, openWeather);
         window.addEventListener("krisiveda:voice-take-photo", takePhoto);
@@ -96,11 +97,16 @@ export default function Dashboard() {
             isOpen: () => document.querySelector(".wmodal__overlay") !== null,
             close: () => setWeatherOpen(false),
         });
+        const unregisterDiag = registerOverlay({
+            isOpen: () => diagFlowRef.current !== "closed",
+            close: () => closeDiagFlowRef.current(),
+        });
         return () => {
             window.removeEventListener(VOICE_OPEN_WEATHER_EVENT, openWeather);
             window.removeEventListener("krisiveda:voice-take-photo", takePhoto);
             window.removeEventListener("krisiveda:voice-upload-photo", uploadPhoto);
             unregister();
+            unregisterDiag();
         };
     }, []);
 
@@ -124,38 +130,56 @@ export default function Dashboard() {
     const ringCircumference = 2 * Math.PI * ringRadius;
     const ringOffset = ringCircumference - (yieldPct / 100) * ringCircumference;
 
-    // ---- Crop Diagnosis (photo → AI analysis → treatment) ----
-    const [photo, setPhoto] = useState(null);
-    const [diagStage, setDiagStage] = useState("idle"); // idle | preview | analyzing | result
-    const cameraInputRef = useRef(null);
-    const uploadInputRef = useRef(null);
-    const analyzeTimerRef = useRef(null);
-
     // Weather card → centered glass modal (not navigation)
     const [weatherOpen, setWeatherOpen] = useState(false);
 
-    const handlePick = (e) => {
-        const file = e.target.files?.[0];
+    /* ---- Crop Diagnosis floating workflow (§22 single state machine) ----
+       closed → camera → photo-preview → analysis. One controlled state, no
+       boolean soup. The captured/uploaded photo NEVER enters the dashboard
+       card — every post-selection stage lives inside the floating window
+       (§2/§26). Voice "close" closes it via the overlay bus (latest-ref
+       pattern, so the registration never captures stale state). */
+    const [diagFlow, setDiagFlow] = useState("closed"); // closed | camera | photo-preview | analysis
+    const [diagPhoto, setDiagPhoto] = useState(null); // { file, url, source }
+    const uploadInputRef = useRef(null);
+    const diagPhotoUrlRef = useRef(null);
+    const diagFlowRef = useRef("closed");
+    diagFlowRef.current = diagFlow;
+    const closeDiagFlowRef = useRef(null);
+
+    /* §25: release the object URL of the current preview photo. */
+    const releaseDiagPhoto = useCallback(() => {
+        if (diagPhotoUrlRef.current) {
+            URL.revokeObjectURL(diagPhotoUrlRef.current);
+            diagPhotoUrlRef.current = null;
+        }
+        setDiagPhoto(null);
+    }, []);
+
+    /* §9: the single image entry point — a camera capture (video → canvas →
+       Blob → File) and an uploaded File both land here, then open the SAME
+       photo-preview floating window. The dashboard card is never touched. */
+    const handleSelectedImage = useCallback((file, source) => {
         if (!file) return;
-        const reader = new FileReader();
-        reader.onload = () => {
-            setPhoto(reader.result);
-            setDiagStage("preview");
-        };
-        reader.readAsDataURL(file);
-        e.target.value = "";
-    };
+        if (diagPhotoUrlRef.current) URL.revokeObjectURL(diagPhotoUrlRef.current);
+        const url = URL.createObjectURL(file);
+        diagPhotoUrlRef.current = url;
+        setDiagPhoto({ file, url, source });
+        setDiagFlow("photo-preview");
+    }, []);
 
-    const startAnalysis = () => {
-        setDiagStage("analyzing");
-        analyzeTimerRef.current = setTimeout(() => setDiagStage("result"), 2400);
-    };
+    /* §21: analysis close → back to the preview (photo still available);
+       preview/camera close → dashboard. Photo release happens when the
+       flow actually closes (effect below). */
+    const closeDiagFlow = useCallback(() => {
+        setDiagFlow((cur) => (cur === "analysis" ? "photo-preview" : "closed"));
+    }, []);
+    closeDiagFlowRef.current = closeDiagFlow;
 
-    const resetDiagnosis = () => {
-        clearTimeout(analyzeTimerRef.current);
-        setPhoto(null);
-        setDiagStage("idle");
-    };
+    useEffect(() => {
+        if (diagFlow === "closed") releaseDiagPhoto();
+    }, [diagFlow, releaseDiagPhoto]);
+    useEffect(() => releaseDiagPhoto, [releaseDiagPhoto]); // unmount (§25)
 
     // Simple, high-priority action cards — labels resolve through i18n
     const gapT = formatNumber(
@@ -398,6 +422,20 @@ export default function Dashboard() {
                 onClose={() => setWeatherOpen(false)}
             />
 
+            {/* Crop Diagnosis floating workflow — camera → photo preview →
+                analysis. One controlled stage machine; the photo stays in
+                the floating windows and NEVER enters the dashboard card. */}
+            <CameraModal
+                open={diagFlow !== "closed"}
+                flow={diagFlow}
+                photo={diagPhoto}
+                onClose={closeDiagFlow}
+                onCapture={(file) => handleSelectedImage(file, "camera")}
+                onRetake={() => setDiagFlow("camera")}
+                onChooseAnother={() => uploadInputRef.current?.click()}
+                onAnalyze={() => setDiagFlow("analysis")}
+            />
+
             {/* Desktop row 2: [Crop Diagnosis | Market]. On mobile this wrapper
                 is a plain pass-through (single child) — Market renders
                 separately below, inside the mobile pair. */}
@@ -433,7 +471,7 @@ export default function Dashboard() {
                         <div className="dashboard-diagnosis-cta">
                             <button
                                 className="dashboard-diagnosis-btn dashboard-diagnosis-btn--primary"
-                                onClick={() => cameraInputRef.current?.click()}
+                                onClick={() => setDiagFlow("camera")}
                             >
                                 <Camera size={18} />
                                 {t("dashboard.takePhoto")}
@@ -447,82 +485,20 @@ export default function Dashboard() {
                             </button>
                         </div>
 
-                        {/* Hidden inputs: camera capture + file upload */}
-                        <input
-                            ref={cameraInputRef}
-                            type="file"
-                            accept="image/*"
-                            capture="environment"
-                            hidden
-                            onChange={handlePick}
-                        />
+                        {/* Hidden input: Upload Photo → the normal browser
+                            file picker; the chosen file opens the photo
+                            preview floating window (§8/§28). */}
                         <input
                             ref={uploadInputRef}
                             type="file"
                             accept="image/*"
                             hidden
-                            onChange={handlePick}
+                            onChange={(e) => {
+                                handleSelectedImage(e.target.files?.[0], "upload");
+                                e.target.value = ""; // allow re-selecting later
+                            }}
                         />
                     </div>
-
-                    {/* Photo / analysis area — appears only once an image is picked */}
-                    {diagStage !== "idle" && (
-                        <div className="dashboard-diagnosis-view">
-                        {(diagStage === "preview" || diagStage === "analyzing") && (
-                            <div className="dashboard-diagnosis-photo">
-                                <img src={photo} alt={t("dashboard.cropForDiagnosis")} />
-                                {diagStage === "analyzing" && (
-                                    <>
-                                        <div className="dashboard-diagnosis-scanline" />
-                                        <div className="dashboard-diagnosis-status">
-                                            <ScanLine size={14} />
-                                            {t("dashboard.analyzing")}
-                                        </div>
-                                    </>
-                                )}
-                            </div>
-                        )}
-
-                {diagStage === "result" && (
-                            <div className="dashboard-diagnosis-result">
-                                <div className="dashboard-diagnosis-result__head">
-                                    <span className="dashboard-diagnosis-result__issue">
-                                        {t("dashboard.possibleIssue")}
-                                    </span>
-                                    <span className="dashboard-diagnosis-result__confidence">
-                                        92% {t("dashboard.match")}
-                                    </span>
-                                </div>
-                                <span className="dashboard-diagnosis-result__name">
-                                    Leaf Blast
-                                </span>
-                                <div className="dashboard-diagnosis-result__treatment">
-                                    <Pill size={15} />
-                                    <div>
-                                        <span>{t("dashboard.recommendedTreatment")}</span>
-                                        <strong>Tricyclazole · {formatLabel("250 g")}</strong>
-                                    </div>
-                                </div>
-                                <div className="dashboard-diagnosis-result__actions">
-                                    <button
-                                        className="dashboard-diagnosis-btn dashboard-diagnosis-btn--primary"
-                                        onClick={() => navigate("/disease")}
-                                    >
-                                        {t("dashboard.fullGuidance")}
-                                        <ArrowRight size={15} />
-                                    </button>
-                                    <button
-                                        className="dashboard-diagnosis-btn"
-                                        onClick={resetDiagnosis}
-                                    >
-                                        <RotateCcw size={14} />
-                                        {t("dashboard.retake")}
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-                        </div>
-                    )}
                 </div>
             </motion.section>
 

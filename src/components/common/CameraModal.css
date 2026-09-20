@@ -1,0 +1,444 @@
+/* ==================== Overlay ==================== */
+/* Same glass language as WeatherModal: dimmed blurred page behind, deep
+   green glass panel in front. Sits above the bottom navigation (z 1000+). */
+.camodal__overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(4, 8, 6, 0.5);
+    -webkit-backdrop-filter: blur(9px) saturate(115%);
+    backdrop-filter: blur(9px) saturate(115%);
+    animation: camodal-overlay-in 220ms ease both;
+}
+
+@keyframes camodal-overlay-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* ==================== Glass panel ==================== */
+.camodal {
+    position: relative;
+    width: min(480px, 100%);
+    max-height: min(90vh, 760px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 20px;
+    background: rgba(10, 25, 18, 0.4);
+    -webkit-backdrop-filter: blur(24px) saturate(140%);
+    backdrop-filter: blur(24px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-top-color: rgba(255, 255, 255, 0.18);
+    border-radius: 22px;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        0 18px 60px rgba(0, 0, 0, 0.38),
+        0 0 52px rgba(111, 207, 142, 0.08);
+    animation: camodal-in 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes camodal-in {
+    from {
+        opacity: 0;
+        transform: translateY(14px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* ==================== Header ==================== */
+.camodal__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.camodal__title {
+    font-size: max(min(calc(16px * var(--ts-mid, 1)), 26px), 10px);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: var(--text-primary);
+}
+
+.camodal__close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    color: var(--text-secondary);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+}
+
+.camodal__close:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.11);
+}
+
+/* ==================== Viewport ==================== */
+/* Fixed-ratio stage so the modal never jumps between starting/live/error.
+   The video keeps its natural aspect inside (object-fit: cover crops only
+   the letterbox band a phone sensor adds — the plant subject stays whole). */
+.camodal__viewport {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    max-height: 56vh;
+    border-radius: 16px;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.camodal__video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* ==================== Photo preview (capture / upload) ==================== */
+/* Bounded frame; the photo itself is object-fit: contain (§11) — never
+   cropped, never stretched, original aspect ratio preserved. */
+.camodal__photo-frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    max-height: 56vh;
+    border-radius: 16px;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.camodal__photo {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    animation: camodal-fade 240ms ease both;
+}
+
+@keyframes camodal-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* ==================== Action row (photo preview) ==================== */
+.camodal__actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* ==================== Analysis window ==================== */
+.camodal__analysis {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    text-align: center;
+}
+
+/* Small thumbnail of the analyzed photo */
+.camodal__thumb-frame {
+    width: min(148px, 42%);
+    aspect-ratio: 1;
+    border-radius: 14px;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    flex-shrink: 0;
+}
+
+.camodal__thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.camodal__analysis-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 0 6px;
+}
+
+/* Subtle status pill ("Model not connected" / future confidence) */
+.camodal__status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 13px;
+    border-radius: var(--radius-full, 999px);
+    font-size: min(max(calc(12px * var(--ts-body, 1)), 8px), 22px);
+    font-weight: 700;
+    color: var(--text-secondary);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    white-space: nowrap;
+}
+
+.camodal__status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--leaf, #6fcf8e);
+    opacity: 0.85;
+    flex-shrink: 0;
+}
+
+.camodal__analysis-disease {
+    font-size: min(max(calc(17px * var(--ts-mid, 1)), 11px), 28px);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: var(--text-primary);
+}
+
+.camodal__analysis-msg {
+    font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
+    font-weight: 600;
+    color: var(--text-secondary);
+    line-height: 1.55;
+    max-width: 40ch;
+}
+
+/* ==================== States (starting / error) ==================== */
+.camodal__state {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    text-align: center;
+    padding: 20px;
+}
+
+.camodal__state-ico {
+    color: var(--text-muted);
+}
+
+.camodal__state-ico--pulse {
+    animation: camodal-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes camodal-pulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.85; }
+}
+
+.camodal__state-text {
+    font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
+    font-weight: 600;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.camodal__state-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.camodal__state-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: min(max(calc(11.5px * var(--ts-small, 1)), 8px), 17px);
+    color: var(--text-muted);
+}
+
+/* ==================== Controls ==================== */
+.camodal__controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-top: 2px;
+}
+
+.camodal__controls-spacer {
+    width: 86px; /* balances the Cancel button so Capture stays centered */
+}
+
+/* Shutter — centered circular capture button */
+.camodal__shutter {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    color: #06130c;
+    background: var(--leaf, #6fcf8e);
+    border: 3px solid rgba(255, 255, 255, 0.55);
+    box-shadow: 0 6px 22px rgba(111, 207, 142, 0.35);
+    cursor: pointer;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    flex-shrink: 0;
+}
+
+.camodal__shutter:hover {
+    transform: scale(1.05);
+}
+
+.camodal__shutter:active {
+    transform: scale(0.96);
+}
+
+/* Secondary pill buttons (Cancel / Retake / Close) */
+.camodal__btn,
+.camodal__cancel {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 18px;
+    border-radius: var(--radius-full, 999px);
+    font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
+    font-weight: 700;
+    font-family: inherit;
+    color: var(--text-secondary);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+}
+
+.camodal__btn:hover,
+.camodal__cancel:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Primary action (Try Again / Use Photo) — existing green accent */
+.camodal__btn--primary {
+    color: #06130c;
+    background: var(--leaf, #6fcf8e);
+    border-color: transparent;
+    box-shadow: 0 4px 16px rgba(111, 207, 142, 0.3);
+}
+
+.camodal__btn--primary:hover {
+    color: #06130c;
+    background: var(--leaf, #6fcf8e);
+    filter: brightness(1.06);
+}
+
+/* ==================== Responsive ==================== */
+@media (max-width: 600px) {
+    .camodal__overlay {
+        padding: 12px;
+        /* Never slide under the mobile bottom navigation */
+        padding-bottom: max(12px, calc(env(safe-area-inset-bottom, 0px) + 84px));
+        align-items: flex-end;
+    }
+
+    .camodal {
+        width: 100%;
+        max-height: calc(100dvh - 104px);
+        padding: 16px 14px;
+        gap: 12px;
+        border-radius: 18px;
+    }
+
+    /* Taller preview on phones — controls stay within thumb reach */
+    .camodal__viewport,
+    .camodal__photo-frame {
+        aspect-ratio: 3 / 4;
+        max-height: 58vh;
+    }
+
+    .camodal__shutter {
+        width: 62px;
+        height: 62px;
+    }
+
+    .camodal__thumb-frame {
+        width: min(128px, 46%);
+    }
+
+    /* Comfortable tap targets in the action rows */
+    .camodal__actions .camodal__btn {
+        padding: 12px 20px;
+    }
+}
+
+@media (max-width: 360px) {
+    .camodal__overlay {
+        padding-bottom: max(10px, calc(env(safe-area-inset-bottom, 0px) + 84px));
+    }
+
+    .camodal {
+        padding: 14px 12px;
+    }
+
+    .camodal__btn,
+    .camodal__cancel {
+        padding: 9px 14px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .camodal,
+    .camodal__overlay,
+    .camodal__photo {
+        animation: none;
+    }
+
+    .camodal__state-ico--pulse {
+        animation: none;
+        opacity: 0.6;
+    }
+}
+
+/* ==================== Light theme ==================== */
+[data-theme="light"] .camodal__overlay {
+    background: rgba(41, 38, 31, 0.32);
+}
+
+[data-theme="light"] .camodal {
+    background: rgba(255, 255, 255, 0.46);
+    border-color: rgba(41, 38, 31, 0.08);
+    border-top-color: rgba(255, 255, 255, 0.75);
+}
+
+[data-theme="light"] .camodal__viewport,
+[data-theme="light"] .camodal__photo-frame,
+[data-theme="light"] .camodal__thumb-frame {
+    background: rgba(41, 38, 31, 0.08);
+    border-color: rgba(41, 38, 31, 0.1);
+}
+
+[data-theme="light"] .camodal__btn,
+[data-theme="light"] .camodal__cancel {
+    background: rgba(41, 38, 31, 0.05);
+    border-color: rgba(41, 38, 31, 0.1);
+    color: var(--text-secondary);
+}
