@@ -253,6 +253,11 @@
     transition:
         transform var(--transition-fast),
         border-color var(--transition-fast);
+    /* Anchors the gradient layer + animated scene; clips everything to
+       the rounded card — nothing may escape its boundaries. */
+    position: relative;
+    overflow: hidden;
+    contain: paint;
 }
 
 /* Background: deliberately NO card-specific tint — the card shares the
@@ -294,6 +299,381 @@
    established look; no weather tint there. */
 [data-theme="dark"] .dashboard-weather-card[class*="wx-bg--"]::before {
     content: none;
+}
+
+/* =====================================================================
+   ANIMATED WEATHER SCENE — a small living window in the card's
+   upper-left→middle zone (≈62% height, below it stays clean). Pure CSS:
+   transform/opacity animations only, 3 clouds + 4 drops + sun + 2 rays,
+   aria-hidden, behind the content (z 0). Fades in/out with the weather
+   group; intensity variants track the same wx-group as the gradient.
+   ===================================================================== */
+.wx-scene {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 62%;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0;
+    transition: opacity 800ms ease;
+}
+
+.dashboard-weather-card[class*="wx-bg--"] .wx-scene {
+    opacity: 1;
+}
+
+/* --- Clouds: soft blurred blobs drifting slowly --- */
+.wx-scene__cloud {
+    position: absolute;
+    border-radius: 999px;
+    filter: blur(7px);
+    will-change: transform;
+}
+
+.wx-scene__cloud--1 {
+    top: 6%;
+    left: -12%;
+    width: 58%;
+    height: 22%;
+    background: rgba(148, 163, 170, 0.32);
+    animation: wx-cloud-drift 34s linear infinite;
+}
+
+.wx-scene__cloud--2 {
+    top: 30%;
+    left: 22%;
+    width: 44%;
+    height: 16%;
+    background: rgba(148, 163, 170, 0.22);
+    animation: wx-cloud-drift 46s linear infinite reverse;
+    animation-delay: -12s;
+}
+
+.wx-scene__cloud--3 {
+    top: 16%;
+    left: 55%;
+    width: 36%;
+    height: 13%;
+    background: rgba(148, 163, 170, 0.16);
+    animation: wx-cloud-drift 58s linear infinite;
+    animation-delay: -25s;
+}
+
+@keyframes wx-cloud-drift {
+    from {
+        transform: translateX(-14%);
+    }
+    to {
+        transform: translateX(300%);
+    }
+}
+
+/* --- Raindrops: few, thin, desynced --- */
+.wx-scene__drop {
+    position: absolute;
+    top: -10%;
+    width: 1.5px;
+    height: 12px;
+    border-radius: 999px;
+    background: linear-gradient(
+        180deg,
+        rgba(125, 155, 185, 0),
+        rgba(125, 155, 185, 0.5)
+    );
+    opacity: 0;
+    will-change: transform, opacity;
+}
+
+.wx-scene__drop--1 {
+    left: 16%;
+    animation: wx-drop-fall 2.6s linear infinite;
+}
+
+.wx-scene__drop--2 {
+    left: 38%;
+    animation: wx-drop-fall 3.1s linear infinite;
+    animation-delay: -1.2s;
+}
+
+.wx-scene__drop--3 {
+    left: 60%;
+    animation: wx-drop-fall 2.8s linear infinite;
+    animation-delay: -0.6s;
+}
+
+.wx-scene__drop--4 {
+    left: 80%;
+    animation: wx-drop-fall 3.4s linear infinite;
+    animation-delay: -2s;
+}
+
+@keyframes wx-drop-fall {
+    0% {
+        transform: translateY(0);
+        opacity: 0;
+    }
+    12% {
+        opacity: 0.55;
+    }
+    70% {
+        opacity: 0.4;
+    }
+    100% {
+        /* ~the scene's height — drops fade out before the Wind/Rain zone */
+        transform: translateY(1000%);
+        opacity: 0;
+    }
+}
+
+/* --- Sun: soft glow + two slow light rays (clear weather only) --- */
+.wx-scene__sun {
+    position: absolute;
+    top: 8%;
+    left: 14%;
+    width: 34%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(
+        circle,
+        rgba(255, 214, 130, 0.4),
+        rgba(255, 214, 130, 0.12) 55%,
+        transparent 72%
+    );
+    animation: wx-sun-breathe 7s ease-in-out infinite;
+    will-change: transform, opacity;
+}
+
+.wx-scene__ray {
+    position: absolute;
+    top: 20%;
+    width: 120%;
+    height: 1.5px;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 222, 150, 0.28),
+        transparent
+    );
+    opacity: 0;
+    will-change: transform, opacity;
+}
+
+.wx-scene__ray--1 {
+    left: -10%;
+    transform: rotate(24deg);
+    transform-origin: left center;
+    animation: wx-ray-shimmer 9s ease-in-out infinite;
+}
+
+.wx-scene__ray--2 {
+    left: -10%;
+    transform: rotate(-6deg);
+    transform-origin: left center;
+    animation: wx-ray-shimmer 11s ease-in-out infinite;
+    animation-delay: -4.5s;
+}
+
+@keyframes wx-ray-shimmer {
+    0%,
+    100% {
+        opacity: 0;
+    }
+    50% {
+        opacity: 0.6;
+    }
+}
+
+@keyframes wx-sun-breathe {
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 0.85;
+    }
+    50% {
+        transform: scale(1.06);
+        opacity: 1;
+    }
+}
+
+/* =====================================================================
+   INTENSITY VARIANTS — which elements show, and how strongly
+   ===================================================================== */
+
+/* CLEAR — sun + rays, NO clouds, NO drops */
+.wx-scene--clear .wx-scene__cloud,
+.wx-scene--clear .wx-scene__drop {
+    display: none;
+}
+
+.wx-scene--clear .wx-scene__sun {
+    opacity: 0.8;
+}
+
+.wx-scene--clear .wx-scene__ray {
+    display: block;
+}
+
+/* PARTLY — calm: slow thin clouds, sun faintly present, no drops unless
+   .wx-scene--showers (real precipitation probability ≥ 40%) */
+.wx-scene--partly .wx-scene__cloud--1 {
+    background: rgba(148, 163, 170, 0.2);
+    animation-duration: 52s;
+}
+
+.wx-scene--partly .wx-scene__cloud--2 {
+    background: rgba(148, 163, 170, 0.13);
+    animation-duration: 64s;
+}
+
+.wx-scene--partly .wx-scene__cloud--3 {
+    display: none;
+}
+
+.wx-scene--partly .wx-scene__sun {
+    opacity: 0.35;
+    top: 10%;
+    left: 40%;
+}
+
+.wx-scene--partly .wx-scene__ray {
+    display: none;
+}
+
+.wx-scene--partly .wx-scene__drop {
+    display: none;
+}
+
+.wx-scene--partly.wx-scene--showers .wx-scene__drop {
+    display: block;
+    animation-duration: 3.8s;
+}
+
+.wx-scene--partly.wx-scene--showers .wx-scene__drop--4 {
+    display: none;
+}
+
+/* RAINY / CLOUDY (overcast, drizzle, rain, storm…) — deeper tones, more
+   cloud presence, all four drops active */
+.wx-scene--rainy .wx-scene__cloud--1 {
+    background: rgba(84, 100, 112, 0.42);
+    height: 26%;
+    animation-duration: 28s;
+}
+
+.wx-scene--rainy .wx-scene__cloud--2 {
+    background: rgba(84, 100, 112, 0.3);
+    height: 19%;
+    animation-duration: 38s;
+}
+
+.wx-scene--rainy .wx-scene__cloud--3 {
+    background: rgba(84, 100, 112, 0.22);
+    animation-duration: 48s;
+}
+
+.wx-scene--rainy .wx-scene__sun,
+.wx-scene--rainy .wx-scene__ray {
+    display: none;
+}
+
+.wx-scene--rainy .wx-scene__drop {
+    background: linear-gradient(
+        180deg,
+        rgba(110, 140, 170, 0),
+        rgba(110, 140, 170, 0.62)
+    );
+}
+
+/* fog maps to the cloudy family: clouds, no rain, no sun */
+.wx-scene--cloudy .wx-scene__cloud--1 {
+    background: rgba(120, 135, 145, 0.34);
+    animation-duration: 40s;
+}
+
+.wx-scene--cloudy .wx-scene__cloud--2 {
+    background: rgba(120, 135, 145, 0.24);
+    animation-duration: 52s;
+}
+
+.wx-scene--cloudy .wx-scene__cloud--3 {
+    background: rgba(120, 135, 145, 0.18);
+}
+
+.wx-scene--cloudy .wx-scene__sun,
+.wx-scene--cloudy .wx-scene__ray,
+.wx-scene--cloudy .wx-scene__drop {
+    display: none;
+}
+
+/* --- Dark theme: deeper blue/gray tones, still subtle --- */
+[data-theme="dark"] .wx-scene__cloud--1 {
+    background: rgba(150, 170, 190, 0.14);
+}
+
+[data-theme="dark"] .wx-scene__cloud--2 {
+    background: rgba(150, 170, 190, 0.09);
+}
+
+[data-theme="dark"] .wx-scene__cloud--3 {
+    background: rgba(150, 170, 190, 0.07);
+}
+
+[data-theme="dark"] .wx-scene--rainy .wx-scene__cloud--1 {
+    background: rgba(140, 160, 180, 0.2);
+}
+
+[data-theme="dark"] .wx-scene--rainy .wx-scene__cloud--2 {
+    background: rgba(140, 160, 180, 0.14);
+}
+
+[data-theme="dark"] .wx-scene--rainy .wx-scene__cloud--3 {
+    background: rgba(140, 160, 180, 0.1);
+}
+
+[data-theme="dark"] .wx-scene__sun {
+    background: radial-gradient(
+        circle,
+        rgba(255, 214, 130, 0.16),
+        rgba(255, 214, 130, 0.05) 55%,
+        transparent 72%
+    );
+}
+
+[data-theme="dark"] .wx-scene__ray {
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 222, 150, 0.12),
+        transparent
+    );
+}
+
+[data-theme="dark"] .wx-scene__drop {
+    background: linear-gradient(
+        180deg,
+        rgba(150, 180, 210, 0),
+        rgba(150, 180, 210, 0.34)
+    );
+}
+
+[data-theme="dark"] .wx-scene--rainy .wx-scene__drop {
+    background: linear-gradient(
+        180deg,
+        rgba(150, 180, 210, 0),
+        rgba(150, 180, 210, 0.44)
+    );
+}
+
+/* Reduced motion: the scene rests as a static soft atmosphere */
+@media (prefers-reduced-motion: reduce) {
+    .wx-scene__cloud,
+    .wx-scene__drop,
+    .wx-scene__sun,
+    .wx-scene__ray {
+        animation: none !important;
+    }
 }
 
 /* CLEAR — very soft pale-blue daylight tint */
@@ -365,8 +745,13 @@
 
 /* Elegant floating shadow on the illustration itself — soft and warm,
    never a harsh black drop. Light theme gets slightly more lift; dark
-   theme only what visibility needs. */
+   theme only what visibility needs. The vector scale enlarges the icon
+   ~12% VISUALLY only — transform never affects layout, so the card's
+   dimensions stay exactly as they are. Left origin keeps the enlarged
+   art leaning toward the card's left side. */
 .dashboard-weather-card__icon svg {
+    transform: scale(1.12);
+    transform-origin: left center;
     filter: drop-shadow(0 4px 8px rgba(80, 80, 40, 0.16))
         drop-shadow(0 10px 20px rgba(80, 80, 40, 0.08));
 }
@@ -378,7 +763,7 @@
 /* Temperature — the card's primary visual element. Weight moderated
    from 900 to 700 (prominent, not black-weight). Color unchanged. */
 .dashboard-weather-card__temp {
-    font-size: max(min(calc(34px * var(--ts-display, 1)), 50px), 14px);
+    font-size: max(min(calc(30px * var(--ts-display, 1)), 44px), 14px);
     font-weight: 700;
     letter-spacing: -0.02em;
     color: var(--text-primary);
@@ -386,15 +771,16 @@
 }
 
 /* ==================== Reference-card rows ==================== */
-/* TOP ROW — icon left-leaning, temperature right-leaning, slightly
-   outward from center as one balanced unit (NOT dead-center, NOT pinned
-   to the edges). 10px keeps them comfortably close. */
+/* TOP ROW — one compact unit leaning toward the LEFT edge of the card:
+   icon leads at the content edge, temperature follows closely after.
+   18px flex gap compensates for the icon's visual scale extension so
+   the REAL icon↔temperature clearance stays ~9px — close, never
+   touching. Internal positioning only: card dimensions are unchanged. */
 .dashboard-weather-card__top {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 10px;
-    padding: 0 6px;
+    justify-content: flex-start;
+    gap: 18px;
     width: 100%;
     box-sizing: border-box;
 }
@@ -1408,7 +1794,7 @@
 
 
     .dashboard-weather-card__temp {
-        font-size: max(min(calc(34px * var(--ts-display, 1)), 50px), 14px);
+        font-size: max(min(calc(30px * var(--ts-display, 1)), 44px), 14px);
     }
 
     .dashboard-weather-card__cond {
@@ -1460,7 +1846,7 @@
     }
 
     .dashboard-weather-card__temp {
-        font-size: max(min(calc(32px * var(--ts-display, 1)), 48px), 14px);
+        font-size: max(min(calc(29px * var(--ts-display, 1)), 43px), 14px);
     }
 
     .dashboard-weather-card__cond {
@@ -1525,7 +1911,7 @@
     }
 
     .dashboard-weather-card__temp {
-        font-size: max(min(calc(28px * var(--ts-heading, 1)), 44px), 12px);
+        font-size: max(min(calc(26px * var(--ts-heading, 1)), 40px), 12px);
     }
 
     .dashboard-weather-card__cond {

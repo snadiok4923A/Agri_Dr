@@ -83,9 +83,15 @@ export default function Dashboard() {
         thunderstorm: "rainy",
         thunderstormHail: "rainy",
     };
-    const wxBgClass = weatherReady
-        ? `wx-bg--${WX_BG_GROUP[weather.current.conditionKey] || "partly"}`
-        : "";
+    const wxGroup = weatherReady
+        ? WX_BG_GROUP[weather.current.conditionKey] || "partly"
+        : null;
+    const wxBgClass = wxGroup ? `wx-bg--${wxGroup}` : "";
+    /* Partly-cloudy WITH real precipitation → a couple of tiny droplets
+       (spec §3: drops only when rain is actually present). */
+    const wxShowers =
+        wxGroup === "partly" &&
+        (weather?.current?.rainProbability ?? 0) >= 40;
 
     /* Condition text auto-fit: shrinks the condition's font just enough
        that ANY condition (English or Bengali) stays on ONE line, fully
@@ -370,6 +376,29 @@ export default function Dashboard() {
                     tabIndex={0}
                     title={t("dashboard.viewWeather")}
                 >
+                    {weatherReady && wxGroup && (
+                        /* Animated weather scene — lives BEHIND the content
+                           (z 0 vs z 1), upper-left→middle only, aria-hidden.
+                           Same wx-group class as the gradient, so the scene's
+                           intensity tracks the real weather condition. */
+                        <div
+                            className={`wx-scene wx-scene--${wxGroup}${
+                                wxShowers ? " wx-scene--showers" : ""
+                            }`}
+                            aria-hidden="true"
+                        >
+                            <span className="wx-scene__cloud wx-scene__cloud--1" />
+                            <span className="wx-scene__cloud wx-scene__cloud--2" />
+                            <span className="wx-scene__cloud wx-scene__cloud--3" />
+                            <span className="wx-scene__drop wx-scene__drop--1" />
+                            <span className="wx-scene__drop wx-scene__drop--2" />
+                            <span className="wx-scene__drop wx-scene__drop--3" />
+                            <span className="wx-scene__drop wx-scene__drop--4" />
+                            <span className="wx-scene__sun" />
+                            <span className="wx-scene__ray wx-scene__ray--1" />
+                            <span className="wx-scene__ray wx-scene__ray--2" />
+                        </div>
+                    )}
                     {weatherReady ? (
                         <>
                             {/* TOP ROW — icon left · temperature right */}
