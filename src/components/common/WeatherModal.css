@@ -64,11 +64,14 @@
   }
 }
 
-/* Subtle glass sheen near the top */
+/* Subtle glass sheen near the top — a BACKGROUND layer only. z-index: 0
+   keeps it behind the content wrapper (.wmodal__content sits at z-index 1),
+   so it tints the glass surface without ever fading the foreground. */
 .wmodal::before {
   content: "";
   position: absolute;
   inset: 0;
+  z-index: 0;
   border-radius: inherit;
   background: linear-gradient(
     180deg,
@@ -77,6 +80,19 @@
     transparent 38%
   );
   pointer-events: none;
+}
+
+/* Foreground content layer — fully opaque, above the glass sheen.
+   The panel itself carries NO opacity: transparency belongs to its
+   rgba background + backdrop-filter, never to the element's content. */
+.wmodal__content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  opacity: 1;
+  filter: none;
 }
 
 /* ==================== Header ==================== */
@@ -391,6 +407,10 @@
     border-radius: 20px;
   }
 
+  .wmodal__content {
+    gap: 16px;
+  }
+
   .wmodal__temp {
     font-size: max(min(calc(44px * var(--ts-display, 1)), 66px), 14px);
   }
@@ -519,9 +539,11 @@
 }
 
 [data-theme="light"] .wmodal {
-  background: rgba(255, 255, 255, 0.42);
-  border-color: rgba(41, 38, 31, 0.08);
-  border-top-color: rgba(255, 255, 255, 0.75);
+  /* Translucent warm white — alpha lives ONLY in the background color.
+     Dark text on this composite (~#dcd8d0) keeps a 10:1 contrast ratio. */
+  background: rgba(255, 255, 255, 0.72);
+  border-color: rgba(41, 38, 31, 0.1);
+  border-top-color: rgba(255, 255, 255, 0.85);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.6),
     0 18px 60px rgba(41, 38, 31, 0.18),
@@ -535,6 +557,16 @@
     rgba(255, 255, 255, 0.12) 22%,
     transparent 38%
   );
+}
+
+/* Close chip stays crisp on the light glass (white-alpha border is invisible there) */
+[data-theme="light"] .wmodal__close {
+  background: rgba(41, 38, 31, 0.07);
+  border-color: rgba(41, 38, 31, 0.14);
+}
+
+[data-theme="light"] .wmodal__close:hover {
+  background: rgba(41, 38, 31, 0.13);
 }
 
 [data-theme="light"] .wmodal__metric,

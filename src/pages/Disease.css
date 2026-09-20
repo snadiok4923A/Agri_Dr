@@ -630,13 +630,33 @@
 }
 
 [data-theme="light"] .disease-page__modal {
-    background: rgba(255, 255, 255, 0.45);
-    border-color: rgba(41, 38, 31, 0.08);
-    border-top-color: rgba(255, 255, 255, 0.75);
+    /* Alpha only in the background color — content above stays opaque.
+       0.72 composite ≈ #dcd8d0 → dark text keeps ~10:1 contrast. */
+    background: rgba(255, 255, 255, 0.72);
+    border-color: rgba(41, 38, 31, 0.1);
+    border-top-color: rgba(255, 255, 255, 0.85);
     box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.6),
         0 18px 60px rgba(41, 38, 31, 0.18),
         0 0 52px rgba(63, 128, 81, 0.08);
+}
+
+/* Close chip must stay crisp on the light glass (dark rgba chip otherwise) */
+[data-theme="light"] .disease-page__modal-close {
+    background: rgba(41, 38, 31, 0.07);
+    border-color: rgba(41, 38, 31, 0.14);
+    color: var(--text-secondary);
+}
+
+[data-theme="light"] .disease-page__modal-close:hover {
+    background: rgba(41, 38, 31, 0.13);
+    color: var(--text-primary);
+}
+
+/* Artwork/banner container tint: neutral, not white-on-white */
+[data-theme="light"] .disease-page__modal-art {
+    background: rgba(41, 38, 31, 0.045);
+    border-color: rgba(41, 38, 31, 0.08);
 }
 
 [data-theme="light"] .disease-page__msection,

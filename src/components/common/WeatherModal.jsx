@@ -116,6 +116,10 @@ export default function WeatherModal({ open, onClose }) {
                 className="wmodal"
                 onClick={(e) => e.stopPropagation()}
             >
+                {/* Foreground layer — sits above the panel's glass background
+                    (the ::before sheen) so glassmorphism can never fade or
+                    wash out the actual content. No opacity, no filter here. */}
+                <div className="wmodal__content">
                 {/* ===== 1. Header ===== */}
                 <header className="wmodal__head">
                     <span className="wmodal__head-title">{t("weather.currentWeather")}</span>
@@ -291,6 +295,7 @@ export default function WeatherModal({ open, onClose }) {
                         )}
                     </div>
                 )}
+                </div>{/* /wmodal__content */}
             </div>
         </div>
     );

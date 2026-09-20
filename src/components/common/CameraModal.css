@@ -419,14 +419,31 @@
 }
 
 /* ==================== Light theme ==================== */
+/* Translucency stays in the panel's rgba background only — the content
+   above it (text, video frame, buttons) is never faded or blurred. */
 [data-theme="light"] .camodal__overlay {
     background: rgba(41, 38, 31, 0.32);
 }
 
 [data-theme="light"] .camodal {
-    background: rgba(255, 255, 255, 0.46);
-    border-color: rgba(41, 38, 31, 0.08);
-    border-top-color: rgba(255, 255, 255, 0.75);
+    background: rgba(255, 255, 255, 0.72);
+    border-color: rgba(41, 38, 31, 0.1);
+    border-top-color: rgba(255, 255, 255, 0.85);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.6),
+        0 18px 60px rgba(41, 38, 31, 0.18);
+}
+
+/* Close button stays a crisp, clearly visible chip on the light glass */
+[data-theme="light"] .camodal__close {
+    background: rgba(41, 38, 31, 0.07);
+    border-color: rgba(41, 38, 31, 0.14);
+    color: var(--text-secondary);
+}
+
+[data-theme="light"] .camodal__close:hover {
+    background: rgba(41, 38, 31, 0.13);
+    color: var(--text-primary);
 }
 
 [data-theme="light"] .camodal__viewport,
@@ -438,7 +455,7 @@
 
 [data-theme="light"] .camodal__btn,
 [data-theme="light"] .camodal__cancel {
-    background: rgba(41, 38, 31, 0.05);
-    border-color: rgba(41, 38, 31, 0.1);
-    color: var(--text-secondary);
+    background: rgba(41, 38, 31, 0.06);
+    border-color: rgba(41, 38, 31, 0.14);
+    color: var(--text-primary);
 }
