@@ -18,6 +18,8 @@ import {
     Pill,
     MapPinOff,
     CloudOff,
+    Droplets,
+    Wind,
 } from "lucide-react";
 import { AreaChart, Area, ResponsiveContainer, XAxis, Tooltip } from "recharts";
 import {
@@ -132,6 +134,15 @@ export default function Dashboard() {
 
     // Weather card → centered glass modal (not navigation)
     const [weatherOpen, setWeatherOpen] = useState(false);
+
+    /* Live local clock for the weather card — H:MM:SS, tick every second,
+       cleaned up on unmount. Never hard-coded. */
+    const [now, setNow] = useState(() => new Date());
+    useEffect(() => {
+        const id = setInterval(() => setNow(new Date()), 1000);
+        return () => clearInterval(id);
+    }, []);
+    const clock = `${now.getHours()}:${String(now.getMinutes()).padStart(2, "0")}:${String(now.getSeconds()).padStart(2, "0")}`;
 
     /* ---- Crop Diagnosis floating workflow (§22 single state machine) ----
        closed → camera → photo-preview → analysis. One controlled state, no
@@ -318,35 +329,70 @@ export default function Dashboard() {
                     tabIndex={0}
                     title={t("dashboard.viewWeather")}
                 >
-                    <span className="dashboard-weather-card__label">{t("dashboard.weather")}</span>
-
                     {weatherReady ? (
                         <>
-                            <div className="dashboard-weather-card__icon">
-                                <WeatherConditionIllustration
-                                    condition={weather.current.conditionKey}
-                                    size={56}
-                                />
+                            {/* TOP ROW — icon left · temperature + live clock right */}
+                            <div className="dashboard-weather-card__top">
+                                <span className="dashboard-weather-card__icon">
+                                    <WeatherConditionIllustration
+                                        condition={weather.current.conditionKey}
+                                        size={66}
+                                    />
+                                </span>
+                                <div className="dashboard-weather-card__tempblock">
+                                    <span className="dashboard-weather-card__temp">
+                                        {formatNumber(Math.round(weather.current.temperature))}°C
+                                    </span>
+                                    <span className="dashboard-weather-card__clock">{clock}</span>
+                                </div>
                             </div>
-                            <div className="dashboard-weather-card__temp">
-                                {formatNumber(Math.round(weather.current.temperature))}°C
+
+                            {/* MIDDLE ROW — condition (wraps 2 lines) · Rain % right */}
+                            <div className="dashboard-weather-card__mid">
+                                <span className="dashboard-weather-card__cond">
+                                    {t(
+                                        `weather.cond${weather.current.conditionKey
+                                            .charAt(0)
+                                            .toUpperCase()}${weather.current.conditionKey.slice(1)}`,
+                                    )
+                                        .split(/\s+/)
+                                        .map((word, i) => (
+                                            <span key={i}>{word}</span>
+                                        ))}
+                                </span>
+                                <div className="dashboard-weather-card__cell dashboard-weather-card__cell--rain">
+                                    <span className="dashboard-weather-card__cell-label">
+                                        <Droplets size={12} />
+                                        {t("weather.rain")}
+                                    </span>
+                                    <span className="dashboard-weather-card__cell-value">
+                                        {weather.current.rainProbability != null
+                                            ? `${formatNumber(Math.round(weather.current.rainProbability))}%`
+                                            : "—%"}
+                                    </span>
+                                </div>
                             </div>
-                            <div className="dashboard-weather-card__cond">
-                                {t(
-                                    `weather.cond${weather.current.conditionKey
-                                        .charAt(0)
-                                        .toUpperCase()}${weather.current.conditionKey.slice(1)}`,
-                                )}
-                            </div>
+
+                            {/* BOTTOM ROW — Wind left · Humidity right (real values) */}
                             <div className="dashboard-weather-card__meta">
-                                <span className="dashboard-weather-card__meta-item">
-                                    <span className="dashboard-weather-card__meta-ico">💧</span>
-                                    {formatNumber(Math.round(weather.current.humidity))}%
-                                </span>
-                                <span className="dashboard-weather-card__meta-item">
-                                    <span className="dashboard-weather-card__meta-ico">💨</span>
-                                    {formatNumber(Math.round(weather.current.wind))} km/h
-                                </span>
+                                <div className="dashboard-weather-card__cell">
+                                    <span className="dashboard-weather-card__cell-label">
+                                        <Wind size={12} />
+                                        {t("weather.wind")}
+                                    </span>
+                                    <span className="dashboard-weather-card__cell-value">
+                                        {formatNumber(Math.round(weather.current.wind))} km/h
+                                    </span>
+                                </div>
+                                <div className="dashboard-weather-card__cell">
+                                    <span className="dashboard-weather-card__cell-label">
+                                        <Droplets size={12} />
+                                        {t("weather.humidity")}
+                                    </span>
+                                    <span className="dashboard-weather-card__cell-value">
+                                        {formatNumber(Math.round(weather.current.humidity))}%
+                                    </span>
+                                </div>
                             </div>
                         </>
                     ) : weatherStatus === "loading" ? (

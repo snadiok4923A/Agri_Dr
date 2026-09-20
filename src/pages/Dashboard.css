@@ -237,64 +237,44 @@
 .dashboard-weather-card {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
     justify-content: center;
-    text-align: center;
+    text-align: left;
     gap: 8px;
-    padding: 16px 18px;
+    padding: 14px 16px 12px;
     min-width: 0;
     width: 100%;
     max-width: 300px;
     background: var(--bg-surface);
     border: 1px solid var(--border);
     border-radius: var(--radius-xl);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
     cursor: pointer;
     transition:
         transform var(--transition-fast),
         border-color var(--transition-fast);
 }
 
-/* Dark theme: deep forest-green glass gradient — the aurora background
-   stays faintly visible through it (blur/rim come from the shared glass rule) */
-[data-theme="dark"] .dashboard-weather-card {
-    background: linear-gradient(
-        165deg,
-        rgba(38, 62, 48, 0.50) 0%,
-        rgba(13, 23, 18, 0.72) 100%
-    );
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
-    backdrop-filter: blur(var(--glass-blur)) saturate(140%);
-}
-
-/* Light theme: soft leaf-tinted gradient, same centered design */
-[data-theme="light"] .dashboard-weather-card {
-    background: linear-gradient(
-        165deg,
-        rgba(240, 246, 240, 0.92) 0%,
-        rgba(216, 231, 220, 0.95) 100%
-    );
-}
+/* Background: deliberately NO card-specific tint — the card shares the
+   same neutral surface as Expected/Potential & friends (var(--bg-surface)
+   in light theme; the shared [data-theme="dark"] glass rule in index.css
+   in dark theme). Green lives only in accents, never as a wash. */
 
 .dashboard-weather-card:hover {
     transform: translateY(-2px);
     border-color: var(--leaf);
 }
 
-/* "Weather" — top heading */
-.dashboard-weather-card__label {
-    font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
-    font-weight: 700;
-    color: var(--text-secondary);
-    line-height: 1;
-}
-
-/* Large condition icon, centered near the top */
+/* Large condition icon — left anchor of the top row, vertically centered
+   against the temperature block. Size comes from the JSX (66px); the
+   min-height keeps the row's rhythm steady across conditions. */
 .dashboard-weather-card__icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     line-height: 0;
-    margin-top: 2px;
+    flex-shrink: 0;
+    min-height: 60px;
 }
 
 /* Temperature — the card's primary visual element */
@@ -306,47 +286,122 @@
     line-height: 1;
 }
 
-/* Current condition, directly below the temperature */
-.dashboard-weather-card__cond {
-    font-size: min(max(calc(14px * var(--ts-body, 1)), 9px), 24px);
-    font-weight: 600;
-    color: var(--text-secondary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%;
-}
-
-/* Bottom info row — humidity + wind, clearly readable */
-.dashboard-weather-card__meta {
+/* ==================== Reference-card rows ==================== */
+/* TOP ROW — icon left · temperature + live clock right.
+   Center alignment balances the large icon against the temp+clock block. */
+.dashboard-weather-card__top {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 16px;
-    font-size: min(max(calc(14px * var(--ts-body, 1)), 9px), 24px);
-    font-weight: 500;
-    color: var(--text-secondary);
-    flex-wrap: wrap;
-    margin-top: 4px;
-    padding-top: 10px;
-    border-top: 1px solid var(--border);
+    justify-content: space-between;
+    gap: 10px;
     width: 100%;
 }
 
-.dashboard-weather-card__meta-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    white-space: nowrap;
+.dashboard-weather-card__tempblock {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    min-width: 0;
 }
 
-.dashboard-weather-card__meta-ico {
-    font-size: max(min(calc(16px * var(--ts-mid, 1)), 26px), 10px);
+/* Live local clock under the temperature — tabular digits stop jitter */
+.dashboard-weather-card__clock {
+    font-size: min(max(calc(11.5px * var(--ts-small, 1)), 8px), 17px);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
     line-height: 1;
 }
 
-.dashboard-weather-card__meta-ico::selection {
-    background: transparent;
+/* MIDDLE ROW — condition (one word per line) · Rain % right */
+.dashboard-weather-card__mid {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    margin-top: 0;
+}
+
+/* Big condition — each word on its own line (PARTLY / CLOUDY) */
+.dashboard-weather-card__cond {
+    display: flex;
+    flex-direction: column;
+    font-size: max(min(calc(19px * var(--ts-mid, 1)), 26px), 12px);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    line-height: 1.12;
+    color: var(--text-primary);
+    min-width: 0;
+}
+
+/* Right-column metric cell: small label on top, value under it */
+.dashboard-weather-card__cell {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 3px;
+    min-width: 0;
+}
+
+.dashboard-weather-card__cell-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: min(max(calc(10.5px * var(--ts-small, 1)), 8px), 16px);
+    font-weight: 500;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+.dashboard-weather-card__cell-label svg {
+    flex-shrink: 0;
+}
+
+.dashboard-weather-card__cell-value {
+    font-size: min(max(calc(15.5px * var(--ts-body, 1)), 9px), 24px);
+    font-weight: 800;
+    color: var(--text-primary);
+    white-space: nowrap;
+    line-height: 1;
+}
+
+/* Rain % carries the info-blue used elsewhere for rain chances */
+.dashboard-weather-card__cell--rain .dashboard-weather-card__cell-value {
+    color: var(--info, #6bb8e8);
+}
+
+/* BOTTOM ROW — Wind left · Humidity right. The old full-width border is
+   replaced by a hairline that fades at both ends — structure without
+   visual weight. */
+.dashboard-weather-card__meta {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    margin-top: 4px;
+    padding-top: 9px;
+    position: relative;
+}
+
+.dashboard-weather-card__meta::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 2px;
+    right: 2px;
+    height: 1px;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        var(--border) 18%,
+        var(--border) 82%,
+        transparent
+    );
 }
 
 /* Weather card loading / permission-denied / error states — same card shape,
@@ -596,6 +651,14 @@
     padding: 18px 20px;
     border-radius: var(--radius-xl);
     max-width: 480px;
+}
+
+/* Light theme: the diagnosis card's glass chrome (background, per-side
+   borders) comes from the [data-theme="dark"] rules in index.css, so in
+   light theme it has no outline at all. Give the container a whisper of a
+   green-tinted border — light theme ONLY; dark stays exactly as it is. */
+[data-theme="light"] .dashboard-diagnosis-card {
+    border: 1px solid rgba(80, 100, 80, 0.18);
 }
 
 .dashboard-diagnosis-info {
@@ -1233,17 +1296,14 @@
     }
 
     .dashboard-weather-card__icon svg {
-        width: 48px;
-        height: 48px;
+        width: 58px;
+        height: 58px;
     }
 
-    .dashboard-weather-card__label {
-        font-size: min(max(calc(14px * var(--ts-body, 1)), 9px), 24px);
-    }
 
     .dashboard-weather-card__icon svg {
-        width: 40px;
-        height: 40px;
+        width: 50px;
+        height: 50px;
     }
 
     .dashboard-weather-card__temp {
@@ -1251,7 +1311,7 @@
     }
 
     .dashboard-weather-card__cond {
-        font-size: min(max(calc(14.5px * var(--ts-body, 1)), 9px), 24px);
+        font-size: max(min(calc(17px * var(--ts-mid, 1)), 24px), 11px);
     }
 
     .dashboard-weather-card__meta {
@@ -1259,8 +1319,8 @@
         font-size: min(max(calc(15px * var(--ts-body, 1)), 9px), 24px);
     }
 
-    .dashboard-weather-card__meta-ico {
-        font-size: max(min(calc(17px * var(--ts-mid, 1)), 26px), 10px);
+    .dashboard-weather-card__cell-value {
+        font-size: min(max(calc(16px * var(--ts-body, 1)), 9px), 24px);
     }
 
     .dashboard-actions-grid {
@@ -1292,13 +1352,10 @@
         gap: 12px;
     }
 
-    .dashboard-weather-card__label {
-        font-size: min(max(calc(13.5px * var(--ts-body, 1)), 9px), 24px);
-    }
 
     .dashboard-weather-card__icon svg {
-        width: 36px;
-        height: 36px;
+        width: 45px;
+        height: 45px;
     }
 
     .dashboard-weather-card__temp {
@@ -1306,7 +1363,7 @@
     }
 
     .dashboard-weather-card__cond {
-        font-size: min(max(calc(14px * var(--ts-body, 1)), 9px), 24px);
+        font-size: max(min(calc(16px * var(--ts-mid, 1)), 22px), 11px);
     }
 
     .dashboard-weather-card__meta {
@@ -1314,8 +1371,8 @@
         font-size: min(max(calc(15px * var(--ts-body, 1)), 9px), 24px);
     }
 
-    .dashboard-weather-card__meta-ico {
-        font-size: max(min(calc(16px * var(--ts-mid, 1)), 26px), 10px);
+    .dashboard-weather-card__cell-value {
+        font-size: min(max(calc(15.5px * var(--ts-body, 1)), 9px), 24px);
     }
 
     .dashboard-diagnosis-card {
@@ -1361,13 +1418,9 @@
         justify-content: center;
     }
 
-    .dashboard-weather-card__label {
-        font-size: min(max(calc(12.5px * var(--ts-body, 1)), 9px), 24px);
-    }
-
     .dashboard-weather-card__icon svg {
-        width: 30px;
-        height: 30px;
+        width: 38px;
+        height: 38px;
     }
 
     .dashboard-weather-card__temp {
@@ -1383,7 +1436,7 @@
         font-size: min(max(calc(14px * var(--ts-body, 1)), 9px), 24px);
     }
 
-    .dashboard-weather-card__meta-ico {
+    .dashboard-weather-card__cell-value {
         font-size: min(max(calc(15px * var(--ts-body, 1)), 9px), 24px);
     }
 }
