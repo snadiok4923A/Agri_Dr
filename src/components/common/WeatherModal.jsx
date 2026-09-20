@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
     X,
     Droplets,
@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useWeather } from "../../hooks/useWeather";
 import { useLanguage } from "../../hooks/useLanguage";
+import { reverseGeocode } from "../../services/geocodingService";
 import { WeatherConditionIllustration } from "./AgriIllustrations";
 import "./WeatherModal.css";
 
@@ -59,9 +60,31 @@ const dayIcon = (conditionKey) => {
  * temperature, condition, humidity, wind and the 7-day forecast.
  */
 export default function WeatherModal({ open, onClose }) {
-    const { t, formatNumber } = useLanguage();
-    const { status, weather, locationError } = useWeather();
+    const { t, formatNumber, language } = useLanguage();
+    const { status, weather, locationError, coords } = useWeather();
     const ready = status === "ready" && !!weather;
+
+    /** Small location caption beside the current temperature — city
+     *  (line 1) + state (line 2), right-aligned in the main weather row.
+     *  Resolved from the coordinates the weather pipeline already
+     *  obtained; stays hidden until a real name resolves. */
+    const [place, setPlace] = useState(null);
+
+    useEffect(() => {
+        if (!open) return;
+        if (!coords) {
+            setPlace(null); // no fix (denied/unsupported) → caption hidden
+            return;
+        }
+        let cancelled = false;
+        reverseGeocode({ latitude: coords.latitude, longitude: coords.longitude, language })
+            .then((p) => {
+                if (!cancelled) setPlace(p); // null → gracefully hidden
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, [open, coords, language]);
 
     useEffect(() => {
         if (!open) return;
@@ -127,6 +150,17 @@ export default function WeatherModal({ open, onClose }) {
                                     )}
                                 </span>
                             </div>
+
+                            {/* Location caption — right side of the temperature,
+                                vertically centered against the temp/condition block */}
+                            {place && (
+                                <div className="wmodal__loc">
+                                    <span className="wmodal__loc-city">{place.line1}</span>
+                                    {place.line2 && (
+                                        <span className="wmodal__loc-state">{place.line2}</span>
+                                    )}
+                                </div>
+                            )}
                         </div>
 
                         {/* ===== 3. Metric row (feels like from Open-Meteo) ===== */}

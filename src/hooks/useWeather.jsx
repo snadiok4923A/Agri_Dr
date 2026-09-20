@@ -42,6 +42,9 @@ export function WeatherProvider({ children }) {
     const [weather, setWeather] = useState(null);
     const [locationError, setLocationError] = useState(null);
     const [weatherError, setWeatherError] = useState(null);
+    /** In-memory coordinates of the last successful fix — consumed by the
+     *  weather modal's location caption (never persisted, spec §23). */
+    const [coords, setCoords] = useState(null);
 
     /** Bumped on every (re)start; stale async results are dropped. */
     const genRef = useRef(0);
@@ -74,11 +77,13 @@ export function WeatherProvider({ children }) {
                     ? LOCATION_ERRORS.UNSUPPORTED
                     : err?.code || String(err);
             setLocationError(code);
+            setCoords(null); // no current fix → modal caption hides (no stale place)
             setPhase("locError");
             return false;
         }
 
         if (!isCurrent()) return false; // retry superseded us mid-flight
+        setCoords(coords); // location fix in hand — expose for the caption
 
         // ---------- 2. WEATHER (§19: only after valid lat/lng) ----------
         setPhase("loading");
@@ -129,6 +134,7 @@ export function WeatherProvider({ children }) {
         phase, // "locating" | "loading" | "ready" | "locError" | "wxError"
         status: phase, // legacy alias for existing consumers
         weather,
+        coords,
         locationError,
         weatherError,
         isStale: weather ? Date.now() - lastFetchRef.current > REFRESH_INTERVAL_MS : false,

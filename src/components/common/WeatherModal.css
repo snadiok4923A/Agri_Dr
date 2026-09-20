@@ -113,6 +113,55 @@
   background: rgba(255, 255, 255, 0.11);
 }
 
+/* ==================== Location caption ==================== */
+/* Small two-line "Kolaghat / West Bengal" caption at the right edge of
+   the main weather row, vertically centered against the temperature/
+   condition block. Resolved from the real coordinates; hidden entirely
+   when no name could be determined. */
+.wmodal__loc {
+  margin-left: auto;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  max-width: 42%;
+  text-align: right;
+  animation: wmodal-loc-in 320ms ease both;
+}
+
+.wmodal__loc-city {
+  font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-secondary);
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wmodal__loc-state {
+  font-size: min(max(calc(11px * var(--ts-small, 1)), 8px), 17px);
+  font-weight: 500;
+  color: var(--text-muted);
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@keyframes wmodal-loc-in {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 /* ==================== Main weather ==================== */
 .wmodal__main {
   display: flex;
@@ -350,6 +399,24 @@
     font-size: min(max(calc(15px * var(--ts-body, 1)), 9px), 24px);
   }
 
+  /* Location stays beside the temperature on phones — tighter row gap,
+     narrower caption block, one notch smaller type (no top-right move). */
+  .wmodal__main {
+    gap: 14px;
+  }
+
+  .wmodal__loc {
+    max-width: 38%;
+  }
+
+  .wmodal__loc-city {
+    font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 22px);
+  }
+
+  .wmodal__loc-state {
+    font-size: min(max(calc(10.5px * var(--ts-small, 1)), 8px), 15px);
+  }
+
   /* Metrics: all 4 stay in ONE row — each tile stacks icon / value / label
      vertically so "12 km/h" and "8 km" fit without any clipping. */
   .wmodal__metrics {
@@ -435,7 +502,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .wmodal,
-  .wmodal__overlay {
+  .wmodal__overlay,
+  .wmodal__loc {
     animation: none;
   }
 
