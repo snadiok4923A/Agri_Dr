@@ -135,15 +135,6 @@ export default function Dashboard() {
     // Weather card → centered glass modal (not navigation)
     const [weatherOpen, setWeatherOpen] = useState(false);
 
-    /* Live local clock for the weather card — H:MM:SS, tick every second,
-       cleaned up on unmount. Never hard-coded. */
-    const [now, setNow] = useState(() => new Date());
-    useEffect(() => {
-        const id = setInterval(() => setNow(new Date()), 1000);
-        return () => clearInterval(id);
-    }, []);
-    const clock = `${now.getHours()}:${String(now.getMinutes()).padStart(2, "0")}:${String(now.getSeconds()).padStart(2, "0")}`;
-
     /* ---- Crop Diagnosis floating workflow (§22 single state machine) ----
        closed → camera → photo-preview → analysis. One controlled state, no
        boolean soup. The captured/uploaded photo NEVER enters the dashboard
@@ -331,23 +322,23 @@ export default function Dashboard() {
                 >
                     {weatherReady ? (
                         <>
-                            {/* TOP ROW — icon left · temperature + live clock right */}
+                            {/* TOP ROW — icon left · temperature right */}
                             <div className="dashboard-weather-card__top">
                                 <span className="dashboard-weather-card__icon">
                                     <WeatherConditionIllustration
                                         condition={weather.current.conditionKey}
-                                        size={66}
+                                        size={76}
                                     />
                                 </span>
                                 <div className="dashboard-weather-card__tempblock">
                                     <span className="dashboard-weather-card__temp">
                                         {formatNumber(Math.round(weather.current.temperature))}°C
                                     </span>
-                                    <span className="dashboard-weather-card__clock">{clock}</span>
                                 </div>
                             </div>
 
-                            {/* MIDDLE ROW — condition (wraps 2 lines) · Rain % right */}
+                            {/* MIDDLE ROW — the condition is the card's main
+                                secondary information and owns the row */}
                             <div className="dashboard-weather-card__mid">
                                 <span className="dashboard-weather-card__cond">
                                     {t(
@@ -360,20 +351,10 @@ export default function Dashboard() {
                                             <span key={i}>{word}</span>
                                         ))}
                                 </span>
-                                <div className="dashboard-weather-card__cell dashboard-weather-card__cell--rain">
-                                    <span className="dashboard-weather-card__cell-label">
-                                        <Droplets size={12} />
-                                        {t("weather.rain")}
-                                    </span>
-                                    <span className="dashboard-weather-card__cell-value">
-                                        {weather.current.rainProbability != null
-                                            ? `${formatNumber(Math.round(weather.current.rainProbability))}%`
-                                            : "—%"}
-                                    </span>
-                                </div>
                             </div>
 
-                            {/* BOTTOM ROW — Wind left · Humidity right (real values) */}
+                            {/* BOTTOM ROW — Wind left · Rain right (real
+                                precipitation probability) */}
                             <div className="dashboard-weather-card__meta">
                                 <div className="dashboard-weather-card__cell">
                                     <span className="dashboard-weather-card__cell-label">
@@ -384,13 +365,15 @@ export default function Dashboard() {
                                         {formatNumber(Math.round(weather.current.wind))} km/h
                                     </span>
                                 </div>
-                                <div className="dashboard-weather-card__cell">
+                                <div className="dashboard-weather-card__cell dashboard-weather-card__cell--rain">
                                     <span className="dashboard-weather-card__cell-label">
                                         <Droplets size={12} />
-                                        {t("weather.humidity")}
+                                        {t("weather.rain")}
                                     </span>
                                     <span className="dashboard-weather-card__cell-value">
-                                        {formatNumber(Math.round(weather.current.humidity))}%
+                                        {weather.current.rainProbability != null
+                                            ? `${formatNumber(Math.round(weather.current.rainProbability))}%`
+                                            : "—%"}
                                     </span>
                                 </div>
                             </div>

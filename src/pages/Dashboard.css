@@ -240,7 +240,7 @@
     align-items: stretch;
     justify-content: center;
     text-align: left;
-    gap: 8px;
+    gap: 9px;
     padding: 14px 16px 12px;
     min-width: 0;
     width: 100%;
@@ -269,6 +269,7 @@
    against the temperature block. Size comes from the JSX (66px); the
    min-height keeps the row's rhythm steady across conditions. */
 .dashboard-weather-card__icon {
+    position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -277,9 +278,45 @@
     min-height: 60px;
 }
 
+/* Soft radial halo behind the illustration — a whisper of warmth that
+   lifts the icon off the neutral card surface. Gentle in light theme,
+   barely-there in dark. */
+.dashboard-weather-card__icon::before {
+    content: "";
+    position: absolute;
+    inset: -7px;
+    border-radius: 50%;
+    background: radial-gradient(
+        closest-side,
+        rgba(214, 158, 46, 0.15),
+        transparent 72%
+    );
+    pointer-events: none;
+}
+
+[data-theme="dark"] .dashboard-weather-card__icon::before {
+    background: radial-gradient(
+        closest-side,
+        rgba(245, 185, 66, 0.07),
+        transparent 72%
+    );
+}
+
+/* Elegant floating shadow on the illustration itself — soft and warm,
+   never a harsh black drop. Light theme gets slightly more lift; dark
+   theme only what visibility needs. */
+.dashboard-weather-card__icon svg {
+    filter: drop-shadow(0 4px 8px rgba(80, 80, 40, 0.16))
+        drop-shadow(0 10px 20px rgba(80, 80, 40, 0.08));
+}
+
+[data-theme="dark"] .dashboard-weather-card__icon svg {
+    filter: drop-shadow(0 4px 9px rgba(0, 0, 0, 0.3));
+}
+
 /* Temperature — the card's primary visual element */
 .dashboard-weather-card__temp {
-    font-size: max(min(calc(30px * var(--ts-display, 1)), 45px), 14px);
+    font-size: max(min(calc(34px * var(--ts-display, 1)), 50px), 14px);
     font-weight: 900;
     letter-spacing: -0.02em;
     color: var(--text-primary);
@@ -305,37 +342,37 @@
     min-width: 0;
 }
 
-/* Live local clock under the temperature — tabular digits stop jitter */
-.dashboard-weather-card__clock {
-    font-size: min(max(calc(11.5px * var(--ts-small, 1)), 8px), 17px);
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    color: var(--text-muted);
-    font-variant-numeric: tabular-nums;
-    line-height: 1;
-}
-
-/* MIDDLE ROW — condition (one word per line) · Rain % right */
+/* MIDDLE ROW — the condition is the card's main secondary information
+   and owns the row outright. SIZE carries the prominence; weight stays
+   moderate (600) so the glyphs don't go heavy. */
 .dashboard-weather-card__mid {
     display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 12px;
+    align-items: center;
     width: 100%;
     margin-top: 0;
 }
 
-/* Big condition — each word on its own line (PARTLY / CLOUDY) */
+/* Big condition — single line, using the full row width (the old
+   right-hand cell is gone). Flex row + nowrap keeps multi-word
+   conditions (PARTLY CLOUDY / আংশিক মেঘলা) on one line; ellipsis is
+   only a last-resort safety net for extreme strings. */
 .dashboard-weather-card__cond {
     display: flex;
-    flex-direction: column;
-    font-size: max(min(calc(19px * var(--ts-mid, 1)), 26px), 12px);
-    font-weight: 800;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: baseline;
+    column-gap: 0.32em;
+    white-space: nowrap;
+    font-size: max(min(calc(24px * var(--ts-mid, 1)), 32px), 13px);
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.01em;
     line-height: 1.12;
     color: var(--text-primary);
     min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* Right-column metric cell: small label on top, value under it */
@@ -351,8 +388,9 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    font-size: min(max(calc(10.5px * var(--ts-small, 1)), 8px), 16px);
+    font-size: min(max(calc(10px * var(--ts-small, 1)), 8px), 15px);
     font-weight: 500;
+    letter-spacing: 0.03em;
     color: var(--text-muted);
     white-space: nowrap;
 }
@@ -362,7 +400,7 @@
 }
 
 .dashboard-weather-card__cell-value {
-    font-size: min(max(calc(15.5px * var(--ts-body, 1)), 9px), 24px);
+    font-size: min(max(calc(16px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 800;
     color: var(--text-primary);
     white-space: nowrap;
@@ -380,11 +418,11 @@
 .dashboard-weather-card__meta {
     display: flex;
     align-items: flex-start;
-    justify-content: space-between;
-    gap: 12px;
+    justify-content: center;
+    gap: 42px;
     width: 100%;
-    margin-top: 4px;
-    padding-top: 9px;
+    margin-top: 5px;
+    padding-top: 10px;
     position: relative;
 }
 
@@ -1296,26 +1334,22 @@
     }
 
     .dashboard-weather-card__icon svg {
-        width: 58px;
-        height: 58px;
+        width: 66px;
+        height: 66px;
     }
 
 
-    .dashboard-weather-card__icon svg {
-        width: 50px;
-        height: 50px;
-    }
 
     .dashboard-weather-card__temp {
-        font-size: max(min(calc(32px * var(--ts-display, 1)), 48px), 14px);
+        font-size: max(min(calc(34px * var(--ts-display, 1)), 50px), 14px);
     }
 
     .dashboard-weather-card__cond {
-        font-size: max(min(calc(17px * var(--ts-mid, 1)), 24px), 11px);
+        font-size: max(min(calc(22px * var(--ts-mid, 1)), 30px), 12px);
     }
 
     .dashboard-weather-card__meta {
-        gap: 18px;
+        gap: 32px;
         font-size: min(max(calc(15px * var(--ts-body, 1)), 9px), 24px);
     }
 
@@ -1354,25 +1388,25 @@
 
 
     .dashboard-weather-card__icon svg {
-        width: 45px;
-        height: 45px;
+        width: 52px;
+        height: 52px;
     }
 
     .dashboard-weather-card__temp {
-        font-size: max(min(calc(30px * var(--ts-display, 1)), 45px), 14px);
+        font-size: max(min(calc(32px * var(--ts-display, 1)), 48px), 14px);
     }
 
     .dashboard-weather-card__cond {
-        font-size: max(min(calc(16px * var(--ts-mid, 1)), 22px), 11px);
+        font-size: max(min(calc(20px * var(--ts-mid, 1)), 27px), 12px);
     }
 
     .dashboard-weather-card__meta {
-        gap: 12px;
+        gap: 28px;
         font-size: min(max(calc(15px * var(--ts-body, 1)), 9px), 24px);
     }
 
     .dashboard-weather-card__cell-value {
-        font-size: min(max(calc(15.5px * var(--ts-body, 1)), 9px), 24px);
+        font-size: min(max(calc(16px * var(--ts-body, 1)), 9px), 24px);
     }
 
     .dashboard-diagnosis-card {
@@ -1419,20 +1453,20 @@
     }
 
     .dashboard-weather-card__icon svg {
-        width: 38px;
-        height: 38px;
+        width: 44px;
+        height: 44px;
     }
 
     .dashboard-weather-card__temp {
-        font-size: max(min(calc(26px * var(--ts-heading, 1)), 42px), 12px);
+        font-size: max(min(calc(28px * var(--ts-heading, 1)), 44px), 12px);
     }
 
     .dashboard-weather-card__cond {
-        font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
+        font-size: min(max(calc(18px * var(--ts-body, 1)), 9px), 25px);
     }
 
     .dashboard-weather-card__meta {
-        gap: 10px;
+        gap: 22px;
         font-size: min(max(calc(14px * var(--ts-body, 1)), 9px), 24px);
     }
 
