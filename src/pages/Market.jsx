@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useLanguage } from "../hooks/useLanguage";
 import { marketPrices, marketFilters, buildPriceHistory } from "../data/marketPrices";
 import { Search, X } from "lucide-react";
@@ -150,6 +151,31 @@ export default function Market() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selected, closing]);
 
+    /* §10: while the modal is open the page behind must not scroll. The fixed
+     * portal captures taps, but wheel/touch gestures can still scroll the
+     * document beneath it (especially on touch devices). Lock body overflow
+     * and swallow wheel/touchmove at the document level — except when the
+     * gesture starts inside the dialog, which keeps its own internal scroll. */
+    useEffect(() => {
+        if (!selected) return undefined;
+        const prevOverflow = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+        const startsInDialog = (e) => e.target?.closest?.(".market-page__dialog");
+        const onWheel = (e) => {
+            if (!startsInDialog(e)) e.preventDefault();
+        };
+        const onTouchMove = (e) => {
+            if (!startsInDialog(e)) e.preventDefault();
+        };
+        document.addEventListener("wheel", onWheel, { passive: false });
+        document.addEventListener("touchmove", onTouchMove, { passive: false });
+        return () => {
+            document.body.style.overflow = prevOverflow;
+            document.removeEventListener("wheel", onWheel);
+            document.removeEventListener("touchmove", onTouchMove);
+        };
+    }, [selected]);
+
     // Voice integration (§10/§11): "traditional basmati price" opens the
     // Market page with that variety's floating price window; "basmati dam
     // koto" shows all Basmati cards; "close" closes the price window.
@@ -289,23 +315,34 @@ export default function Market() {
                 </div>
             )}
 
-            {selected && (
-                <div
-                    className={`market-page__overlay market-page__overlay--open${
-                        closing ? " market-page__overlay--closing" : ""
-                    }`}
-                    onClick={closeWithAnim}
-                    role="presentation"
-                >
+            {selected &&
+                createPortal(
                     <div
-                        className={`market-page__dialog market-page__dialog--open${
-                            closing ? " market-page__dialog--closing" : ""
+                        className={`market-page__portal${
+                            closing ? " market-page__portal--closing" : ""
                         }`}
-                        role="dialog"
-                        aria-modal="true"
-                        aria-label={selected.name}
-                        onClick={(e) => e.stopPropagation()}
                     >
+                        {/* Dedicated full-viewport backdrop: the blur + tint live
+                        HERE, on their own layer under <body>, never on an
+                        inline element inside animated/stacked page containers.
+                        Explicit CSS only (no dynamic utility classes) so the
+                        production build can never purge the effect. */}
+                        <div className="market-page__backdrop" aria-hidden="true" />
+                        <div
+                            className={`market-page__overlay market-page__overlay--open${
+                                closing ? " market-page__overlay--closing" : ""
+                            }`}
+                            onClick={closeWithAnim}
+                            role="presentation"
+                        >                        <div
+                            className={`market-page__dialog market-page__dialog--open${
+                                closing ? " market-page__dialog--closing" : ""
+                            }`}
+                            role="dialog"
+                            aria-modal="true"
+                            aria-label={selected.name}
+                            onClick={(e) => e.stopPropagation()}
+                        >
                         <button
                             type="button"
                             className="market-page__dialog-close"
@@ -464,7 +501,9 @@ export default function Market() {
                         </div>
                     </div>
                 </div>
-            )}
+                    </div>,
+                    document.body,
+                )}
         </div>
     );
 }

@@ -194,18 +194,54 @@
     font-size: min(max(calc(14px * var(--ts-body, 1)), 9px), 24px);
 }
 
-/* ==================== Glass detail modal ==================== */
-.market-page__overlay {
+/* ==================== Glass detail modal (portaled to <body>) ==================== */
+/* The whole modal layer is portaled to document.body (createPortal). It must
+   never inherit stacking contexts, transforms, filters, opacity or overflow
+   from animated page containers — .page-container runs a fadeIn opacity
+   animation, which creates a stacking context and broke the backdrop blur in
+   the production build. Three explicit layers:
+     .market-page__portal    fixed top-level wrapper (no paint of its own)
+     .market-page__backdrop  full-viewport blur + tint — the ONLY blurred layer
+     .market-page__overlay   transparent flex wrapper holding the dialog
+     .market-page__dialog    glass surface, fully crisp content
+   All values are explicit CSS (no dynamic utility classes), so the effect
+   cannot be purged or renamed by the production build. */
+.market-page__portal {
     position: fixed;
     inset: 0;
-    z-index: 999;
+    z-index: 9000;
+    pointer-events: none;
+    filter: none;
+    opacity: 1;
+}
+
+.market-page__backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: rgba(4, 12, 8, 0.55);
+    -webkit-backdrop-filter: blur(16px) saturate(120%);
+    backdrop-filter: blur(16px) saturate(120%);
+    pointer-events: auto;
+    /* NO entrance animation here: visibility must never depend on an
+       animation actually starting. A fade-in that begins at `from {opacity:0}`
+       leaves the backdrop invisible (and the page UNBLURRED) whenever the
+       animation is delayed/stalled — observed on deployed pages. The tint
+       appearing instantly is imperceptible; the blur is the effect. */
+    animation: none;
+}
+
+.market-page__overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 20px;
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
+    pointer-events: auto;
+    background: transparent;
+    filter: none;
 }
 
 .market-page__dialog {
@@ -408,9 +444,16 @@
     font-weight: 600;
 }
 
-/* ==================== Modal animations (subtle scale + fade) ==================== */
-.market-page__overlay--open {
-    animation: marketOverlayIn 0.18s ease both;
+/* ==================== Modal animations (subtle scale only) ==================== */
+/* The dialog's entrance animates ONLY transform. Opacity is never animated:
+   a stalled/delayed animation (throttled tab, suspended compositor on a
+   deployed page) would otherwise hold the dialog at `from {opacity:0}` —
+   an invisible but clickable modal. With transform-only, the worst case is
+   the dialog appearing at scale(1) without the transition. Closing
+   animations keep `both` so layers hold their hidden end-state until the
+   JS timer unmounts them. */
+.market-page__portal--closing .market-page__backdrop {
+    animation: marketBackdropOut 0.16s ease both;
 }
 
 /* ==================== Light theme ==================== */
@@ -418,8 +461,8 @@
    now lives ONLY in the background color: the panel is a translucent warm
    white (≈#dcd8d0 composite), and every foreground element above it —
    text, rice image, buttons, chart, tooltip — stays fully opaque. */
-[data-theme="light"] .market-page__overlay {
-    background: rgba(41, 38, 31, 0.3);
+[data-theme="light"] .market-page__backdrop {
+    background: rgba(58, 54, 44, 0.45);
 }
 
 [data-theme="light"] .market-page__dialog {
@@ -477,33 +520,27 @@
 }
 
 .market-page__dialog--open {
-    animation: marketDialogIn 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.market-page__overlay--closing {
-    animation: marketOverlayOut 0.16s ease both;
+    animation: marketDialogIn 0.2s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .market-page__dialog--closing {
     animation: marketDialogOut 0.16s ease both;
 }
 
-@keyframes marketOverlayIn {
+@keyframes marketBackdropOut {
     from {
-        opacity: 0;
+        opacity: 1;
     }
     to {
-        opacity: 1;
+        opacity: 0;
     }
 }
 
 @keyframes marketDialogIn {
     from {
-        opacity: 0;
         transform: scale(0.96);
     }
     to {
-        opacity: 1;
         transform: scale(1);
     }
 }
