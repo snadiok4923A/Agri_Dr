@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Mic, Square } from "lucide-react";
 import { useVoiceMode } from "../../hooks/useVoiceMode";
 import { useLanguage } from "../../hooks/useLanguage";
@@ -14,6 +15,36 @@ export default function VoiceModeCard() {
     const { active, status, start, stop, supported, transcript, lastCommand } =
         useVoiceMode();
     const { t } = useLanguage();
+
+    /* Activation transition (visual only, §state machine):
+       click → "activating" → the WHOLE button floods with a flowing
+       multi-color gradient while the microphone/permission initializes.
+       It ends only when activation actually RESOLVES:
+         • success: status flips to "listening" → active UI (border loop)
+         • failure/denied: the hook calls stop() → active=false → idle
+       A 10s safety cap guarantees the button can never stay stuck
+       colorful. Recognition/mic/commands are untouched. */
+    const [activating, setActivating] = useState(false);
+
+    useEffect(() => {
+        if (!activating) return;
+        if ((active && status === "listening") || !active) {
+            setActivating(false);
+        }
+        // still "starting" (permission prompt, engine warm-up) → keep flowing
+    }, [activating, active, status]);
+
+    useEffect(() => {
+        if (!activating) return undefined;
+        const timer = setTimeout(() => setActivating(false), 10000);
+        return () => clearTimeout(timer);
+    }, [activating]);
+
+    const handleStart = () => {
+        if (!supported || activating) return;
+        setActivating(true);
+        start();
+    };
 
     const listening = active && (status === "listening" || status === "starting");
     const restarting = active && status === "restarting";
@@ -37,7 +68,13 @@ export default function VoiceModeCard() {
                 <span className="feature-card__title">{t("dashboard.voiceMode")}</span>
             </div>
 
-            {active ? (
+            {/* Visual-only gate (§6 state machine): while `activating`, the
+                start button stays mounted with the full-button flowing
+                gradient — even though recognition is already starting under
+                the hood. When activation RESOLVES it switches: success →
+                active UI (stop button + border loop); failure/denied →
+                idle button. Mic/commands/stop behavior untouched. */}
+            {active && !activating ? (
                 <>
                     <p className="feature-card__sub feature-card__sub--live">
                         <span className="feature-card__live-dot" />
@@ -69,8 +106,12 @@ export default function VoiceModeCard() {
                     </p>
                     <button
                         type="button"
-                        className="feature-card__btn feature-card__btn--start"
-                        onClick={start}
+                        className={`feature-card__btn feature-card__btn--start${
+                            activating
+                                ? " feature-card__btn--start--activating"
+                                : ""
+                        }`}
+                        onClick={handleStart}
                         disabled={!supported}
                         title={
                             supported

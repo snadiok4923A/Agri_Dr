@@ -68,8 +68,55 @@
 }
 
 /* ---------- Voice Mode ---------- */
+
+/* ACTIVE/LISTENING state — the aurora lives on the CARD BORDER here.
+   A soft conic blue→purple→pink→orange gradient rotates around the
+   perimeter, masked to a thin ring so the card interior stays completely
+   clean (dark or light per theme). The stop button itself is a plain
+   neutral pill — see the button section below. */
+@property --voice-card-glow {
+    syntax: "<angle>";
+    inherits: false;
+    initial-value: 0deg;
+}
+
 .feature-card--voice-active {
-    border-color: rgba(111, 207, 142, 0.35);
+    position: relative;
+    border-color: transparent;
+    box-shadow:
+        var(--shadow-sm),
+        0 0 16px rgba(147, 51, 234, 0.1);
+}
+
+.feature-card--voice-active::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1.5px;
+    background: conic-gradient(
+        from var(--voice-card-glow),
+        rgba(96, 165, 250, 0.65),
+        rgba(167, 139, 250, 0.65),
+        rgba(244, 114, 182, 0.6),
+        rgba(251, 146, 60, 0.55),
+        rgba(96, 165, 250, 0.65)
+    );
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    animation: voiceCardGlowSpin 8s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes voiceCardGlowSpin {
+    from {
+        --voice-card-glow: 0deg;
+    }
+    to {
+        --voice-card-glow: 360deg;
+    }
 }
 
 .feature-card__sub--live {
@@ -148,20 +195,6 @@
 .feature-card__btn:disabled {
     opacity: 0.55;
     cursor: not-allowed;
-}
-
-.feature-card__btn--start {
-    border: 1px solid transparent;
-    background: linear-gradient(135deg, var(--leaf), #4faf72);
-    color: #06130c;
-    box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.35),
-        0 6px 18px rgba(111, 207, 142, 0.25);
-}
-
-.feature-card__btn--start:hover:not(:disabled) {
-    transform: translateY(-1px);
-    background: linear-gradient(135deg, #7fd99c, var(--leaf));
 }
 
 .feature-card__btn--stop {
@@ -280,5 +313,288 @@
     .feature-card__live-dot {
         animation: none !important;
         transition: none !important;
+    }
+}
+
+/* ==================== VOICE MODE BUTTON — AURORA PILL ====================
+   "Download for Mac"-style redesign of the Voice Mode buttons ONLY
+   (this stylesheet is imported by VoiceModeCard + MarketCard; MarketCard
+   renders neither button).
+
+   Structure:
+     button       white glass pill surface + very soft downward shadow
+                  (theme-adapted; dimensions/padding/radius untouched)
+       ::before   THE AURORA — an OVERSIZED layer (~180% wide, 200% tall)
+                  carrying five large overlapping radial color sources
+                  (blue / cyan / violet / pink / orange), blurred AS A
+                  LAYER (blur never touches the button or its content)
+                  and clipped inside the pill by overflow:hidden
+       content    mic icon + "চালু করুন" — untouched, fully opaque, crisp
+
+   THE DRIFT (the critical fix): the oversized ::before is translated
+   horizontally by animating ITS OWN transform — translateX(0) →
+   translateX(-34%) → translateX(0), 10s ease-in-out infinite alternate.
+   Because the layer is oversized, the colorful area stays thick and
+   soft even at the extremes; because the keyframes start and end at the
+   same value, `alternate` produces a seamless back-and-forth with no
+   jump. The glow physically moves RIGHT → CENTER → LEFT → CENTER → RIGHT
+   and is always visible somewhere. No rainbow border, no green fill,
+   no spinning ring — in ANY state. */
+
+.feature-card__btn--start,
+.feature-card__btn--stop {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    border: 1px solid transparent;
+    background: linear-gradient(180deg, #ffffff 0%, #f5f4f0 100%);
+    color: #1c2530;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.9),
+        0 10px 28px rgba(15, 23, 42, 0.1),
+        0 2px 6px rgba(15, 23, 42, 0.05);
+}
+
+/* The aurora layer itself — oversized so the glow remains thick at the
+   edges of the travel. Anchored toward the RIGHT (left: auto / right:
+   -40%) so the layer's rest position paints the right side, matching
+   the reference. Drift = transform on THIS element, not a custom
+   property, so it cannot fail to inherit.
+
+   COMPOSITION ("Download for Mac" reference): the five color sources
+   are clustered in ONE tight region of the layer (all centers within a
+   ~20%-wide band) so they read as a single compact light blob, not
+   bands across the button. Transparent stops are pulled in (55–58%)
+   so edges fade fast — at any moment roughly 25–40% of the pill is
+   colored and the rest stays white. */
+.feature-card__btn--start::before {
+    content: "";
+    position: absolute;
+    top: -50%;
+    right: -40%;
+    width: 180%;
+    height: 200%;
+    z-index: -1;
+    border-radius: 50%;
+    background:
+        radial-gradient(
+            32% 40% at 62% 42%,
+            rgba(59, 130, 246, 0.8),
+            transparent 58%
+        ),
+        radial-gradient(
+            22% 30% at 55% 32%,
+            rgba(6, 182, 212, 0.62),
+            transparent 55%
+        ),
+        radial-gradient(
+            24% 34% at 68% 58%,
+            rgba(124, 58, 237, 0.66),
+            transparent 58%
+        ),
+        radial-gradient(
+            20% 28% at 76% 50%,
+            rgba(219, 39, 119, 0.6),
+            transparent 56%
+        ),
+        radial-gradient(
+            15% 22% at 72% 68%,
+            rgba(249, 115, 22, 0.5),
+            transparent 55%
+        );
+    filter: blur(16px);
+    opacity: 0.85;
+    transform: translateX(0);
+    animation: voiceAuroraDrift 7.5s ease-in-out infinite alternate;
+    pointer-events: none;
+    will-change: transform;
+}
+
+/* RIGHT → LEFT: the oversized layer slides left by ~34% of its own
+   width, which carries the glow across the pill. `alternate` reverses
+   it smoothly every cycle — a true back-and-forth, never a jump. */
+@keyframes voiceAuroraDrift {
+    from {
+        transform: translateX(0);
+    }
+
+    to {
+        transform: translateX(-34%);
+    }
+}
+
+/* Hover: slightly stronger glow + slightly deeper soft shadow. The button
+   never turns green, never gains a rainbow border. */
+.feature-card__btn--start:hover:not(:disabled),
+.feature-card__btn--stop:hover {
+    transform: translateY(-1px);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.9),
+        0 12px 32px rgba(15, 23, 42, 0.13),
+        0 3px 8px rgba(15, 23, 42, 0.06);
+}
+
+.feature-card__btn--start:hover:not(:disabled)::before {
+    opacity: 1;
+}
+
+/* Stop button (active/listening state): clean NEUTRAL pill — no aurora
+   layer at all (the glow lives on the card border in this state). Red
+   content, subtle defined edge, same dimensions as before. */
+.feature-card__btn--stop {
+    border-color: rgba(15, 23, 42, 0.14);
+    color: #ef6b6b;
+}
+
+/* ---------- ACTIVATING ----------
+   Same white pill — the ambient glow simply becomes fully visible with a
+   faint cool halo. The drift continues uninterrupted; the class is removed
+   when activation resolves (success or failure). */
+.feature-card__btn--start--activating {
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.9),
+        0 10px 30px rgba(99, 102, 241, 0.18),
+        0 0 28px rgba(56, 189, 248, 0.18);
+}
+
+.feature-card__btn--start--activating::before {
+    opacity: 1;
+}
+
+/* ---------- DARK THEME ----------
+   Deep charcoal pill so the aurora has real contrast to glow against —
+   never the washed translucent-white surface. */
+[data-theme="dark"] .feature-card__btn--start,
+[data-theme="dark"] .feature-card__btn--stop {
+    background: linear-gradient(180deg, #181e1a 0%, #0a0e0b 100%);
+    border-color: rgba(255, 255, 255, 0.13);
+    color: #f2f6fa;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.12),
+        0 12px 30px rgba(0, 0, 0, 0.55);
+}
+
+[data-theme="dark"] .feature-card__btn--stop {
+    color: #f8a5a5;
+}
+
+[data-theme="dark"] .feature-card__btn--start:hover:not(:disabled),
+[data-theme="dark"] .feature-card__btn--stop:hover {
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.14),
+        0 14px 34px rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="dark"] .feature-card__btn--start--activating {
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        0 10px 30px rgba(99, 102, 241, 0.22),
+        0 0 28px rgba(56, 189, 248, 0.2);
+}
+
+/* Aurora on dark: fully opaque + a chroma boost so blue/purple/pink/orange
+   read saturated and crisp against the charcoal. Same blur, same size,
+   same compact cluster, same 7.5s drift. */
+[data-theme="dark"] .feature-card__btn--start::before {
+    opacity: 1;
+    /* Deep saturated electric palette (reference: blue→purple→magenta).
+       Reduced blur keeps the color CORES dense and defined while halos
+       still fade smoothly. Same centers/sizes → same compact cluster
+       (~25-40% of the pill), same single moving group. */
+    filter: blur(12px) saturate(1.2) brightness(1.05);
+    background:
+        radial-gradient(
+            20% 26% at 62% 42%,
+            rgba(59, 130, 246, 1),
+            rgba(37, 99, 235, 0.75) 48%,
+            transparent 62%
+        ),
+        radial-gradient(
+            15% 20% at 55% 32%,
+            rgba(96, 165, 250, 0.9),
+            rgba(37, 99, 235, 0.5) 50%,
+            transparent 60%
+        ),
+        radial-gradient(
+            17% 23% at 68% 58%,
+            rgba(139, 92, 246, 0.98),
+            rgba(124, 58, 237, 0.7) 48%,
+            transparent 62%
+        ),
+        radial-gradient(
+            14% 19% at 76% 50%,
+            rgba(217, 70, 239, 0.95),
+            rgba(192, 38, 211, 0.6) 48%,
+            transparent 60%
+        ),
+        radial-gradient(
+            11% 15% at 72% 68%,
+            rgba(251, 146, 60, 0.8),
+            rgba(234, 88, 12, 0.45) 48%,
+            transparent 58%
+        ),
+        radial-gradient(
+            32% 40% at 62% 42%,
+            rgba(37, 99, 235, 0.92),
+            transparent 58%
+        ),
+        radial-gradient(
+            22% 30% at 55% 32%,
+            rgba(59, 130, 246, 0.7),
+            transparent 55%
+        ),
+        radial-gradient(
+            24% 34% at 68% 58%,
+            rgba(124, 58, 237, 0.88),
+            transparent 58%
+        ),
+        radial-gradient(
+            20% 28% at 76% 50%,
+            rgba(192, 38, 211, 0.75),
+            transparent 56%
+        ),
+        radial-gradient(
+            15% 22% at 72% 68%,
+            rgba(234, 88, 12, 0.55),
+            transparent 55%
+        );
+}
+
+/* ---------- DARK THEME — VOICE CARD CONTRAST ----------
+   Deep charcoal surface + crisp text, scoped strictly to the Voice card
+   (.feature-card--voice): the Market card and the light theme are not
+   affected. No size/spacing/layout changes — surface, text color, border
+   alpha only. */
+[data-theme="dark"] .feature-card--voice {
+    background: linear-gradient(180deg, #0d1310 0%, #090c0a 100%);
+    border-color: rgba(255, 255, 255, 0.16);
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .feature-card--voice .feature-card__title {
+    color: #ffffff;
+}
+
+[data-theme="dark"] .feature-card--voice .feature-card__sub {
+    color: rgba(240, 247, 242, 0.88);
+}
+
+[data-theme="dark"] .feature-card--voice .feature-card__icon--leaf {
+    background: #101a12;
+    color: #7fdb9a;
+}
+
+/* Reduced motion: freeze the drift into a static right-side glow (the
+   reference look). The global reduced-motion block already kills the
+   animation; this makes the intent explicit for the pseudo-element. */
+@media (prefers-reduced-motion: reduce) {
+    .feature-card__btn--start::before {
+        animation: none;
+        transform: translateX(0);
+    }
+
+    /* Active card ring: static gradient edge, no rotation. */
+    .feature-card--voice-active::before {
+        animation: none;
     }
 }

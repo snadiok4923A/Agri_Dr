@@ -525,3 +525,123 @@
     height: 36px;
   }
 }
+
+/* ==================== CHATBAR AURORA BORDER (BOTH THEMES) ====================
+   "Try a whole new way to search" reference: a thin luminous border with
+   LOCALIZED color zones — strong saturated sections (cyan, blue, purple,
+   magenta→orange, green) separated by intentional DARK GAPS, like real
+   aurora light patches rather than a continuous rainbow ring. A soft
+   blurred glow hugs the border just OUTSIDE it. Interior, input, mic and
+   send buttons are untouched.
+
+   ONE CONTINUOUS PATTERN, ONE GAP: hues flow smoothly around the whole
+   perimeter (cyan → blue → purple → magenta → orange → green → wrap)
+   with gently varied intensity (0.85–0.95 — never uniformly bright),
+   and exactly ONE long valley where the whole pattern eases down to a
+   still-visible 0.18 and back up (never zero → the border never breaks,
+   the glow never dies). The valley's descent/ascent spans ~15% of the
+   perimeter with no hard stops — the viewer barely notices the fade.
+   Because it's ONE conic on ONE pseudo-element, top/right/bottom/left
+   share the same pattern — two gaps can never appear at once, and the
+   single valley travels with the rotating angle like the rest. The
+   0%/100% stops match exactly (cyan), so the 10s rotation stays
+   seamless.
+
+   Layer (pointer-safe, absolutely positioned, no layout impact):
+     chatbar::before      the ONLY aurora layer — a crisp, sharp, thin
+                          (2px) conic ring masked exactly onto the border.
+                          NO external glow: no blur, no box-shadow, no
+                          halo — colored pixels stay confined to the
+                          border area and the background around the input
+                          stays completely clean. */
+@property --aidoc-ring {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.ai-doctor__chatbar {
+  position: relative;
+}
+
+.ai-doctor__chatbar::before {
+  content: "";
+  position: absolute;
+  border-radius: inherit;
+  background: conic-gradient(
+    from var(--aidoc-ring),
+    rgba(34, 211, 238, 0.85) 0%,
+    rgba(59, 130, 246, 0.95) 10%,
+    rgba(59, 130, 246, 0.9) 24%,
+    rgba(139, 92, 246, 0.95) 33%,
+    rgba(236, 72, 153, 0.9) 41%,
+    rgba(236, 72, 153, 0.45) 47%,
+    rgba(236, 72, 153, 0.18) 53%,
+    rgba(251, 146, 60, 0.18) 59%,
+    rgba(251, 146, 60, 0.65) 65%,
+    rgba(251, 146, 60, 0.9) 72%,
+    rgba(74, 222, 128, 0.9) 81%,
+    rgba(74, 222, 128, 0.85) 90%,
+    rgba(34, 211, 238, 0.85) 100%
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  animation: aidocRingFlow 10s linear infinite;
+  pointer-events: none;
+}
+
+/* Thin crisp ring sitting exactly on the border line. */
+.ai-doctor__chatbar::before {
+  inset: -1px;
+  padding: 2px;
+}
+
+/* ---------- BORDER ONLY (no external glow) ----------
+   The crisp ring IS the whole effect — no halo pseudo-element anywhere.
+   Colored pixels exist only within the 2px masked band on the border;
+   the page around the input stays completely clean and dark. */
+.ai-doctor__chatbar::before {
+  inset: -1px;
+  padding: 2px;
+}
+
+/* ---------- LIGHT THEME ----------
+   Same one-valley continuous structure in deeper 600-scale tones so the
+   flow stays clearly visible on the bright background. */
+[data-theme="light"] .ai-doctor__chatbar::before {
+  background: conic-gradient(
+    from var(--aidoc-ring),
+    rgba(8, 145, 178, 0.85) 0%,
+    rgba(37, 99, 235, 0.95) 10%,
+    rgba(37, 99, 235, 0.9) 24%,
+    rgba(124, 58, 237, 0.95) 33%,
+    rgba(219, 39, 119, 0.9) 41%,
+    rgba(219, 39, 119, 0.45) 47%,
+    rgba(219, 39, 119, 0.18) 53%,
+    rgba(234, 88, 12, 0.18) 59%,
+    rgba(234, 88, 12, 0.65) 65%,
+    rgba(234, 88, 12, 0.9) 72%,
+    rgba(22, 163, 74, 0.9) 81%,
+    rgba(22, 163, 74, 0.85) 90%,
+    rgba(8, 145, 178, 0.85) 100%
+  );
+}
+
+@keyframes aidocRingFlow {
+  from {
+    --aidoc-ring: 0deg;
+  }
+  to {
+    --aidoc-ring: 360deg;
+  }
+}
+
+/* Reduced motion: keep the elegant static multicolor edge, stop the flow
+   (both themes). */
+@media (prefers-reduced-motion: reduce) {
+  .ai-doctor__chatbar::before {
+    animation: none;
+  }
+}
