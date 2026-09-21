@@ -22,10 +22,8 @@ import {
     Wind,
 } from "lucide-react";
 import { AreaChart, Area, ResponsiveContainer, XAxis, Tooltip } from "recharts";
-import {
-    WeatherConditionIllustration,
-    AgriActionIcon,
-} from "../components/common/AgriIllustrations";
+import { AgriActionIcon } from "../components/common/AgriIllustrations";
+import { Weather3DIllustration } from "../components/common/Weather3DIllustration";
 import AnimatedNumber from "../components/common/AnimatedNumber";
 import WeatherModal from "../components/common/WeatherModal";
 import CameraModal from "../components/common/CameraModal";
@@ -404,7 +402,9 @@ export default function Dashboard() {
                             {/* TOP ROW — icon left · temperature right */}
                             <div className="dashboard-weather-card__top">
                                 <span className="dashboard-weather-card__icon">
-                                    <WeatherConditionIllustration
+                                    {/* Premium 3D-style animated weather art —
+                                        driven by the REAL WMO conditionKey. */}
+                                    <Weather3DIllustration
                                         condition={weather.current.conditionKey}
                                         size={76}
                                     />
@@ -474,7 +474,7 @@ export default function Dashboard() {
                         /* Weather fetch in flight — coordinates already known */
                         <div className="dashboard-weather-card__state">
                             <div className="dashboard-weather-card__state-icon dashboard-weather-card__state-icon--loading">
-                                <WeatherConditionIllustration
+                                <Weather3DIllustration
                                     condition="partlyCloudy"
                                     size={56}
                                 />
@@ -489,7 +489,7 @@ export default function Dashboard() {
                            until the callback actually returns (§1/§3/§7). */
                         <div className="dashboard-weather-card__state">
                             <div className="dashboard-weather-card__state-icon dashboard-weather-card__state-icon--loading">
-                                <WeatherConditionIllustration
+                                <Weather3DIllustration
                                     condition="partlyCloudy"
                                     size={56}
                                 />

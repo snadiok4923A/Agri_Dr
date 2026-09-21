@@ -1093,6 +1093,22 @@
     }
 }
 
+/* ==================== 3D WEATHER ILLUSTRATION (STATIC) ====================
+   Premium static 3D weather object (Weather3DIllustration) in the main
+   card's icon slot: layered rear/front clouds, volumetric shading, static
+   droplets/bolt. NO internal weather animation — the card's separate
+   wx-scene background owns all motion; this icon is a still 3D object. */
+.wx3-illustration {
+    display: block;
+    overflow: visible;
+}
+
+/* Dark theme: the ground shadow needs a touch more weight to read against
+   the glass surface. Pure color/opacity — nothing animates. */
+[data-theme="dark"] .wx3-illustration .wx3-shadow {
+    opacity: 0.26;
+}
+
 @keyframes sunGlow {
     0% {
         transform: scale(1);
