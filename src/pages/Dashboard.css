@@ -827,37 +827,62 @@
     max-width: 100%;
 }
 
-/* Bottom metric cell: label centered directly above its value — both
-   share one center axis so the pair reads as a balanced block */
+/* Bottom metric cell — reference layout: LARGE ICON beside a two-line
+   text block. The icon (24px, ~1.9 stroke) spans the full height of
+   label + value and is centered against the block; label sits above
+   value in a plain column. Icon never stacks above the text. */
 .dashboard-weather-card__cell {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
+    gap: 7px;
+    min-width: 0;
+}
+
+/* Icon gets flex-shrink: 0 so the text block can never squeeze it */
+.dashboard-weather-card__cell-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: var(--text-secondary);
+}
+
+.dashboard-weather-card__cell--rain .dashboard-weather-card__cell-icon {
+    color: var(--info, #6bb8e8);
+}
+
+/* Text block: a simple two-line column. Label line-height + gap are tuned
+   so the block stays exactly as tall as the previous stacked layout —
+   the card's outer dimensions must not move. */
+.dashboard-weather-card__cell-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
     gap: 3px;
     min-width: 0;
 }
 
 .dashboard-weather-card__cell-label {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
     font-size: min(max(calc(10px * var(--ts-small, 1)), 8px), 15px);
     font-weight: 500;
     letter-spacing: 0.03em;
+    text-transform: uppercase;
     color: var(--text-muted);
     white-space: nowrap;
-}
-
-.dashboard-weather-card__cell-label svg {
-    flex-shrink: 0;
+    line-height: 1.2;
 }
 
 .dashboard-weather-card__cell-value {
     font-size: min(max(calc(16px * var(--ts-body, 1)), 9px), 24px);
-    font-weight: 800;
+    font-weight: 700;
     color: var(--text-primary);
     white-space: nowrap;
     line-height: 1;
+}
+
+.dashboard-weather-card__cell-icon svg {
+    display: block;
 }
 
 /* Rain % carries the info-blue used elsewhere for rain chances */
@@ -1802,12 +1827,20 @@
     }
 
     .dashboard-weather-card__meta {
-        gap: 32px;
-        font-size: min(max(calc(15px * var(--ts-body, 1)), 9px), 24px);
+        gap: 26px;
+    }
+
+    .dashboard-weather-card__cell {
+        gap: 6px;
+    }
+
+    .dashboard-weather-card__cell-icon svg {
+        width: 22px;
+        height: 22px;
     }
 
     .dashboard-weather-card__cell-value {
-        font-size: min(max(calc(16px * var(--ts-body, 1)), 9px), 24px);
+        font-size: min(max(calc(15px * var(--ts-body, 1)), 9px), 24px);
     }
 
     .dashboard-actions-grid {
@@ -1854,12 +1887,20 @@
     }
 
     .dashboard-weather-card__meta {
-        gap: 28px;
-        font-size: min(max(calc(15px * var(--ts-body, 1)), 9px), 24px);
+        gap: 16px;
+    }
+
+    .dashboard-weather-card__cell {
+        gap: 6px;
+    }
+
+    .dashboard-weather-card__cell-icon svg {
+        width: 20px;
+        height: 20px;
     }
 
     .dashboard-weather-card__cell-value {
-        font-size: min(max(calc(16px * var(--ts-body, 1)), 9px), 24px);
+        font-size: min(max(calc(14px * var(--ts-body, 1)), 9px), 24px);
     }
 
     .dashboard-diagnosis-card {
@@ -1919,12 +1960,20 @@
     }
 
     .dashboard-weather-card__meta {
-        gap: 22px;
-        font-size: min(max(calc(14px * var(--ts-body, 1)), 9px), 24px);
+        gap: 12px;
+    }
+
+    .dashboard-weather-card__cell {
+        gap: 5px;
+    }
+
+    .dashboard-weather-card__cell-icon svg {
+        width: 18px;
+        height: 18px;
     }
 
     .dashboard-weather-card__cell-value {
-        font-size: min(max(calc(15px * var(--ts-body, 1)), 9px), 24px);
+        font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
     }
 }
 

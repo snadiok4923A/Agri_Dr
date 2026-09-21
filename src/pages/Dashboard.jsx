@@ -436,26 +436,36 @@ export default function Dashboard() {
                             </div>
 
                             {/* BOTTOM ROW — Wind left · Rain right (real
-                                precipitation probability) */}
+                                precipitation probability). Reference layout:
+                                large icon beside a two-line text block, the
+                                icon centered against the full text height. */}
                             <div className="dashboard-weather-card__meta">
                                 <div className="dashboard-weather-card__cell">
-                                    <span className="dashboard-weather-card__cell-label">
-                                        <Wind size={12} />
-                                        {t("weather.wind")}
+                                    <span className="dashboard-weather-card__cell-icon">
+                                        <Wind size={24} strokeWidth={1.9} />
                                     </span>
-                                    <span className="dashboard-weather-card__cell-value">
-                                        {formatNumber(Math.round(weather.current.wind))} km/h
+                                    <span className="dashboard-weather-card__cell-text">
+                                        <span className="dashboard-weather-card__cell-label">
+                                            {t("weather.wind")}
+                                        </span>
+                                        <span className="dashboard-weather-card__cell-value">
+                                            {formatNumber(Math.round(weather.current.wind))} km/h
+                                        </span>
                                     </span>
                                 </div>
                                 <div className="dashboard-weather-card__cell dashboard-weather-card__cell--rain">
-                                    <span className="dashboard-weather-card__cell-label">
-                                        <Droplets size={12} />
-                                        {t("weather.rain")}
+                                    <span className="dashboard-weather-card__cell-icon">
+                                        <Droplets size={24} strokeWidth={1.9} />
                                     </span>
-                                    <span className="dashboard-weather-card__cell-value">
-                                        {weather.current.rainProbability != null
-                                            ? `${formatNumber(Math.round(weather.current.rainProbability))}%`
-                                            : "—%"}
+                                    <span className="dashboard-weather-card__cell-text">
+                                        <span className="dashboard-weather-card__cell-label">
+                                            {t("weather.rain")}
+                                        </span>
+                                        <span className="dashboard-weather-card__cell-value">
+                                            {weather.current.rainProbability != null
+                                                ? `${formatNumber(Math.round(weather.current.rainProbability))}%`
+                                                : "—%"}
+                                        </span>
                                     </span>
                                 </div>
                             </div>
