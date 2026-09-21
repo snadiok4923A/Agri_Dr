@@ -588,7 +588,7 @@ export const translations = {
             cropForDiagnosis: "পরীক্ষার জন্য ফসল",
             voiceMode: "ভয়েস মোড",
             voiceControlSub: "কণ্ঠস্বর দিয়ে কৃষিবেদা চালান",
-            startVoiceMode: "ভয়েস মোড চালু করুন",
+            startVoiceMode: "চালু করুন",
             stopVoiceMode: "ভয়েস মোড বন্ধ করুন",
             listening: "শুনছি…",
             starting: "চালু হচ্ছে…",

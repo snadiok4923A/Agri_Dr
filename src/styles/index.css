@@ -102,8 +102,8 @@
     --success-soft: rgba(63, 128, 81, 0.08);
     --info: #3b8dc5;
     --info-soft: rgba(59, 141, 197, 0.08);
-    --border: #ddd5c7;
-    --border-light: #e8e2d5;
+    --border: #cfc5b2;
+    --border-light: #ddd5c7;
     --shadow-sm: 0 1px 3px rgba(41, 38, 31, 0.06);
     --shadow-md: 0 4px 12px rgba(41, 38, 31, 0.08);
     --shadow-lg: 0 8px 24px rgba(41, 38, 31, 0.1);
@@ -239,10 +239,13 @@ body {
     background: var(--glass-bg);
     -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
     backdrop-filter: blur(var(--glass-blur)) saturate(140%);
-    border-color: rgba(255, 255, 255, 0.05);
-    border-top-color: rgba(255, 255, 255, 0.12);
-    border-left-color: rgba(255, 255, 255, 0.08);
-    border-right-color: rgba(255, 255, 255, 0.06);
+    /* Per-side glass rims, one step more visible than before — still
+       whisper-thin 1px whites, just enough contrast to read each card's
+       boundary against the aurora background. */
+    border-color: rgba(255, 255, 255, 0.08);
+    border-top-color: rgba(255, 255, 255, 0.16);
+    border-left-color: rgba(255, 255, 255, 0.11);
+    border-right-color: rgba(255, 255, 255, 0.09);
     box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.06),
         0 8px 32px rgba(0, 0, 0, 0.25);
