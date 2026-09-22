@@ -1,4 +1,5 @@
-import { Bell, Sun, Moon, ChevronDown, Globe, Menu, Mic, Camera, Pencil } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { Bell, Sun, Moon, ChevronDown, Globe, Menu, Mic, Camera, X } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useTheme } from '../../hooks/useTheme';
@@ -6,8 +7,8 @@ import { useVoiceMode } from '../../hooks/useVoiceMode';
 import { demoUser } from '../../data/mockData';
 import './Header.css';
 
-/* localStorage keys — shared by the header avatar and the profile panel
-   (one profileImage state drives both, per the profile-panel spec). */
+/* localStorage keys — one shared profile state drives the header avatar,
+   the large panel photo, the name and the role (spec §15). */
 const PROFILE_IMAGE_KEY = 'krisiveda.profileImage';
 const PROFILE_NAME_KEY = 'krisiveda.profileName';
 const PROFILE_ROLE_KEY = 'krisiveda.profileRole';
@@ -27,7 +28,6 @@ export default function Header({ onMenuToggle }) {
   const [profileName, setProfileName] = useState(() => localStorage.getItem(PROFILE_NAME_KEY) || demoUser.name);
   const [profileRole, setProfileRole] = useState(() => localStorage.getItem(PROFILE_ROLE_KEY) || demoUser.role);
   const langRef = useRef(null);
-  const panelRef = useRef(null);
   const fileRef = useRef(null);
 
   const currentLang = languages.find(l => l.code === language);
@@ -43,14 +43,28 @@ export default function Header({ onMenuToggle }) {
       if (langRef.current && !langRef.current.contains(e.target)) {
         setLangOpen(false);
       }
-      if (panelRef.current && !panelRef.current.contains(e.target)) {
-        setPanelOpen(false);
-        setEditing(false);
-      }
     };
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
+
+  /* Escape closes the panel (and any open editor) — standard modal UX. */
+  useEffect(() => {
+    if (!panelOpen) return;
+    const onKey = (e) => {
+      if (e.key === 'Escape') { setPanelOpen(false); setEditing(false); }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [panelOpen]);
+
+  /* Lock page scroll while the modal is open (market-modal philosophy). */
+  useEffect(() => {
+    if (!panelOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, [panelOpen]);
 
   const handlePhotoPick = (e) => {
     const file = e.target.files?.[0];
@@ -90,6 +104,8 @@ export default function Header({ onMenuToggle }) {
     setEditing(false);
   };
 
+  const closePanel = () => { setPanelOpen(false); setEditing(false); };
+
   return (
     <header className="header">
       <div className="header__left">
@@ -99,7 +115,6 @@ export default function Header({ onMenuToggle }) {
       </div>
 
       <div className="header__right">
-        {/* Persistent Voice Mode indicator — click to stop */}
         {voiceActive && (
           <button
             className="header__voice-btn"
@@ -145,31 +160,58 @@ export default function Header({ onMenuToggle }) {
           <span className="header__notification-dot" />
         </button>
 
-        {/* Small circular header avatar — opens the floating profile panel.
-            Shows the uploaded photo when present, else the initials. */}
-        <div className="header__avatar-wrap" ref={panelRef}>
-          <button
-            className="header__avatar"
-            onClick={() => { setPanelOpen(o => !o); setEditing(false); setPhotoError(''); }}
-            title={profileName}
-            aria-haspopup="dialog"
-            aria-expanded={panelOpen}
-          >
-            {profileImage
-              ? <img className="header__avatar-img" src={profileImage} alt={profileName} />
-              : <span>{initials}</span>}
-          </button>
+        {/* Small circular header avatar — opens the LARGE floating profile
+            window. Shows the uploaded photo when present, else initials. */}
+        <button
+          className="header__avatar"
+          onClick={() => { setPanelOpen(true); setPhotoError(''); }}
+          title={profileName}
+          aria-haspopup="dialog"
+          aria-expanded={panelOpen}
+        >
+          {profileImage
+            ? <img className="header__avatar-img" src={profileImage} alt={profileName} />
+            : <span>{initials}</span>}
+        </button>
+      </div>
 
-          {panelOpen && (
-            <div className="profile-panel" role="dialog" aria-label={t("settings.profile")}>
-              {/* Large identity photo — the panel's dominant visual. The
-                  edit/camera button floats over its lower-right corner. */}
-              <div className="profile-panel__photo">
+      {/* LARGE floating profile window — portal + backdrop + overlay +
+          dialog, the same battle-tested architecture as the Market
+          Intelligence modal (production-safe backdrop blur). The photo
+          fills the window; name/role sit OVER it on a subtle gradient. */}
+      {panelOpen && createPortal(
+        <div className="profile-modal__portal">
+          <div
+            className="profile-modal__backdrop"
+            onClick={closePanel}
+            aria-hidden="true"
+          />
+          <div className="profile-modal__overlay">
+            <div
+              className="profile-modal__dialog"
+              role="dialog"
+              aria-modal="true"
+              aria-label={t("settings.profile")}
+            >
+              {/* Hero photo — covers the whole window (spec §2). */}
+              <div className="profile-modal__hero">
                 {profileImage
                   ? <img src={profileImage} alt={profileName} />
-                  : <span className="profile-panel__initials">{initials}</span>}
+                  : <span className="profile-modal__initials">{initials}</span>}
+                <div className="profile-modal__scrim" aria-hidden="true" />
+
+                {/* Circular close button, top-right (spec §7). */}
                 <button
-                  className="profile-panel__photo-edit"
+                  className="profile-modal__close"
+                  onClick={closePanel}
+                  aria-label="Close profile"
+                >
+                  <X size={16} />
+                </button>
+
+                {/* Circular camera button over the photo (spec §5). */}
+                <button
+                  className="profile-modal__photo-edit"
                   onClick={() => fileRef.current?.click()}
                   aria-label={t("common.profile.changePhoto")}
                   title={t("common.profile.changePhoto")}
@@ -183,57 +225,57 @@ export default function Header({ onMenuToggle }) {
                   hidden
                   onChange={handlePhotoPick}
                 />
-              </div>
 
-              {photoError && <p className="profile-panel__error">{photoError}</p>}
-
-              {editing ? (
-                <div className="profile-panel__editor">
-                  <label className="profile-panel__field">
-                    <span>{t("common.profile.editName")}</span>
-                    <input
-                      value={nameDraft}
-                      onChange={(e) => setNameDraft(e.target.value)}
-                      maxLength={40}
-                    />
-                  </label>
-                  <span className="profile-panel__field-label">{t("common.profile.changeRole")}</span>
-                  <div className="profile-panel__roles">
-                    {ROLES.map(role => (
-                      <button
-                        key={role}
-                        className={`profile-panel__role ${roleDraft === role ? 'profile-panel__role--active' : ''}`}
-                        onClick={() => setRoleDraft(role)}
-                      >
-                        {role === 'Farmer' ? t("common.profile.farmer") : t("common.profile.businessMan")}
+                {editing ? (
+                  <div className="profile-modal__editor">
+                    <label className="profile-modal__field">
+                      <span>{t("common.profile.editName")}</span>
+                      <input
+                        value={nameDraft}
+                        onChange={(e) => setNameDraft(e.target.value)}
+                        maxLength={40}
+                      />
+                    </label>
+                    <span className="profile-modal__field-label">{t("common.profile.changeRole")}</span>
+                    <div className="profile-modal__roles">
+                      {ROLES.map(role => (
+                        <button
+                          key={role}
+                          className={`profile-modal__role ${roleDraft === role ? 'profile-modal__role--active' : ''}`}
+                          onClick={() => setRoleDraft(role)}
+                        >
+                          {role === 'Farmer' ? t("common.profile.farmer") : t("common.profile.businessMan")}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="profile-modal__editor-actions">
+                      <button className="profile-modal__pill profile-modal__pill--ghost" onClick={() => setEditing(false)}>
+                        {t("common.profile.cancel")}
                       </button>
-                    ))}
+                      <button className="profile-modal__pill profile-modal__pill--primary" onClick={saveProfile}>
+                        {t("common.profile.save")}
+                      </button>
+                    </div>
                   </div>
-                  <div className="profile-panel__actions">
-                    <button className="profile-panel__btn profile-panel__btn--ghost" onClick={() => setEditing(false)}>
-                      {t("common.profile.cancel")}
-                    </button>
-                    <button className="profile-panel__btn profile-panel__btn--primary" onClick={saveProfile}>
-                      {t("common.profile.save")}
+                ) : (
+                  <div className="profile-modal__identity">
+                    <h3 className="profile-modal__name">{profileName}</h3>
+                    <p className="profile-modal__role-line">
+                      {profileRole === 'Business Man' ? t("common.profile.businessMan") : t("common.profile.farmer")}
+                    </p>
+                    <button className="profile-modal__pill" onClick={startEditing}>
+                      {t("common.profile.editProfile")}
                     </button>
                   </div>
-                </div>
-              ) : (
-                <>
-                  <h3 className="profile-panel__name">{profileName}</h3>
-                  <p className="profile-panel__role-line">
-                    {profileRole === 'Business Man' ? t("common.profile.businessMan") : t("common.profile.farmer")}
-                  </p>
-                  <button className="profile-panel__edit" onClick={startEditing}>
-                    <Pencil size={14} />
-                    {t("common.profile.editProfile")}
-                  </button>
-                </>
-              )}
+                )}
+
+                {photoError && <p className="profile-modal__error">{photoError}</p>}
+              </div>
             </div>
-          )}
-        </div>
-      </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </header>
   );
 }
