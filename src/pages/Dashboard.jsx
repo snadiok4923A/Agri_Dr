@@ -61,35 +61,57 @@ export default function Dashboard() {
     const { status: weatherStatus, weather, locationError, retryLocation } = useWeather();
     const weatherReady = weatherStatus === "ready" && !!weather;
 
-    /* Weather-condition → background-gradient group (§ centralized map).
-       Driven by the REAL WMO conditionKey from weatherService, never by
-       the displayed text. Intensity rises with cloud/rain severity. */
-    const WX_BG_GROUP = {
+    /* Weather-condition → gradient class (§ granular map). Driven by the
+       REAL WMO conditionKey + raw code from weatherService, never by the
+       displayed text — Bengali and English labels resolve from the same
+       key, so both languages always get the same gradient.
+       Intensity ladder: clear < partly < overcast < lightRain < rain <
+       heavyRain < thunder. Rain intensity comes from the raw WMO code
+       (61 slight · 62 moderate · 63–65 heavy · 80/81/82 showers). */
+    const WX_GRADIENT = {
         clear: "clear",
         mainlyClear: "clear",
         partlyCloudy: "partly",
-        fog: "cloudy",
-        overcast: "rainy",
-        drizzle: "rainy",
-        freezingDrizzle: "rainy",
-        rain: "rainy",
-        freezingRain: "rainy",
-        snowfall: "rainy",
-        snowGrains: "rainy",
-        rainShowers: "rainy",
-        snowShowers: "rainy",
-        thunderstorm: "rainy",
-        thunderstormHail: "rainy",
+        overcast: "overcast",
+        fog: "fog",
+        drizzle: "lightRain",
+        freezingDrizzle: "lightRain",
+        snowfall: "snow",
+        snowGrains: "snow",
+        snowShowers: "snow",
+        thunderstorm: "thunder",
+        thunderstormHail: "thunder",
     };
-    const wxGroup = weatherReady
-        ? WX_BG_GROUP[weather.current.conditionKey] || "partly"
+    let wxGroup = weatherReady
+        ? WX_GRADIENT[weather.current.conditionKey]
         : null;
+    if (weatherReady && !wxGroup) {
+        /* Rain-family keys collapse several codes — split by raw code. */
+        const k = weather.current.conditionKey;
+        const c = weather.current.code;
+        if (k === "rain") {
+            wxGroup = !c || c <= 61 ? "lightRain" : c === 62 ? "rain" : "heavyRain";
+        } else if (k === "freezingRain") {
+            wxGroup = c === 66 ? "rain" : "heavyRain";
+        } else if (k === "rainShowers") {
+            wxGroup = !c || c === 80 ? "lightRain" : c === 81 ? "rain" : "heavyRain";
+        } else {
+            wxGroup = "partly"; /* unknown → calm fallback */
+        }
+    }
     const wxBgClass = wxGroup ? `wx-bg--${wxGroup}` : "";
-    /* Partly-cloudy WITH real precipitation → a couple of tiny droplets
-       (spec §3: drops only when rain is actually present). */
-    const wxShowers =
-        wxGroup === "partly" &&
-        (weather?.current?.rainProbability ?? 0) >= 40;
+    /* Scene ANIMATION kind (§ static-first spec): rain/thunderstorm ONLY.
+       Every other condition is the static weather gradient — no scene at
+       all. Thunder = the real thunderstorm WMO codes; rain = the rest of
+       the rain family (drizzle, rain, showers, freezing rain). */
+    const wxSceneKind =
+        weatherReady &&
+        (weather.current.conditionKey === "thunderstorm" ||
+            weather.current.conditionKey === "thunderstormHail")
+            ? "thunder"
+            : wxGroup === "lightRain" || wxGroup === "rain" || wxGroup === "heavyRain"
+              ? "rain"
+              : null;
 
     /* Condition text auto-fit: shrinks the condition's font just enough
        that ANY condition (English or Bengali) stays on ONE line, fully
@@ -374,27 +396,21 @@ export default function Dashboard() {
                     tabIndex={0}
                     title={t("dashboard.viewWeather")}
                 >
-                    {weatherReady && wxGroup && (
-                        /* Animated weather scene — lives BEHIND the content
-                           (z 0 vs z 1), upper-left→middle only, aria-hidden.
-                           Same wx-group class as the gradient, so the scene's
-                           intensity tracks the real weather condition. */
+                    {weatherReady && wxSceneKind && (
+                        /* Rain/thunder scene — lives BEHIND the content
+                           (z 0 vs z 1), upper zone only, aria-hidden.
+                           Renders ONLY for rain (streaks) and thunderstorm
+                           (streaks + occasional flash); every other
+                           condition shows the static gradient alone. */
                         <div
-                            className={`wx-scene wx-scene--${wxGroup}${
-                                wxShowers ? " wx-scene--showers" : ""
-                            }`}
+                            className={`wx-scene wx-scene--${wxGroup} wx-scene--${wxSceneKind}`}
                             aria-hidden="true"
                         >
-                            <span className="wx-scene__cloud wx-scene__cloud--1" />
-                            <span className="wx-scene__cloud wx-scene__cloud--2" />
-                            <span className="wx-scene__cloud wx-scene__cloud--3" />
                             <span className="wx-scene__drop wx-scene__drop--1" />
                             <span className="wx-scene__drop wx-scene__drop--2" />
                             <span className="wx-scene__drop wx-scene__drop--3" />
                             <span className="wx-scene__drop wx-scene__drop--4" />
-                            <span className="wx-scene__sun" />
-                            <span className="wx-scene__ray wx-scene__ray--1" />
-                            <span className="wx-scene__ray wx-scene__ray--2" />
+                            <span className="wx-scene__bolt" />
                         </div>
                     )}
                     {weatherReady ? (
