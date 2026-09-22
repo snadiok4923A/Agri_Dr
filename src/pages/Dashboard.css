@@ -1233,52 +1233,102 @@
     border-top-color: rgba(80, 70, 55, 0.6);
 }
 
-/* --- "Photo" gradient text ----------------------------------------------
-   ONLY the word "Photo" carries a looping blue→cyan gradient, clipped to
-   its glyph shapes (background-clip: text). "Upload", the icon, border
-   and button surface are untouched. The gradient layer is oversized
-   (200%) and slides slowly; start/end stops match (blue at both ends),
-   so the loop wraps with no visible reset. */
-.dashboard-diagnosis-upload-text {
-    color: inherit;
+/* --- Upload Photo: ARROW-ONLY looping motion ------------------------------
+   The lucide Upload glyph is TWO stacked 16px SVGs — a STATIC in-flow
+   tray (reserves the icon slot) and an ANIMATED arrow layer.
+
+   THE GEOMETRY FIX: the arrow layer is `position: absolute` DIRECTLY
+   inside the button (the icon span is position: static, so the button
+   is the layer's containing block). Its vertical position is animated
+   via `top`, whose percentages resolve against the BUTTON's height —
+   exactly the "calculated from the actual button" requirement:
+
+     • start top:  calc((100% - 16px) / 2)
+       → centers the 16px layer in the button's INNER box (padding-box
+         for abs positioning — i.e., relative to the button's inner top
+         edge), the same spot the in-flow icon occupies.
+     • end top:    calc(-16px - 1px)
+       → the entire 16px layer sits fully ABOVE the inner top edge
+         (plus 1px margin), so ZERO pixels of the arrow can remain
+         below the boundary at max travel — by construction, not by
+         tuned pixels. (Also >= the needed 13px+10px≈23px clearance.)
+
+   The button's `overflow: hidden` is the ONLY viewport (clips at the
+   inner edge of its 1px border). Ascent is 100% opaque; the only fade
+   is the stationary fade-in at the original position after an
+   invisible reset. No downward movement ever. */
+.dashboard-diagnosis-btn--upload {
+    position: relative; /* the BUTTON is the arrow layer's containing block
+                            (without it, a positioned ancestor higher up —
+                            e.g. the glass card — would claim the layer) */
+    overflow: hidden; /* THE clip: the button's rounded inner boundary */
 }
 
-@supports ((-webkit-background-clip: text) or (background-clip: text)) {
-    .dashboard-diagnosis-upload-photo {
-        /* One periodic blue→cyan→blue tile; the layer is 200% wide so two
-           full tiles exist. Animating position 0% → 100% slides exactly one
-           tile — a true seamless loop — and because the layer REPEATS,
-           every glyph stays covered at every instant (no cut-off text). */
-        background-image: linear-gradient(
-            90deg,
-            #2f7fd1 0%,
-            #22b8d4 25%,
-            #2f7fd1 50%,
-            #22b8d4 75%,
-            #2f7fd1 100%
-        );
-        background-size: 200% 100%;
-        background-repeat: repeat;
-        background-position: 0% 0;
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
-        animation: diagnosis-photo-gradient 5s linear infinite;
-    }
+.dashboard-diagnosis-upload-icon {
+    position: static; /* the BUTTON is the arrow layer's containing block */
+    display: inline-flex;
+    flex-shrink: 0;
 }
 
-@keyframes diagnosis-photo-gradient {
-    from {
-        background-position: 0% 0;
+.dashboard-diagnosis-upload-icon svg {
+    overflow: visible; /* no svg-viewport clipping either */
+}
+
+.dashboard-diagnosis-upload-arrow {
+    position: absolute;
+    /* X: as an abspos child of the inline-flex span, its static position
+       is the span's content-box start — exactly over the tray svg — so no
+       margin compensation is needed. */
+    /* Y default (also the reduced-motion frozen state): centered spot. */
+    top: calc((100% - 16px) / 2);
+    animation: diagnosis-upload-arrow-rise 3.2s ease-in-out infinite;
+    will-change: top, opacity;
+}
+
+@keyframes diagnosis-upload-arrow-rise {
+    /* pause at the original (centered) position — fully visible */
+    0%,
+    14% {
+        top: calc((100% - 16px) / 2);
+        opacity: 1;
     }
-    to {
-        background-position: 100% 0;
+    /* ascent through the button's whole interior: NO fade — opacity stays
+       1; the top inner edge ends visibility by pure clipping */
+    46% {
+        top: calc(-16px - 1px);
+        opacity: 1;
+    }
+    /* hidden pause fully above the inner edge (clipped, still opaque) */
+    56% {
+        top: calc(-16px - 1px);
+        opacity: 1;
+    }
+    /* opacity drops to 0 while the layer is fully hidden — no visible change */
+    62% {
+        top: calc(-16px - 1px);
+        opacity: 0;
+    }
+    /* INSTANT position reset while invisible — a 0.01% step (~0.3ms):
+       NO downward travel is ever rendered */
+    62.01% {
+        top: calc((100% - 16px) / 2);
+        opacity: 0;
+    }
+    /* fade in AT the original position — zero movement during the fade */
+    88% {
+        top: calc((100% - 16px) / 2);
+        opacity: 1;
+    }
+    /* pause fully visible before the next ascent */
+    100% {
+        top: calc((100% - 16px) / 2);
+        opacity: 1;
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .dashboard-diagnosis-upload-photo {
-        animation: none;
+    .dashboard-diagnosis-upload-arrow {
+        animation: none; /* keeps the default centered top above */
     }
 }
 

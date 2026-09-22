@@ -614,23 +614,53 @@ export default function Dashboard() {
                                 {t("dashboard.takePhoto")}
                             </button>
                             <button
-                                className="dashboard-diagnosis-btn"
+                                className="dashboard-diagnosis-btn dashboard-diagnosis-btn--upload"
                                 onClick={() => uploadInputRef.current?.click()}
                             >
-                                <Upload size={16} />
-                                {/* Text split so ONLY "Photo" carries the
-                                    looping blue→cyan gradient (clipped to its
-                                    glyphs); "Upload" keeps the normal color.
-                                    Locales whose label doesn't end in "Photo"
-                                    render the plain label untouched. */}
-                                <span className="dashboard-diagnosis-upload-text">
-                                    {t("dashboard.uploadPhoto").replace(/\s*Photo\s*$/i, "")}
-                                    {t("dashboard.uploadPhoto").match(/\s*Photo\s*$/i) && (
-                                        <span className="dashboard-diagnosis-upload-photo">
-                                            {t("dashboard.uploadPhoto").match(/\s*Photo\s*$/i)[0]}
-                                        </span>
-                                    )}
+                                {/* The lucide "Upload" glyph as TWO stacked
+                                    16px SVGs with identical geometry/stroke:
+                                    the tray svg stays in flow (static, and
+                                    reserves the icon slot); the arrow svg is
+                                    an absolutely positioned layer whose
+                                    containing block is the BUTTON itself —
+                                    so its animated `top` is computed from
+                                    the button's real height and it can
+                                    travel the button's full interior until
+                                    it passes behind the top inner edge.
+                                    Geometry matches <Upload size={16} />. */}
+                                <span className="dashboard-diagnosis-upload-icon">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="16"
+                                        height="16"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        aria-hidden="true"
+                                    >
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                    </svg>
+                                    <svg
+                                        className="dashboard-diagnosis-upload-arrow"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="16"
+                                        height="16"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        aria-hidden="true"
+                                    >
+                                        <polyline points="17 8 12 3 7 8" />
+                                        <line x1="12" y1="3" x2="12" y2="15" />
+                                    </svg>
                                 </span>
+                                {t("dashboard.uploadPhoto")}
                             </button>
                         </div>
 
