@@ -190,6 +190,7 @@
   width: 34px;
   height: 34px;
   border-radius: var(--radius-full);
+  overflow: hidden;
   background: var(--accent-soft);
   color: var(--accent);
   display: flex;
@@ -199,6 +200,14 @@
   font-weight: 700;
   cursor: pointer;
   margin-left: 4px;
+}
+
+/* Small circular version of the shared uploaded photo (header, spec §9). */
+.header__avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 @media (max-width: 1024px) {
@@ -217,191 +226,339 @@
   }
 }
 
-/* ==================== Profile floating panel ====================
-   Opens under the small header avatar. The LARGE photo is the
-   panel's dominant visual; everything else is quiet and clean.
-   Uses the shared card tokens — no aurora, no neon, no glass. */
-.header__avatar-wrap {
-  position: relative;
-  margin-left: 4px;
+/* ==================== LARGE floating profile window ====================
+   Portal + backdrop + overlay + dialog — the same architecture as the
+   Market Intelligence modal (production-safe blur, no full-screen take-
+   over). The hero photo COVERS the whole window; name, role and actions
+   sit OVER it on a subtle bottom gradient (no opaque text card).
+   Backdrop: translucent dark tint + 16px blur; dashboard stays visible.
+   The dialog itself stays crisp (its blur is its own glass only). */
+.profile-modal__portal {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  pointer-events: none;
+  filter: none;
+  opacity: 1;
 }
 
-.header__avatar {
-  width: 34px;
-  height: 34px;
-  border-radius: var(--radius-full);
-  background: var(--accent-soft);
-  color: var(--accent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
-  font-weight: 700;
-  cursor: pointer;
-  overflow: hidden;
-  padding: 0;
-  border: none;
-}
-
-.header__avatar-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.profile-panel {
+.profile-modal__backdrop {
   position: absolute;
-  top: calc(100% + 10px);
-  right: 0;
-  width: 264px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-lg);
-  padding: 10px 10px 16px;
-  z-index: 60;
-  text-align: center;
+  inset: 0;
+  z-index: 0;
+  background: rgba(4, 12, 8, 0.5);
+  -webkit-backdrop-filter: blur(16px) saturate(120%);
+  backdrop-filter: blur(16px) saturate(120%);
+  pointer-events: auto;
+  /* No entrance animation on the blur layer — visibility must never
+     depend on an animation starting (Market modal lesson). */
+  animation: none;
 }
 
-.profile-panel__photo {
-  position: relative;
-  width: 100%;
-  height: 168px;
-  border-radius: calc(var(--radius-xl) - 4px);
-  overflow: hidden;
-  background: var(--bg-hover);
+.profile-modal__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 20px;
+  pointer-events: auto;
+  background: transparent;
+  filter: none;
 }
 
-.profile-panel__photo img {
+.profile-modal__dialog {
+  position: relative;
+  width: min(400px, 100%);
+  /* Substantially larger floating card (spec §1): explicit height so the
+     hero photo dominates — ~58% of the viewport, never full-screen. */
+  height: min(560px, calc(100vh - 40px));
+  overflow: hidden;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(12, 18, 15, 0.55);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+  animation: profileModalIn 260ms cubic-bezier(0.22, 0.8, 0.36, 1) both;
+  filter: none;
+}
+
+@keyframes profileModalIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-modal__dialog {
+    width: 92vw;
+    height: 60vh;
+    max-height: calc(100vh - 24px);
+  }
+}
+
+/* Light theme: same hero design, light-mode chrome. */
+[data-theme="light"] .profile-modal__dialog {
+  background: rgba(255, 255, 255, 0.6);
+  border-color: rgba(41, 38, 31, 0.12);
+  box-shadow: 0 24px 60px rgba(41, 38, 31, 0.22);
+}
+
+.profile-modal__hero {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.profile-modal__hero > img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: block;
 }
 
-.profile-panel__initials {
-  font-size: 44px;
+.profile-modal__initials {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 72px;
   font-weight: 700;
   color: var(--accent);
   letter-spacing: 0.02em;
 }
 
-.profile-panel__photo-edit {
+/* Subtle bottom gradient so name/role read over the photo —
+   the photo stays clearly visible behind it (no opaque card). */
+.profile-modal__scrim {
   position: absolute;
-  right: 8px;
-  bottom: 8px;
-  width: 30px;
-  height: 30px;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0) 45%,
+    rgba(0, 0, 0, 0.34) 72%,
+    rgba(0, 0, 0, 0.62) 100%
+  );
+  pointer-events: none;
+}
+
+[data-theme="light"] .profile-modal__scrim {
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0) 50%,
+    rgba(0, 0, 0, 0.3) 76%,
+    rgba(0, 0, 0, 0.56) 100%
+  );
+}
+
+.profile-modal__close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 34px;
+  height: 34px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--radius-full);
-  border: 1px solid var(--border);
-  background: var(--bg-surface);
-  color: var(--text-secondary);
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
   cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  transition: all var(--transition-fast);
+  transition: background var(--transition-fast);
+  z-index: 3;
 }
 
-.profile-panel__photo-edit:hover {
-  color: var(--text-primary);
-  border-color: var(--text-secondary);
+.profile-modal__close:hover {
+  background: rgba(0, 0, 0, 0.55);
 }
 
-.profile-panel__error {
-  margin: 8px 4px 0;
-  font-size: 12px;
-  color: var(--danger);
-  text-align: left;
+.profile-modal__photo-edit {
+  position: absolute;
+  right: 16px;
+  bottom: 108px;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  background: rgba(0, 0, 0, 0.4);
+  color: #fff;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  z-index: 3;
 }
 
-.profile-panel__name {
-  margin: 14px 4px 2px;
-  font-size: 17px;
-  font-weight: 700;
-  color: var(--text-primary);
+.profile-modal__photo-edit:hover {
+  background: rgba(0, 0, 0, 0.6);
 }
 
-.profile-panel__role-line {
-  margin: 0 4px;
-  font-size: 13px;
-  color: var(--text-secondary);
+.profile-modal__identity {
+  position: relative;
+  z-index: 2;
+  padding: 0 20px 22px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.profile-panel__edit {
-  margin-top: 12px;
+.profile-modal__name {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.45);
+}
+
+.profile-modal__role-line {
+  margin: 4px 0 14px;
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.82);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4);
+}
+
+.profile-modal__pill {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 16px;
-  border-radius: var(--radius-full);
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--text-primary);
+  padding: 8px 18px;
+  border-radius: var(--radius-full, 999px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.14);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  color: #fff;
   font-size: 13px;
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: background var(--transition-fast);
 }
 
-.profile-panel__edit:hover {
-  background: var(--bg-hover);
+.profile-modal__pill:hover {
+  background: rgba(255, 255, 255, 0.24);
 }
 
-.profile-panel__editor {
-  margin: 12px 4px 0;
+.profile-modal__pill--ghost {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.22);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.profile-modal__pill--primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.profile-modal__pill--primary:hover {
+  background: var(--accent);
+  filter: brightness(1.08);
+}
+
+.profile-modal__error {
+  position: relative;
+  z-index: 2;
+  margin: 0;
+  padding: 0 20px 12px;
+  font-size: 12px;
+  color: #fecaca;
+  text-align: center;
+}
+
+/* --- Editor over the photo ------------------------------------------ */
+.profile-modal__editor {
+  position: relative;
+  z-index: 2;
+  margin: 0 20px 20px;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(0, 0, 0, 0.45);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
   display: flex;
   flex-direction: column;
   gap: 8px;
   text-align: left;
 }
 
-.profile-panel__field {
+[data-theme="light"] .profile-modal__editor {
+  background: rgba(255, 255, 255, 0.78);
+  border-color: rgba(41, 38, 31, 0.14);
+}
+
+.profile-modal__field {
   display: flex;
   flex-direction: column;
   gap: 4px;
   font-size: 12px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+[data-theme="light"] .profile-modal__field {
   color: var(--text-secondary);
 }
 
-.profile-panel__field input {
+.profile-modal__field input {
   padding: 8px 10px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border);
-  background: var(--bg-primary);
-  color: var(--text-primary);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.3);
+  color: #fff;
   font-size: 13px;
   font-family: inherit;
 }
 
-.profile-panel__field input:focus {
+[data-theme="light"] .profile-modal__field input {
+  background: rgba(41, 38, 31, 0.05);
+  border-color: rgba(41, 38, 31, 0.16);
+  color: var(--text-primary);
+}
+
+.profile-modal__field input:focus {
   outline: none;
   border-color: var(--accent);
 }
 
-.profile-panel__field-label {
+.profile-modal__field-label {
   font-size: 12px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+[data-theme="light"] .profile-modal__field-label {
   color: var(--text-secondary);
 }
 
-.profile-panel__roles {
+.profile-modal__roles {
   display: flex;
   gap: 6px;
 }
 
-.profile-panel__role {
+.profile-modal__role {
   flex: 1;
   padding: 8px 6px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
   background: transparent;
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.8);
   font-size: 12.5px;
   font-weight: 600;
   font-family: inherit;
@@ -409,53 +566,35 @@
   transition: all var(--transition-fast);
 }
 
-.profile-panel__role--active {
-  background: var(--accent-soft);
+.profile-modal__role--active {
+  background: rgba(111, 207, 142, 0.2);
   border-color: var(--accent);
   color: var(--accent);
 }
 
-.profile-panel__actions {
+[data-theme="light"] .profile-modal__role {
+  border-color: rgba(41, 38, 31, 0.18);
+  color: var(--text-secondary);
+}
+
+[data-theme="light"] .profile-modal__role--active {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.profile-modal__editor-actions {
   display: flex;
   gap: 8px;
   margin-top: 4px;
 }
 
-.profile-panel__btn {
+.profile-modal__editor-actions .profile-modal__pill {
   flex: 1;
-  padding: 8px 10px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border);
-  font-size: 13px;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all var(--transition-fast);
+  justify-content: center;
 }
 
-.profile-panel__btn--ghost {
-  background: transparent;
-  color: var(--text-secondary);
-}
-
-.profile-panel__btn--primary {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
-}
-
-/* Mobile: modern floating sheet feel — strong photo, comfortable
-   margins, never full-screen. */
-@media (max-width: 480px) {
-  .profile-panel {
-    position: fixed;
-    top: 64px;
-    right: 12px;
-    left: 12px;
-    width: auto;
-  }
-
-  .profile-panel__photo {
-    height: 190px;
+@media (prefers-reduced-motion: reduce) {
+  .profile-modal__dialog {
+    animation: none;
   }
 }
