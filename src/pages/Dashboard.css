@@ -1063,14 +1063,38 @@
        Weather, Voice Mode, Market…). Dark theme overrides this with the
        shared glass token in styles/index.css, so both themes match. */
     background: var(--bg-surface);
+    /* The shared dark glass rule only overrides border-COLOR — the 1px
+       border itself must exist here or the dark rim paints nothing. */
+    border: 1px solid var(--border);
 }
 
-/* Light theme: the diagnosis card's glass chrome (background, per-side
-   borders) comes from the [data-theme="dark"] rules in index.css, so in
-   light theme it has no outline at all. Give the container a whisper of a
-   green-tinted border — light theme ONLY; dark stays exactly as it is. */
+/* Card family borders — Light theme.
+   One shared neutral warm-taupe edge for every dashboard card, clearly
+   visible yet understated. Dark theme replaces these with the glass rims
+   in styles/index.css, so the two themes stay independent. */
+[data-theme="light"] .dashboard-hero-card,
+[data-theme="light"] .dashboard-weather-card,
+[data-theme="light"] .dashboard-action-card,
+[data-theme="light"] .dashboard-insight-card,
+[data-theme="light"] .dashboard-diagnosis-card,
+/* :not() preserves the Voice-Mode ACTIVE state's transparent border —
+   its aurora ring paints exactly there. */
+[data-theme="light"] .feature-card:not(.feature-card--voice-active) {
+    border-color: rgba(80, 70, 55, 0.45);
+}
+
+/* No hover border change for the flat card family — keeps every edge
+   identical and prevents light mode from ever erasing the border. */
+[data-theme="light"] .dashboard-action-card:hover,
+[data-theme="light"] .dashboard-insight-card:hover {
+    border-color: rgba(80, 70, 55, 0.45);
+}
+
+/* Light theme: the diagnosis card previously had a green-tinted border —
+   it now shares the family's neutral warm-taupe edge for a consistent
+   card system. */
 [data-theme="light"] .dashboard-diagnosis-card {
-    border: 1px solid rgba(80, 100, 80, 0.28);
+    border: 1px solid rgba(80, 70, 55, 0.45);
 }
 
 .dashboard-diagnosis-info {

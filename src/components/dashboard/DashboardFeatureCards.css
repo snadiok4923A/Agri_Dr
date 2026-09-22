@@ -21,9 +21,35 @@
         background var(--transition-fast);
 }
 
+/* ---------- DARK THEME — VOICE CARD CONTRAST (surface only) ----------
+   Deep charcoal surface + crisp text, scoped strictly to the Voice card;
+   its border is handled by the shared rim rule above. */
+[data-theme="dark"] .feature-card--voice {
+    background: linear-gradient(180deg, #0d1310 0%, #090c0a 100%);
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.5);
+}
+
+/* Hover: light theme keeps the family's taupe edge (no visible jump);
+   dark theme brightens the cool rim instead. The Voice-Mode ACTIVE card
+   is excluded everywhere — its border must stay transparent because the
+   aurora ring paints exactly there. */
 .feature-card:hover {
     transform: translateY(-2px);
-    border-color: rgba(255, 255, 255, 0.14);
+    border-color: rgba(80, 70, 55, 0.45);
+}
+
+[data-theme="dark"] .feature-card:hover:not(.feature-card--voice-active) {
+    border-color: rgba(255, 255, 255, 0.19);
+    border-top-color: rgba(255, 255, 255, 0.24);
+    border-left-color: rgba(255, 255, 255, 0.17);
+    border-right-color: rgba(255, 255, 255, 0.15);
+}
+
+/* ACTIVE state always wins: transparent border under the ring, in both
+   themes, hover or not. */
+[data-theme="light"] .feature-card--voice-active,
+[data-theme="dark"] .feature-card--voice-active {
+    border-color: transparent;
 }
 
 /* ---------- shared header row ---------- */
@@ -467,7 +493,7 @@
 [data-theme="dark"] .feature-card__btn--start,
 [data-theme="dark"] .feature-card__btn--stop {
     background: linear-gradient(180deg, #181e1a 0%, #0a0e0b 100%);
-    border-color: rgba(255, 255, 255, 0.13);
+    border-color: rgba(255, 255, 255, 0.18);
     color: #f2f6fa;
     box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.12),
@@ -560,15 +586,22 @@
         );
 }
 
-/* ---------- DARK THEME — VOICE CARD CONTRAST ----------
-   Deep charcoal surface + crisp text, scoped strictly to the Voice card
-   (.feature-card--voice): the Market card and the light theme are not
-   affected. No size/spacing/layout changes — surface, text color, border
-   alpha only. */
-[data-theme="dark"] .feature-card--voice {
-    background: linear-gradient(180deg, #0d1310 0%, #090c0a 100%);
-    border-color: rgba(255, 255, 255, 0.16);
-    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.5);
+/* ---------- DARK THEME — FEATURE CARD RIM (shared) ----------
+   The same cool dark-gray glass rim the other dashboard cards use
+   (styles/index.css), so Voice Mode and Market match the card family.
+   Voice-Mode ACTIVE keeps its transparent border — the aurora ring
+   paints exactly there. */
+[data-theme="dark"] .feature-card:not(.feature-card--voice-active) {
+    border-color: rgba(255, 255, 255, 0.13);
+    border-top-color: rgba(255, 255, 255, 0.22);
+    border-left-color: rgba(255, 255, 255, 0.17);
+    border-right-color: rgba(255, 255, 255, 0.14);
+}
+
+/* Voice card keeps its deeper charcoal + a rim one step brighter so it
+   stays clearly defined against the dark background. */
+[data-theme="dark"] .feature-card--voice:not(.feature-card--voice-active) {
+    border-color: rgba(255, 255, 255, 0.22);
 }
 
 [data-theme="dark"] .feature-card--voice .feature-card__title {

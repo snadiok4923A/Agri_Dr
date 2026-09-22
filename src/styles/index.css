@@ -240,12 +240,12 @@ body {
     -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
     backdrop-filter: blur(var(--glass-blur)) saturate(140%);
     /* Per-side glass rims, one step more visible than before — still
-       whisper-thin 1px whites, just enough contrast to read each card's
+       whisper-thin 1px, but clearly enough contrast to read each card's
        boundary against the aurora background. */
-    border-color: rgba(255, 255, 255, 0.08);
-    border-top-color: rgba(255, 255, 255, 0.16);
-    border-left-color: rgba(255, 255, 255, 0.11);
-    border-right-color: rgba(255, 255, 255, 0.09);
+    border-color: rgba(255, 255, 255, 0.13);
+    border-top-color: rgba(255, 255, 255, 0.22);
+    border-left-color: rgba(255, 255, 255, 0.17);
+    border-right-color: rgba(255, 255, 255, 0.14);
     box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.06),
         0 8px 32px rgba(0, 0, 0, 0.25);
@@ -292,8 +292,8 @@ body {
 /* Lighter, brighter glass on hover — soft lift, no flashy glow */
 [data-theme="dark"] .dashboard-action-card:hover {
     background: rgba(30, 35, 30, 0.38);
-    border-color: rgba(255, 255, 255, 0.14);
-    border-top-color: rgba(255, 255, 255, 0.16);
+    border-color: rgba(255, 255, 255, 0.19);
+    border-top-color: rgba(255, 255, 255, 0.23);
 }
 
 /* Nested surfaces inside glass cards go translucent — never opaque blocks */
