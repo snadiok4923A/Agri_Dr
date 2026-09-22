@@ -618,7 +618,19 @@ export default function Dashboard() {
                                 onClick={() => uploadInputRef.current?.click()}
                             >
                                 <Upload size={16} />
-                                {t("dashboard.uploadPhoto")}
+                                {/* Text split so ONLY "Photo" carries the
+                                    looping blue→cyan gradient (clipped to its
+                                    glyphs); "Upload" keeps the normal color.
+                                    Locales whose label doesn't end in "Photo"
+                                    render the plain label untouched. */}
+                                <span className="dashboard-diagnosis-upload-text">
+                                    {t("dashboard.uploadPhoto").replace(/\s*Photo\s*$/i, "")}
+                                    {t("dashboard.uploadPhoto").match(/\s*Photo\s*$/i) && (
+                                        <span className="dashboard-diagnosis-upload-photo">
+                                            {t("dashboard.uploadPhoto").match(/\s*Photo\s*$/i)[0]}
+                                        </span>
+                                    )}
+                                </span>
                             </button>
                         </div>
 
