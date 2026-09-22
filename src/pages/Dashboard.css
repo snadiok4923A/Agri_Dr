@@ -157,20 +157,9 @@
 
 .dashboard-ring-fill {
     fill: none;
-    /* Golden harvest ring with a soft breathing glow */
+    /* Golden harvest ring — clean flat stroke, zero glow (no filter/shadow). */
     stroke: var(--gold);
-    filter: drop-shadow(0 0 6px var(--gold-dim));
-    animation: ringGlow 4.5s ease-in-out infinite alternate;
     transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@keyframes ringGlow {
-    from {
-        filter: drop-shadow(0 0 4px var(--gold-dim));
-    }
-    to {
-        filter: drop-shadow(0 0 10px var(--gold-dim));
-    }
 }
 
 .dashboard-ring-artwork {
@@ -1070,6 +1059,10 @@
     padding: 18px 20px;
     border-radius: var(--radius-xl);
     max-width: 480px;
+    /* Same card surface as every other dashboard card (Expected/Potential,
+       Weather, Voice Mode, Market…). Dark theme overrides this with the
+       shared glass token in styles/index.css, so both themes match. */
+    background: var(--bg-surface);
 }
 
 /* Light theme: the diagnosis card's glass chrome (background, per-side
