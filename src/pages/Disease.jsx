@@ -5,7 +5,6 @@ import {
     searchDiseases,
     diseaseLibrary,
 } from "../data/diseaseLibrary";
-import DiseaseIllustration from "../components/common/DiseaseIllustration";
 import { X, Sparkles, ArrowRight, Search } from "lucide-react";
 import { registerOverlay } from "../voice/overlayBus";
 import { VOICE_OPEN_DISEASE_EVENT } from "../voice/executeVoiceCommand";
@@ -149,8 +148,14 @@ export default function Disease() {
                         aria-haspopup="dialog"
                     >
                         <div className="disease-page__card-top">
-                            <span className={`disease-page__card-icon disease-page__icon--${d.tone}`}>
-                                <DiseaseIllustration kind={d.art} />
+                            <span className={`disease-page__card-icon disease-page__icon--${d.tone}`}>                                        {/* Real photo from public/Disease — same `image`
+                                            property the modal uses, so they always match. */}
+                                        <img
+                                            className="disease-page__card-img"
+                                            src={d.image}
+                                            alt=""
+                                            loading="lazy"
+                                        />
                             </span>
                             <span className={`disease-page__status disease-page__status--${d.tone}`}>
                                 {d.harmLevel}
@@ -221,8 +226,13 @@ export default function Disease() {
                         </button>
 
                         {/* Disease image */}
-                        <div className="disease-page__modal-art">
-                            <DiseaseIllustration kind={selected.art} />
+                        <div className="disease-page__modal-art">                                {/* Real photo of the clicked disease — the same
+                                    `image` property the card thumbnail uses. */}
+                                <img
+                                    className="disease-page__modal-img"
+                                    src={selected.image}
+                                    alt={selected.name}
+                                />
                         </div>
 
                         {/* Name + scientific name + severity */}

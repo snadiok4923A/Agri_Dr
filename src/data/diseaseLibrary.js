@@ -11,8 +11,8 @@
  *
  * Every entry follows the same complete schema so the floating detail
  * window renders an identical structure for all diseases:
- *   image (art) · name · scientificName · severity · medicine · dose ·
- *   coverage · cost · symptoms · commonIn
+ *   image (real photo) · name · scientificName · severity · medicine ·
+ *   dose · coverage · cost · symptoms · commonIn
  *
  * Presentation-only transforms of the original data:
  *   · "Leaf Blast (Magnaporthe oryzae)" → common name + scientific name
@@ -20,6 +20,16 @@
  *   · symptoms sentence → 2–4 short symptom bullets (same wording)
  *   · dosage parenthetical "250 g for 1.8 ac" → coverage value
  */
+
+/*
+ * Real symptom photographs — one file per disease in public/Disease.
+ * Joined on the Vite base so GitHub Pages sub-path deploys resolve
+ * (same approach as Crops.jsx). Filenames keep their original spaces,
+ * parentheses and underscores — browsers percent-encode them in requests.
+ * Both the card thumbnail and the modal banner read this ONE property,
+ * so card and modal can never show different images for a disease.
+ */
+const diseaseImage = (file) => `${import.meta.env.BASE_URL}Disease/${file}`;
 
 export const diseaseLibrary = [
     /* ==================== Existing (from app diseaseData) ==================== */
@@ -31,6 +41,7 @@ export const diseaseLibrary = [
         harmLevel: "Critical",
         tone: "danger",
         art: "blast",
+        image: diseaseImage("Leaf Blast.jpg"),
         medicine: "Tricyclazole 75% WP (Baan / Beam)",
         dose: "0.6 g / L",
         coverage: "250 g for 1.8 acres",
@@ -50,6 +61,7 @@ export const diseaseLibrary = [
         harmLevel: "Moderate",
         tone: "warning",
         art: "hopper",
+        image: diseaseImage("brown plant hopper.jpg"),
         medicine: "Imidacloprid 17.8 SL (Confidor)",
         dose: "0.3 ml / L",
         coverage: "120 ml for 2.4 acres",
@@ -68,6 +80,7 @@ export const diseaseLibrary = [
         harmLevel: "Low",
         tone: "info",
         art: "sheath",
+        image: diseaseImage("Sheath Blight.jpg"),
         medicine: "Hexaconazole 5% SC (Contaf Plus)",
         dose: "2.0 ml / L",
         coverage: "500 ml for 2.2 acres",
@@ -88,6 +101,7 @@ export const diseaseLibrary = [
         harmLevel: "High",
         tone: "warning",
         art: "brownspot",
+        image: diseaseImage("Brown Spot.jpg"),
         medicine: null,
         dose: "≈ 1.0 ml / L",
         coverage: "≈ 400 ml for 1.8 acres",
@@ -107,6 +121,7 @@ export const diseaseLibrary = [
         harmLevel: "Moderate",
         tone: "info",
         art: "smut",
+        image: diseaseImage("False Smut.jpg"),
         medicine: null,
         dose: "≈ 2.0 g / L",
         coverage: "≈ 800 g for 2.0 acres",
@@ -126,6 +141,7 @@ export const diseaseLibrary = [
         harmLevel: "High",
         tone: "warning",
         art: "bakanae",
+        image: diseaseImage("Bakanae_Foot Rot.jpg"),
         medicine: null,
         dose: "≈ 1.0 g / L",
         coverage: "≈ 450 g for 1.8 acres",
@@ -145,6 +161,7 @@ export const diseaseLibrary = [
         harmLevel: "Critical",
         tone: "danger",
         art: "blb",
+        image: diseaseImage("Bacterial Leaf Blight (BLB).jpg"),
         medicine: null,
         dose: "≈ 0.5 g / L",
         coverage: "≈ 250 g for 1.8 acres",
@@ -164,6 +181,7 @@ export const diseaseLibrary = [
         harmLevel: "High",
         tone: "warning",
         art: "bls",
+        image: diseaseImage("bacterial leaf streak.jpg"),
         medicine: null,
         dose: "≈ 0.5 g / L",
         coverage: "≈ 250 g for 1.8 acres",
@@ -183,6 +201,7 @@ export const diseaseLibrary = [
         harmLevel: "Critical",
         tone: "danger",
         art: "tungro",
+        image: diseaseImage("Rice Tungro.jpg"),
         medicine: null,
         dose: "≈ 0.3 ml / L",
         coverage: "≈ 120 ml for 2.0 acres",
@@ -203,6 +222,7 @@ export const diseaseLibrary = [
         harmLevel: "High",
         tone: "warning",
         art: "yellowdwarf",
+        image: diseaseImage("Rice Yellow Dwarf.jpg"),
         medicine: null,
         dose: "≈ 0.3 ml / L",
         coverage: "≈ 120 ml for 2.0 acres",
@@ -222,6 +242,7 @@ export const diseaseLibrary = [
         harmLevel: "High",
         tone: "warning",
         art: "ufra",
+        image: diseaseImage("Ufra Disease.jpg"),
         medicine: null,
         dose: "≈ 2.0 ml / L",
         coverage: "≈ 900 ml for 2.0 acres",
@@ -242,6 +263,7 @@ export const diseaseLibrary = [
         harmLevel: "Moderate",
         tone: "info",
         art: "rootknot",
+        image: diseaseImage("Root-Knot.jpg"),
         medicine: null,
         dose: "≈ 2.0 ml / L",
         coverage: "≈ 1,000 ml for 2.2 acres",
@@ -262,6 +284,7 @@ export const diseaseLibrary = [
         harmLevel: "Moderate",
         tone: "info",
         art: "khaira",
+        image: diseaseImage("Khaira Disease.jpg"),
         medicine: null,
         dose: "≈ 0.5 % foliar spray",
         coverage: "≈ 500 g zinc sulphate for 1.8 acres",
@@ -282,6 +305,7 @@ export const diseaseLibrary = [
         harmLevel: "Moderate",
         tone: "info",
         art: "irontox",
+        image: diseaseImage("iron toxicity.jpg"),
         medicine: null,
         dose: "≈ 0.5 % foliar spray",
         coverage: "≈ 10 kg lime for 1.8 acres",

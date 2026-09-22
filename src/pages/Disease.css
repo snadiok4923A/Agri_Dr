@@ -592,6 +592,29 @@
     display: block;
 }
 
+/* ==================== Real disease photos (public/Disease) ====================
+   Both images sit inside the EXISTING rounded, overflow-hidden frames
+   (.disease-page__card-icon for cards, .disease-page__modal-art for the
+   modal banner) — so dimensions, radius and layout are untouched.
+   object-fit: cover fills the frame without stretching the photo. */
+.disease-page__card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+}
+
+/* The old vector SVG borrowed its height from its intrinsic 5:3 viewBox,
+   so the modal banner keeps exactly that footprint via aspect-ratio. */
+.disease-page__modal-img {
+    width: 100%;
+    aspect-ratio: 5 / 3;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+}
+
 /* ==================== Responsive ==================== */
 @media (max-width: 1100px) {
     .disease-page__grid {
