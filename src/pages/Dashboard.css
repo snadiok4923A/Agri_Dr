@@ -636,6 +636,16 @@
     filter: drop-shadow(0 4px 9px rgba(0, 0, 0, 0.3));
 }
 
+/* The card's icon is the SAME shared WeatherConditionIllustration the
+   floating Current Weather window uses. In the card it renders STATIC:
+   no pulsing sun core, no falling droplets (the card's wx-scene owns all
+   motion). Scoped to the card only — the floating window keeps its own
+   animation behavior untouched. */
+.dashboard-weather-card__icon .agri-sun-pulse,
+.dashboard-weather-card__icon .agri-rain-drop {
+    animation: none;
+}
+
 /* Temperature — the card's primary visual element. Weight moderated
    from 900 to 700 (prominent, not black-weight). Color unchanged. */
 .dashboard-weather-card__temp {
