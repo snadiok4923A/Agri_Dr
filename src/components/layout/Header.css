@@ -598,3 +598,275 @@
     animation: none;
   }
 }
+
+/* ============================================================
+   NOTIFICATION PANEL — premium translucent floating panel.
+   Anchored under the bell on desktop; a comfortable floating
+   card with viewport-safe margins on mobile. Layered surfaces:
+   translucent panel > slightly different translucent cards.
+   ============================================================ */
+.header__notif {
+  position: relative;
+}
+
+.notif-panel {
+  position: fixed;
+  /* default: desktop anchor — JS sets precise values from the bell rect.
+     --notif-y: bell bottom + gap; --notif-right-offset: window-right → bell-right. */
+  top: var(--notif-y, calc(var(--header-height) + 6px));
+  right: max(12px, calc(var(--notif-right-offset, 40px) - 4px));
+  width: 380px;
+  max-width: calc(100vw - 24px);
+  max-height: min(520px, calc(100vh - var(--header-height) - 20px));
+  display: flex;
+  flex-direction: column;
+  z-index: 80;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgba(18, 23, 21, 0.78);
+  -webkit-backdrop-filter: blur(18px) saturate(1.25);
+  backdrop-filter: blur(18px) saturate(1.25);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.38);
+  overflow: hidden;
+  animation: notifPanelIn 0.18s ease-out;
+}
+
+@keyframes notifPanelIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.notif-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 14px 10px;
+}
+
+.notif-panel__head-text {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.notif-panel__title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.notif-panel__count {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.notif-panel__mark-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  white-space: nowrap;
+}
+
+.notif-panel__mark-all:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-primary);
+}
+
+.notif-panel__list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0 10px 12px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* --- compact notification card --- */
+.notif-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 11px;
+  text-align: left;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.045);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.notif-card:hover {
+  background: rgba(255, 255, 255, 0.075);
+  border-color: rgba(255, 255, 255, 0.11);
+}
+
+.notif-card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.notif-card--read {
+  background: rgba(255, 255, 255, 0.028);
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+.notif-card--read:hover {
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.notif-card__icon {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+}
+
+/* status accents — icon chip only, never the whole card (spec §5) */
+.notif-card--success .notif-card__icon {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.notif-card--warning .notif-card__icon {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.notif-card--danger .notif-card__icon {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.notif-card--info .notif-card__icon {
+  background: var(--info-soft);
+  color: var(--info);
+}
+
+.notif-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.notif-card__title {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.notif-card--read .notif-card__title {
+  color: var(--text-secondary);
+}
+
+.notif-card__desc {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.notif-card--read .notif-card__desc {
+  color: var(--text-muted);
+}
+
+.notif-card__time {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+  font-size: 10.5px;
+  color: var(--text-muted);
+}
+
+/* unread indicator — small colored dot before the time (spec §7) */
+.notif-card__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.notif-card--success .notif-card__dot { background: var(--success); }
+.notif-card--warning .notif-card__dot { background: var(--warning); }
+.notif-card--danger .notif-card__dot { background: var(--danger); }
+.notif-card--info .notif-card__dot { background: var(--info); }
+
+/* --- LIGHT MODE: translucent warm off-white, layered the same way --- */
+[data-theme="light"] .notif-panel {
+  border-color: rgba(120, 110, 92, 0.22);
+  background: rgba(251, 248, 241, 0.82);
+  box-shadow: 0 12px 32px rgba(41, 38, 31, 0.14);
+}
+
+[data-theme="light"] .notif-panel__mark-all:hover {
+  background: rgba(63, 48, 28, 0.07);
+}
+
+[data-theme="light"] .notif-card {
+  border-color: rgba(120, 110, 92, 0.16);
+  background: rgba(255, 255, 255, 0.42);
+}
+
+[data-theme="light"] .notif-card:hover {
+  background: rgba(255, 255, 255, 0.62);
+  border-color: rgba(120, 110, 92, 0.26);
+}
+
+[data-theme="light"] .notif-card--read {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(120, 110, 92, 0.11);
+}
+
+[data-theme="light"] .notif-card--read:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+/* --- MOBILE: floating card with comfortable, viewport-safe margins.
+     JS sets --notif-x from the bell; margins keep it inside the screen. --- */
+@media (max-width: 768px) {
+  .notif-panel {
+    top: var(--notif-y, calc(var(--header-height) + 6px));
+    right: auto;
+    /* center on the bell, clamped to safe 12px viewport margins */
+    left: clamp(
+      12px,
+      calc(var(--notif-x, 50vw) - 174px),
+      calc(100vw - min(348px, 100vw - 24px) - 12px)
+    );
+    width: min(348px, calc(100vw - 24px));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .notif-panel {
+    animation: none;
+  }
+}

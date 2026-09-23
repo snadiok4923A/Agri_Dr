@@ -1,10 +1,14 @@
 import { createPortal } from 'react-dom';
-import { Bell, Sun, Moon, ChevronDown, Globe, Menu, Mic, Camera, X } from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
+import {
+  Bell, Sun, Moon, ChevronDown, Globe, Menu, Mic, Camera, X,
+  Bug, TrendingDown, FlaskConical, TrendingUp, Activity, CheckCheck,
+} from 'lucide-react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useTheme } from '../../hooks/useTheme';
 import { useVoiceMode } from '../../hooks/useVoiceMode';
-import { demoUser } from '../../data/mockData';
+import { demoUser, recommendations } from '../../data/mockData';
 import './Header.css';
 
 /* localStorage keys — one shared profile state drives the header avatar,
@@ -14,11 +18,31 @@ const PROFILE_NAME_KEY = 'krisiveda.profileName';
 const PROFILE_ROLE_KEY = 'krisiveda.profileRole';
 const ROLES = ['Farmer', 'Business Man'];
 
+/* Notification read-state key + seed. The notifications themselves come
+   from the REAL recommendation data (mockData.js) — the same actionable
+   alerts shown on the Improve page. Only the read/unread flags persist. */
+const NOTIF_READ_KEY = 'krisiveda.notifRead';
+const NOTIF_SEED_READ = [false, false, true, true, true]; // 2 unread
+
+const NOTIF_META = {
+  1: { icon: Bug, tone: 'danger', timeKey: 'notifTime1' },
+  2: { icon: TrendingDown, tone: 'danger', timeKey: 'notifTime2' },
+  3: { icon: FlaskConical, tone: 'success', timeKey: 'notifTime3' },
+  4: { icon: TrendingUp, tone: 'info', timeKey: 'notifTime4' },
+  5: { icon: Activity, tone: 'warning', timeKey: 'notifTime5' },
+};
+
+/* Every notification relates to the farm's production health → the Improve
+   page is where these alerts are actionable. */
+const NOTIF_TARGET = '/improve';
+
 export default function Header({ onMenuToggle }) {
   const { language, changeLanguage, languages, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
   const { active: voiceActive, stop: stopVoiceMode } = useVoiceMode();
+  const navigate = useNavigate();
   const [langOpen, setLangOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
   const [panelOpen, setPanelOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [nameDraft, setNameDraft] = useState('');
@@ -27,7 +51,17 @@ export default function Header({ onMenuToggle }) {
   const [profileImage, setProfileImage] = useState(() => localStorage.getItem(PROFILE_IMAGE_KEY) || '');
   const [profileName, setProfileName] = useState(() => localStorage.getItem(PROFILE_NAME_KEY) || demoUser.name);
   const [profileRole, setProfileRole] = useState(() => localStorage.getItem(PROFILE_ROLE_KEY) || demoUser.role);
+  const [readMap, setReadMap] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(NOTIF_READ_KEY));
+      if (Array.isArray(saved) && saved.length === recommendations.length) return saved;
+    } catch { /* corrupted seed → re-seed */ }
+    return NOTIF_SEED_READ;
+  });
   const langRef = useRef(null);
+  const notifRef = useRef(null);
+  const notifPanelRef = useRef(null);
+  const notifBtnRef = useRef(null);
   const fileRef = useRef(null);
 
   const currentLang = languages.find(l => l.code === language);
@@ -38,6 +72,14 @@ export default function Header({ onMenuToggle }) {
     .join('')
     .toUpperCase() || demoUser.initials;
 
+  const unreadCount = readMap.filter(r => !r).length;
+
+  const persistRead = (next) => {
+    setReadMap(next);
+    localStorage.setItem(NOTIF_READ_KEY, JSON.stringify(next));
+  };
+
+  /* Language dropdown: outside-click close (existing behaviour). */
   useEffect(() => {
     const handleClick = (e) => {
       if (langRef.current && !langRef.current.contains(e.target)) {
@@ -48,7 +90,36 @@ export default function Header({ onMenuToggle }) {
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  /* Escape closes the panel (and any open editor) — standard modal UX. */
+  /* Notification panel: outside-click + Escape close (spec §14).
+     The panel is portaled to <body>, so it is NOT inside notifRef —
+     close on any outside mousedown, but never when the click started
+     on the bell (it toggles) or inside the panel itself. */
+  useEffect(() => {
+    if (!notifOpen) return;
+    const handlePointer = (e) => {
+      if (notifRef.current?.contains(e.target)) return;
+      if (notifPanelRef.current?.contains(e.target)) return;
+      setNotifOpen(false);
+    };
+    const onKey = (e) => { if (e.key === 'Escape') setNotifOpen(false); };
+    document.addEventListener('mousedown', handlePointer);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', handlePointer);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [notifOpen]);
+
+  /* Close on resize/rotation so the measured anchor can never drift
+     outside the viewport (mobile orientation change). */
+  useEffect(() => {
+    if (!notifOpen) return;
+    const onResize = () => setNotifOpen(false);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [notifOpen]);
+
+  /* Escape closes the profile modal (and any open editor) — standard modal UX. */
   useEffect(() => {
     if (!panelOpen) return;
     const onKey = (e) => {
@@ -65,6 +136,19 @@ export default function Header({ onMenuToggle }) {
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = prev; };
   }, [panelOpen]);
+
+  /* Notification click: mark read + navigate to the relevant feature (spec §9). */
+  const openNotification = useCallback((index) => {
+    if (readMap[index]) return;
+    const next = readMap.map((r, i) => (i === index ? true : r));
+    persistRead(next);
+    setNotifOpen(false);
+    navigate(NOTIF_TARGET);
+  }, [readMap, navigate]);
+
+  const markAllRead = () => {
+    persistRead(readMap.map(() => true));
+  };
 
   const handlePhotoPick = (e) => {
     const file = e.target.files?.[0];
@@ -155,10 +239,84 @@ export default function Header({ onMenuToggle }) {
           {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
         </button>
 
-        <button className="header__icon-btn header__notification" aria-label={t("common.notifications")}>
-          <Bell size={18} />
-          <span className="header__notification-dot" />
-        </button>
+        {/* Notification bell — toggles the translucent notification panel.
+            The red dot shows only while notifications are unread (spec §10). */}
+        <div className="header__notif" ref={notifRef}>
+          <button
+            ref={notifBtnRef}
+            className="header__icon-btn header__notification"
+            onClick={() => setNotifOpen(o => !o)}
+            aria-label={t("common.notifications")}
+            aria-haspopup="true"
+            aria-expanded={notifOpen}
+          >
+            <Bell size={18} />
+            {unreadCount > 0 && <span className="header__notification-dot" />}
+          </button>
+
+          {notifOpen && createPortal(
+            <div
+              ref={notifPanelRef}
+              className="notif-panel"
+              role="dialog"
+              aria-label={t("common.notifications")}
+              style={(() => {
+                /* Anchor precisely under the bell, measured at open time. */
+                const r = notifBtnRef.current?.getBoundingClientRect();
+                return {
+                  '--notif-x': `${Math.round((r?.left ?? 0) + (r?.width ?? 0) / 2)}px`,
+                  '--notif-y': `${Math.round((r?.bottom ?? 0) + 6)}px`,
+                  '--notif-right-offset': `${Math.round(window.innerWidth - (r?.right ?? 0))}px`,
+                };
+              })()}
+            >
+              <div className="notif-panel__head">
+                <div className="notif-panel__head-text">
+                  <h3 className="notif-panel__title">{t("common.notifications")}</h3>
+                  {unreadCount > 0 && (
+                    <span className="notif-panel__count">
+                      {t("common.notifUnreadCount", { n: unreadCount })}
+                    </span>
+                  )}
+                </div>
+                {unreadCount > 0 && (
+                  <button className="notif-panel__mark-all" onClick={markAllRead}>
+                    <CheckCheck size={13} />
+                    <span>{t("common.markAllRead")}</span>
+                  </button>
+                )}
+              </div>
+
+              <div className="notif-panel__list">
+                {recommendations.map((rec, i) => {
+                  const meta = NOTIF_META[rec.id] || NOTIF_META[1];
+                  const Icon = meta.icon;
+                  const read = readMap[i];
+                  return (
+                    <button
+                      key={rec.id}
+                      className={`notif-card notif-card--${meta.tone} ${read ? 'notif-card--read' : ''}`}
+                      onClick={() => openNotification(i)}
+                    >
+                      <span className="notif-card__icon">
+                        <Icon size={14} />
+                      </span>
+                      <span className="notif-card__body">
+                        <span className="notif-card__title">{rec.title}</span>
+                        <span className="notif-card__desc">{rec.description}</span>
+                        <span className="notif-card__time">
+                          {!read && <span className="notif-card__dot" aria-hidden="true" />}
+                          {t(`common.${meta.timeKey}`)}
+                        </span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>,
+            document.body
+          )}
+        </div>
 
         {/* Small circular header avatar — opens the LARGE floating profile
             window. Shows the uploaded photo when present, else initials. */}
