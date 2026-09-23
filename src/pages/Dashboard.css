@@ -1275,26 +1275,20 @@
    The lucide Upload glyph is TWO stacked 16px SVGs — a STATIC in-flow
    tray (reserves the icon slot) and an ANIMATED arrow layer.
 
-   THE GEOMETRY FIX: the arrow layer is `position: absolute` DIRECTLY
-   inside the button (the icon span is position: static, so the button
-   is the layer's containing block). Its vertical position is animated
-   via `top`, whose percentages resolve against the BUTTON's height —
-   exactly the "calculated from the actual button" requirement:
+   THE MOTION (pop + settle): the arrow layer is `position: absolute`
+   directly inside the button (the icon span is position: static, so
+   the button is its containing block); `top` percentages resolve
+   against the BUTTON's height. Home position `calc((100% - 16px) / 2)`
+   centers the 16px layer in the button's inner box — the same spot the
+   in-flow tray occupies. From there the arrow makes a SMALL pop:
 
-     • start top:  calc((100% - 16px) / 2)
-       → centers the 16px layer in the button's INNER box (padding-box
-         for abs positioning — i.e., relative to the button's inner top
-         edge), the same spot the in-flow icon occupies.
-     • end top:    calc(-16px - 1px)
-       → the entire 16px layer sits fully ABOVE the inner top edge
-         (plus 1px margin), so ZERO pixels of the arrow can remain
-         below the boundary at max travel — by construction, not by
-         tuned pixels. (Also >= the needed 13px+10px≈23px clearance.)
+     pop up 5px → gravity drop → tiny 1.5px settle dip → rest → repeat
 
-   The button's `overflow: hidden` is the ONLY viewport (clips at the
-   inner edge of its 1px border). Ascent is 100% opaque; the only fade
-   is the stationary fade-in at the original position after an
-   invisible reset. No downward movement ever. */
+   fully inside the button — at the 42px button the apex leaves the
+   arrow ~7px clear of the inner top edge, and the dip stays ~10px
+   above the inner bottom edge, so nothing ever approaches the border.
+   Opaque at every keyframe: no fade, no clipping, no reset — the
+   motion itself is the only effect. */
 .dashboard-diagnosis-btn--upload {
     position: relative; /* the BUTTON is the arrow layer's containing block
                             (without it, a positioned ancestor higher up —
@@ -1317,50 +1311,43 @@
     /* X: as an abspos child of the inline-flex span, its static position
        is the span's content-box start — exactly over the tray svg — so no
        margin compensation is needed. */
-    /* Y default (also the reduced-motion frozen state): centered spot. */
+    /* Y default (also the reduced-motion frozen state): home spot. */
     top: calc((100% - 16px) / 2);
-    animation: diagnosis-upload-arrow-rise 3.2s ease-in-out infinite;
-    will-change: top, opacity;
+    animation: diagnosis-upload-arrow-pop 3.2s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+    will-change: top;
 }
 
-@keyframes diagnosis-upload-arrow-rise {
-    /* pause at the original (centered) position — fully visible */
+/* Small rubber-ball pop: quick decelerating rise to a −5px apex,
+   gravity-accelerated drop back through the home spot into a tiny
+   +1.5px settle dip, then a gentle ease to rest. Opaque throughout —
+   per-segment timing functions give each phase its own character
+   (rise eases out, fall eases in, settle eases in-out). */
+@keyframes diagnosis-upload-arrow-pop {
+    /* rest at the home position */
     0%,
-    14% {
+    18% {
         top: calc((100% - 16px) / 2);
-        opacity: 1;
+        animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1); /* decelerate into the apex */
     }
-    /* ascent through the button's whole interior: NO fade — opacity stays
-       1; the top inner edge ends visibility by pure clipping */
-    46% {
-        top: calc(-16px - 1px);
-        opacity: 1;
+    /* apex of the small pop (−5px) */
+    30% {
+        top: calc((100% - 16px) / 2 - 5px);
+        animation-timing-function: cubic-bezier(0.32, 0, 0.67, 0); /* accelerate downward — gravity */
     }
-    /* hidden pause fully above the inner edge (clipped, still opaque) */
-    56% {
-        top: calc(-16px - 1px);
-        opacity: 1;
-    }
-    /* opacity drops to 0 while the layer is fully hidden — no visible change */
-    62% {
-        top: calc(-16px - 1px);
-        opacity: 0;
-    }
-    /* INSTANT position reset while invisible — a 0.01% step (~0.3ms):
-       NO downward travel is ever rendered */
-    62.01% {
+    /* back at the home position, still carrying momentum */
+    42% {
         top: calc((100% - 16px) / 2);
-        opacity: 0;
+        animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1); /* ease into the dip bottom */
     }
-    /* fade in AT the original position — zero movement during the fade */
-    88% {
-        top: calc((100% - 16px) / 2);
-        opacity: 1;
+    /* tiny soft settle dip (+1.5px) */
+    50% {
+        top: calc((100% - 16px) / 2 + 1.5px);
+        animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); /* gentle ease back home */
     }
-    /* pause fully visible before the next ascent */
+    /* settled — hold the exact original position until the next pop */
+    58%,
     100% {
         top: calc((100% - 16px) / 2);
-        opacity: 1;
     }
 }
 
