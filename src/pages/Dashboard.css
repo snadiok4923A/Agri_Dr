@@ -1184,6 +1184,34 @@
     transform: rotate(45deg);
 }
 
+/* Dark theme: the white-alpha hairline above nearly vanishes on the dark
+   glass card (0.32 alpha over near-black). Same geometry — only the color
+   lifts to a soft light-gray that reads clearly but stays muted. */
+[data-theme="dark"] .dashboard-diagnosis-flow__arrow {
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.3),
+        rgba(255, 255, 255, 0.62)
+    );
+}
+
+[data-theme="dark"] .dashboard-diagnosis-flow__arrow::after {
+    border-top-color: rgba(255, 255, 255, 0.62);
+    border-right-color: rgba(255, 255, 255, 0.62);
+}
+
+/* Light theme: white alphas are near-invisible on the cream card — swap
+   to the card's own muted warm-gray text tokens (same family as the step
+   icons). Same geometry; Dark's override above is untouched. */
+[data-theme="light"] .dashboard-diagnosis-flow__arrow {
+    background: linear-gradient(90deg, var(--text-muted), var(--text-secondary));
+}
+
+[data-theme="light"] .dashboard-diagnosis-flow__arrow::after {
+    border-top-color: var(--text-secondary);
+    border-right-color: var(--text-secondary);
+}
+
 .dashboard-diagnosis-cta {
     display: flex;
     flex-wrap: wrap;
@@ -2057,7 +2085,7 @@
 
 /* ==================== TAKE PHOTO BUTTON — CHROME BORDER ====================
    Premium metallic ring ("AI Mode" reference): the border is POLISHED
-   STEEL, not a rainbow. Two masked layers on the 2px border band:
+   STEEL, not a rainbow. Two masked layers on the 1px border band:
 
      ::before  STATIC polished-metal base — uneven graphite/charcoal and
                silver sections like brushed steel catching ambient light.
@@ -2083,8 +2111,8 @@
 .dashboard-diagnosis-btn--primary::before {
     content: "";
     position: absolute;
-    inset: -1px;
-    padding: 2px;
+    inset: 0;
+    padding: 1px;
     z-index: -1;
     border-radius: inherit;
     background: conic-gradient(
@@ -2111,8 +2139,8 @@
 .dashboard-diagnosis-btn--primary::after {
     content: "";
     position: absolute;
-    inset: -1px;
-    padding: 2px;
+    inset: 0;
+    padding: 1px;
     z-index: -1;
     border-radius: inherit;
     background: conic-gradient(
