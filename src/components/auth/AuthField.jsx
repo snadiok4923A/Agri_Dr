@@ -5,16 +5,30 @@
  * logic; restyle or replace freely (spec §14).
  */
 
-export default function AuthField({ id, label, type = "text", value, onChange, placeholder, autoComplete, error, children }) {
+export default function AuthField({
+    id,
+    label,
+    type = "text",
+    value,
+    onChange,
+    placeholder,
+    autoComplete,
+    error,
+    icon,
+    children,
+}) {
     return (
         <div className="auth-field">
             <label className="auth-field__label" htmlFor={id}>
                 {label}
             </label>
             <div className="auth-field__control">
+                {icon && <span className="auth-field__icon">{icon}</span>}
                 <input
                     id={id}
-                    className={`auth-field__input ${error ? "auth-field__input--error" : ""}`}
+                    className={`auth-field__input ${icon ? "auth-field__input--icon" : ""} ${
+                        error ? "auth-field__input--error" : ""
+                    }`}
                     type={type}
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
