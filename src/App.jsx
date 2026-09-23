@@ -4,7 +4,11 @@ import { LanguageProvider } from './hooks/useLanguage';
 import { TextSizeProvider } from './hooks/useTextSize';
 import { VoiceModeProvider } from './hooks/useVoiceMode';
 import { WeatherProvider } from './hooks/useWeather';
+import { AuthProvider, useAuth } from './hooks/useAuth';
+import ProtectedRoute from './components/auth/ProtectedRoute';
 import Layout from './components/layout/Layout';
+import Login from './components/auth/Login';
+import Signup from './components/auth/Signup';
 import Dashboard from './pages/Dashboard';
 import MyFarm from './pages/MyFarm';
 import Crops from './pages/Crops';
@@ -24,13 +28,32 @@ export default function App() {
     <ThemeProvider>
       <TextSizeProvider>
       <LanguageProvider>
+        {/* AuthProvider wraps everything (incl. the router) so session
+            state is available app-wide — Header, pages, and the auth
+            pages themselves. Auth logic (useAuth/authService) is fully
+            separate from the Login/Signup UI (spec §14). */}
+        <AuthProvider>
         {/* VoiceModeProvider lives INSIDE the Router so voice commands can
             drive react-router navigation directly. */}
         <BrowserRouter basename="/Agri_Dr">
           <WeatherProvider>
           <VoiceModeProvider>
             <Routes>
-              <Route path="/" element={<Layout />}>
+              {/* Public auth routes — replaceable UI, logic stays in
+                  AuthProvider/authService (spec §14). */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+
+              {/* Protected app shell — all dashboard pages require a
+                  session; unauthenticated visitors land on /login. */}
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute>
+                    <Layout />
+                  </ProtectedRoute>
+                }
+              >
                 <Route index element={<Dashboard />} />
                 <Route path="farm" element={<MyFarm />} />
                 <Route path="crops" element={<Crops />} />
@@ -51,6 +74,7 @@ export default function App() {
           </VoiceModeProvider>
           </WeatherProvider>
         </BrowserRouter>
+        </AuthProvider>
       </LanguageProvider>
       </TextSizeProvider>
     </ThemeProvider>

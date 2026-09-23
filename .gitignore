@@ -23,3 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 .freebuff
+# Environment — never commit real keys
+.env
+.env.*
+!.env.example

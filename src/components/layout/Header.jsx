@@ -2,12 +2,15 @@ import { createPortal } from 'react-dom';
 import {
   Bell, Sun, Moon, ChevronDown, Globe, Menu, Mic, Camera, X,
   Bug, TrendingDown, FlaskConical, TrendingUp, Activity, CheckCheck,
+  LogIn, UserPlus, LogOut,
 } from 'lucide-react';
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useTheme } from '../../hooks/useTheme';
 import { useVoiceMode } from '../../hooks/useVoiceMode';
+import { useAuth } from '../../hooks/useAuth';
+import { friendlyAuthError } from '../../lib/authService';
 import { demoUser, recommendations } from '../../data/mockData';
 import './Header.css';
 
@@ -40,6 +43,7 @@ export default function Header({ onMenuToggle }) {
   const { language, changeLanguage, languages, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
   const { active: voiceActive, stop: stopVoiceMode } = useVoiceMode();
+  const { user, isAuthenticated, signOut, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [langOpen, setLangOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -48,6 +52,7 @@ export default function Header({ onMenuToggle }) {
   const [nameDraft, setNameDraft] = useState('');
   const [roleDraft, setRoleDraft] = useState('');
   const [photoError, setPhotoError] = useState('');
+  const [accountError, setAccountError] = useState('');
   const [profileImage, setProfileImage] = useState(() => localStorage.getItem(PROFILE_IMAGE_KEY) || '');
   const [profileName, setProfileName] = useState(() => localStorage.getItem(PROFILE_NAME_KEY) || demoUser.name);
   const [profileRole, setProfileRole] = useState(() => localStorage.getItem(PROFILE_ROLE_KEY) || demoUser.role);
@@ -73,6 +78,24 @@ export default function Header({ onMenuToggle }) {
     .toUpperCase() || demoUser.initials;
 
   const unreadCount = readMap.filter(r => !r).length;
+
+  /* Auth-aware identity: signed-in users see their real account email in
+     the profile window and their Google avatar when no photo was uploaded.
+     The local profile name/role editing stays exactly as it was. */
+  const authEmail = user?.email || '';
+  const displayName = (isAuthenticated && user?.name) || profileName;
+
+  const handleSignOut = async () => {
+    if (authLoading) return;
+    setAccountError('');
+    try {
+      await signOut();
+      setPanelOpen(false);
+      navigate('/login'); // spec §11: land on the public page after logout
+    } catch (err) {
+      setAccountError(friendlyAuthError(err, 'sign out'));
+    }
+  };
 
   const persistRead = (next) => {
     setReadMap(next);
@@ -318,19 +341,39 @@ export default function Header({ onMenuToggle }) {
           )}
         </div>
 
+        {/* Account area — signed out: compact Login / Sign Up buttons in
+            place of the avatar (spec §17, minimal navbar change). */}
+        {!isAuthenticated && (
+          <>
+            <Link className="header__auth-btn" to="/login">
+              <LogIn size={14} />
+              <span>Login</span>
+            </Link>
+            <Link className="header__auth-btn header__auth-btn--primary" to="/signup">
+              <UserPlus size={14} />
+              <span>Sign Up</span>
+            </Link>
+          </>
+        )}
+
         {/* Small circular header avatar — opens the LARGE floating profile
-            window. Shows the uploaded photo when present, else initials. */}
-        <button
-          className="header__avatar"
-          onClick={() => { setPanelOpen(true); setPhotoError(''); }}
-          title={profileName}
-          aria-haspopup="dialog"
-          aria-expanded={panelOpen}
-        >
-          {profileImage
-            ? <img className="header__avatar-img" src={profileImage} alt={profileName} />
-            : <span>{initials}</span>}
-        </button>
+            window. Shows the uploaded photo, else the Google avatar, else
+            initials. Only rendered while signed in. */}
+        {isAuthenticated && (
+          <button
+            className="header__avatar"
+            onClick={() => { setPanelOpen(true); setPhotoError(''); setAccountError(''); }}
+            title={displayName}
+            aria-haspopup="dialog"
+            aria-expanded={panelOpen}
+          >
+            {profileImage
+              ? <img className="header__avatar-img" src={profileImage} alt={displayName} />
+              : user?.avatarUrl
+                ? <img className="header__avatar-img" src={user.avatarUrl} alt={displayName} referrerPolicy="no-referrer" />
+                : <span>{initials}</span>}
+          </button>
+        )}
       </div>
 
       {/* LARGE floating profile window — portal + backdrop + overlay +
@@ -354,8 +397,10 @@ export default function Header({ onMenuToggle }) {
               {/* Hero photo — covers the whole window (spec §2). */}
               <div className="profile-modal__hero">
                 {profileImage
-                  ? <img src={profileImage} alt={profileName} />
-                  : <span className="profile-modal__initials">{initials}</span>}
+                  ? <img src={profileImage} alt={displayName} />
+                  : user?.avatarUrl
+                    ? <img src={user.avatarUrl} alt={displayName} referrerPolicy="no-referrer" />
+                    : <span className="profile-modal__initials">{initials}</span>}
                 <div className="profile-modal__scrim" aria-hidden="true" />
 
                 {/* Circular close button, top-right (spec §7). */}
@@ -417,17 +462,31 @@ export default function Header({ onMenuToggle }) {
                   </div>
                 ) : (
                   <div className="profile-modal__identity">
-                    <h3 className="profile-modal__name">{profileName}</h3>
+                    <h3 className="profile-modal__name">{displayName}</h3>
+                    {/* Signed-in account identity — real auth email (spec §17). */}
+                    {authEmail && <p className="profile-modal__email">{authEmail}</p>}
                     <p className="profile-modal__role-line">
                       {profileRole === 'Business Man' ? t("common.profile.businessMan") : t("common.profile.farmer")}
                     </p>
-                    <button className="profile-modal__pill" onClick={startEditing}>
-                      {t("common.profile.editProfile")}
-                    </button>
+                    <div className="profile-modal__actions">
+                      <button className="profile-modal__pill" onClick={startEditing}>
+                        {t("common.profile.editProfile")}
+                      </button>
+                      <button
+                        className="profile-modal__pill profile-modal__pill--signout"
+                        onClick={handleSignOut}
+                        disabled={authLoading}
+                      >
+                        <LogOut size={13} />
+                        <span>{authLoading ? 'Signing out…' : 'Sign out'}</span>
+                      </button>
+                    </div>
                   </div>
                 )}
 
-                {photoError && <p className="profile-modal__error">{photoError}</p>}
+                {(photoError || accountError) && (
+                  <p className="profile-modal__error">{photoError || accountError}</p>
+                )}
               </div>
             </div>
           </div>

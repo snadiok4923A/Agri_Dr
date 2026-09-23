@@ -870,3 +870,79 @@
     animation: none;
   }
 }
+
+/* ============================================================
+   Auth integration (Header) — minimal account-area additions.
+   Signed out: compact Login / Sign Up buttons in the header.
+   Signed in: account email + Sign out pill in the profile window.
+   ============================================================ */
+
+.header__auth-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  margin-left: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full, 999px);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: border-color 160ms ease, background 160ms ease;
+}
+
+.header__auth-btn:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.header__auth-btn--primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.header__auth-btn--primary:hover {
+  background: var(--accent-hover);
+}
+
+/* Keep the header row tidy on small screens: labels collapse, icons stay */
+@media (max-width: 640px) {
+  .header__auth-btn span {
+    display: none;
+  }
+  .header__auth-btn {
+    padding: 8px;
+  }
+}
+
+/* Account email line inside the profile window */
+.profile-modal__email {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+/* Sign out pill — same family as the existing Edit Profile pill */
+.profile-modal__pill--signout {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
+.profile-modal__pill--signout:hover {
+  background: rgba(239, 68, 68, 0.55);
+}
+
+.profile-modal__actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
