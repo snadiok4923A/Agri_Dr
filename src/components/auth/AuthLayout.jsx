@@ -20,7 +20,7 @@ export default function AuthLayout({ title, subtitle, children, footer }) {
                 '--bg-mobile': `url(${mobBg})`
             }}
         >
-            {/* Dark translucent overlay */}
+            {/* Translucent readability overlay — above the photo, below the card */}
             <div className="auth-bg" aria-hidden="true" />
 
             <div className="auth-panel">

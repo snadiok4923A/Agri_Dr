@@ -3,13 +3,14 @@
    PRESENTATION ONLY: no auth logic anywhere in this file.
    Redesign surface — restyle freely without touching logic.
 
-   Design language: dark cinematic base, abstract flowing light
-   ribbons (blue → cyan → purple → pink), frosted glass card,
-   premium typography. Light mode gets a warm, reduced-intensity
-   variant (not a straight inversion).
+   Design language: static agricultural photo backdrop (pc.jpg on
+   desktop, mob.jpg on mobile — BASE_URL-safe URLs passed as
+   custom properties from AuthLayout.jsx) under a subtle dark
+   scrim, frosted glass card, premium typography. Light mode gets
+   a warm, reduced-intensity variant (not a straight inversion).
    ============================================================ */
 
-/* ---------- page + cinematic background ---------- */
+/* ---------- page + photographic background ---------- */
 
 .auth-page {
     position: relative;
@@ -391,6 +392,11 @@
     color: #29261f;
 }
 
+/* Light theme keeps dark text readable: warm light veil instead of the dark scrim */
+[data-theme="light"] .auth-bg {
+    background-color: rgba(255, 252, 245, 0.45);
+}
+
 [data-theme="light"] .auth-brand__name {
     color: #29261f;
 }
@@ -501,10 +507,16 @@
 
 /* ---------- mobile ---------- */
 
+@media (max-width: 768px) {
+    /* Mobile: automatically swap to the portrait mobile photo */
+    .auth-page {
+        background-image: var(--bg-mobile);
+    }
+}
+
 @media (max-width: 480px) {
     .auth-page {
         padding: 28px 16px;
-        background-image: var(--bg-mobile);
     }
 
     .auth-card {
