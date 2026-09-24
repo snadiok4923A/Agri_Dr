@@ -5,9 +5,10 @@
 
    Design language: static agricultural photo backdrop (pc.jpg on
    desktop, mob.jpg on mobile — BASE_URL-safe URLs passed as
-   custom properties from AuthLayout.jsx) under a subtle dark
-   scrim, frosted glass card,   premium typography. FIXED DARK PREMIUM THEME — the page never
-   switches to light mode, regardless of the main website theme.
+   custom properties from AuthLayout.jsx) under a cinematic dark
+   scrim, frosted glass card, premium typography. FIXED DARK
+   PREMIUM THEME — the page never switches to light mode,
+   regardless of the main website theme.
    ============================================================ */
 
 /* ---------- page + photographic background ---------- */
@@ -27,10 +28,9 @@
     font-family: var(--font-primary);
 }
 
-.auth-bg {
-    position: absolute;
-    inset: 0;
-/* Deep cinematic scrim — above the photo, below the card (panel z-index 1). */
+/* Deep cinematic scrim — above the photo, below the card
+   (panel z-index 1). Transparent enough that the rice-field
+   photo stays recognizable through it. Static — never animated. */
 .auth-bg {
     position: absolute;
     inset: 0;
@@ -47,9 +47,6 @@
     inset: 0;
     background: radial-gradient(120% 85% at 50% 42%, transparent 42%, rgba(4, 6, 12, 0.55) 100%);
     pointer-events: none;
-}
-    pointer-events: none;
-    z-index: 0;
 }
 
 /* ---------- panel + brand ---------- */
@@ -74,6 +71,8 @@
     display: inline-flex;
     align-items: center;
     gap: 10px;
+    text-decoration: none;
+    color: inherit;
     margin-bottom: 22px;
     user-select: none;
 }
@@ -83,10 +82,20 @@
     place-items: center;
     width: 32px;
     height: 32px;
+    flex-shrink: 0;
+
     border-radius: 10px;
     background: linear-gradient(135deg, #4f46e5 0%, #2563eb 48%, #06b6d4 100%);
     color: #fff;
     box-shadow: 0 6px 18px rgba(37, 99, 235, 0.35);
+}
+
+.auth-brand__logo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    border-radius: 12px; /* subtle premium rounding, matches the auth UI */
 }
 
 .auth-brand__name {
@@ -399,7 +408,6 @@
     outline-offset: 2px;
     border-radius: 4px;
 }
-
 
 /* ---------- mobile ---------- */
 
