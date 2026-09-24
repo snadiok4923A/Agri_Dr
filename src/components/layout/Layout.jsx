@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
@@ -11,8 +11,8 @@ import './Layout.css';
 export default function Layout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Voice integration (§13/§19): "sidebar kholo" opens the drawer, "close"
-  // closes it via React state — exactly like tapping the UI.
+  /* Voice integration (§13/§19): "sidebar kholo" opens the drawer, "close"
+     closes it via React state — exactly like tapping the UI. */
   useEffect(() => {
     const openSidebar = () => setMobileMenuOpen(true);
     window.addEventListener(VOICE_OPEN_SIDEBAR_EVENT, openSidebar);
@@ -26,20 +26,36 @@ export default function Layout() {
     };
   }, []);
 
+  /* PERF: these handlers are created ONCE. The header is React.memo'd and
+     takes both of them as props — inline arrows would be new objects on
+     every Layout render (i.e. every drawer toggle), which would punch
+     straight through the memo and re-render the whole header for nothing. */
+  const closeMenu = useCallback(() => setMobileMenuOpen(false), []);
+  const toggleMenu = useCallback(() => setMobileMenuOpen((open) => !open), []);
+  const headerProps = useMemo(
+    () => ({ onMenuToggle: toggleMenu }),
+    [toggleMenu]
+  );
+
   return (
     <div className="layout">
       <Sidebar />
       <div className="layout__main">
-        <Header onMenuToggle={() => setMobileMenuOpen(!mobileMenuOpen)} />
+        <Header {...headerProps} />
         <main className="layout__content">
-          <Outlet />
+          {/* Lazy route chunks suspend HERE: the sidebar, header and mobile
+              nav stay mounted while a page chunk loads, so navigating never
+              flashes an empty shell or remounts the app frame (§22). The
+              fallback is intentionally empty — chunks resolve in a frame or
+              two and the previous page area simply stays blank instead of
+              showing a spinner that would flicker. */}
+          <Suspense fallback={null}>
+            <Outlet />
+          </Suspense>
         </main>
       </div>
       <MobileNavigation />
-      <MobileDrawer
-        open={mobileMenuOpen}
-        onClose={() => setMobileMenuOpen(false)}
-      />
+      <MobileDrawer open={mobileMenuOpen} onClose={closeMenu} />
     </div>
   );
 }

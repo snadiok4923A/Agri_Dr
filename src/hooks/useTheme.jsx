@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 const ThemeContext = createContext();
 
@@ -12,12 +12,20 @@ export function ThemeProvider({ children }) {
     localStorage.setItem('krisiveda-theme', theme);
   }, [theme]);
 
-  const toggleTheme = () => {
+  const toggleTheme = useCallback(() => {
     setTheme(prev => prev === 'dark' ? 'light' : 'dark');
-  };
+  }, []);
+
+  /* PERF: a stable value object + stable callbacks. Consumers (the header,
+     the settings page, the voice runtime) only re-render when the theme
+     actually changes — not on every provider re-render. */
+  const value = useMemo(
+    () => ({ theme, setTheme, toggleTheme }),
+    [theme, toggleTheme]
+  );
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>
+    <ThemeContext.Provider value={value}>
       {children}
     </ThemeContext.Provider>
   );

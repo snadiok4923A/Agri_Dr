@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { memo, useEffect, useState } from "react";
 import { Mic, Square } from "lucide-react";
 import { useVoiceMode } from "../../hooks/useVoiceMode";
 import { useLanguage } from "../../hooks/useLanguage";
@@ -11,7 +11,12 @@ import "./DashboardFeatureCards.css";
  * the card, the header icon, or a spoken stop command ("voice bondho").
  * All labels resolve through the i18n system.
  */
-export default function VoiceModeCard() {
+/* PERF: this card takes no props. React.memo stops it from re-rendering
+   when the Dashboard re-renders for unrelated reasons (weather arriving,
+   location phases, the crop-diagnosis flow, the mobile breakpoint) — its
+   own context subscriptions still update it normally (spec §11: unrelated
+   state must not re-render other cards). */
+export default memo(function VoiceModeCard() {
     const { active, status, start, stop, supported, transcript, lastCommand } =
         useVoiceMode();
     const { t } = useLanguage();
@@ -131,4 +136,4 @@ export default function VoiceModeCard() {
             )}
         </div>
     );
-}
+});

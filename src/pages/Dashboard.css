@@ -1313,8 +1313,14 @@
        margin compensation is needed. */
     /* Y default (also the reduced-motion frozen state): home spot. */
     top: calc((100% - 16px) / 2);
+    /* PERF: the pop travels as a transform on the compositor, not as a
+       `top` deviation. Animating `top` re-ran layout for the button's
+       whole subtree every frame (and `will-change: top` asked the browser
+       to keep a layer warm for a property that cannot be composited).
+       `translateY` produces the identical 5px rise / 1.5px settle without
+       touching layout. */
     animation: diagnosis-upload-arrow-pop 3.2s cubic-bezier(0.45, 0, 0.55, 1) infinite;
-    will-change: top;
+    will-change: transform;
 }
 
 /* Small rubber-ball pop: quick decelerating rise to a −5px apex,
@@ -1323,37 +1329,66 @@
    per-segment timing functions give each phase its own character
    (rise eases out, fall eases in, settle eases in-out). */
 @keyframes diagnosis-upload-arrow-pop {
-    /* rest at the home position */
+    /* rest at the home position (transform-only: no layout, no paint) */
     0%,
     18% {
-        top: calc((100% - 16px) / 2);
+        transform: translateY(0);
         animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1); /* decelerate into the apex */
     }
     /* apex of the small pop (−5px) */
     30% {
-        top: calc((100% - 16px) / 2 - 5px);
+        transform: translateY(-5px);
         animation-timing-function: cubic-bezier(0.32, 0, 0.67, 0); /* accelerate downward — gravity */
     }
     /* back at the home position, still carrying momentum */
     42% {
-        top: calc((100% - 16px) / 2);
+        transform: translateY(0);
         animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1); /* ease into the dip bottom */
     }
     /* tiny soft settle dip (+1.5px) */
     50% {
-        top: calc((100% - 16px) / 2 + 1.5px);
+        transform: translateY(1.5px);
         animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); /* gentle ease back home */
     }
     /* settled — hold the exact original position until the next pop */
     58%,
     100% {
-        top: calc((100% - 16px) / 2);
+        transform: translateY(0);
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
     .dashboard-diagnosis-upload-arrow {
         animation: none; /* keeps the default centered top above */
+        transform: none;
+    }
+}
+
+/* ============================================================
+   SECTION MOUNT REVEAL
+   The dashboard's staggered fade-up, formerly driven by
+   framer-motion `variants` (a JS engine writing styles on every
+   frame for nine sections). As a pure CSS animation it runs on the
+   compositor, costs no JavaScript, and lets framer-motion stay out
+   of the eagerly-loaded bundle entirely.
+
+   transform + opacity only (§5); the final keyframe is
+   `transform: none`, so after the reveal the section stops creating
+   a containing block for any fixed-position descendant.
+   ============================================================ */
+.dashboard-reveal {
+    animation: dashboardReveal 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: var(--reveal-delay, 0ms);
+}
+
+@keyframes dashboardReveal {
+    from {
+        opacity: 0;
+        transform: translateY(14px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
     }
 }
 
@@ -1424,32 +1459,10 @@
     display: block;
 }
 
-/* AI scanning effect over the photo */
-.dashboard-diagnosis-scanline {
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 34%;
-    background: linear-gradient(
-        180deg,
-        transparent,
-        rgba(111, 207, 142, 0.28),
-        rgba(111, 207, 142, 0.45),
-        rgba(111, 207, 142, 0.28),
-        transparent
-    );
-    animation: diagScan 1.4s ease-in-out infinite;
-    pointer-events: none;
-}
-
-@keyframes diagScan {
-    0% {
-        top: -34%;
-    }
-    100% {
-        top: 100%;
-    }
-}
+/* (Removed) `.dashboard-diagnosis-scanline` + its `diagScan` keyframes: a
+   leftover from the old in-card analysis stage. The class was referenced by
+   no component — the scanning UI now lives in the floating CameraModal — so
+   this was dead weight on every page load. */
 
 .dashboard-diagnosis-status {
     position: absolute;

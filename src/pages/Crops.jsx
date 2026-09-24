@@ -155,7 +155,7 @@ export default function Crops() {
             </div>
 
             {/* Cards grid */}
-            <div className="crops-page__grid">
+            <div className="crops-page__grid cv-grid">
                 {visible.map((v) => (
                     <button
                         key={v.id}
@@ -166,7 +166,7 @@ export default function Crops() {
                     >
                         <div className="crops-page__card-top">
                             <span className={`crops-page__card-icon crops-page__card-icon--${v.tone}`}>
-                                <img className="crops-page__card-logo" src={varietyImage(v)} alt={v.name} loading="lazy" />
+                                <img className="crops-page__card-logo" src={varietyImage(v)} alt={v.name} loading="lazy" decoding="async" />
                             </span>
                             <span className={`crops-page__status crops-page__status--${v.statusTone}`}>
                                 {t(BADGE_KEY[v.status] || v.status)}
@@ -249,7 +249,7 @@ export default function Crops() {
                         {/* Modal header */}
                         <div className="crops-page__modal-head">
                             <span className={`crops-page__card-icon crops-page__card-icon--${selected.tone} crops-page__card-icon--lg`}>
-                                <img className="crops-page__card-logo" src={varietyImage(selected)} alt={selected.name} />
+                                <img className="crops-page__card-logo" src={varietyImage(selected)} alt={selected.name} decoding="async" />
                             </span>
                             <div>
                                 <h3 className="crops-page__modal-name">

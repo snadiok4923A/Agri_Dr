@@ -332,9 +332,11 @@
     padding: 20px;
     /* Light touch: the dashboard must stay recognizable behind the glass,
        just softly blurred and slightly darkened (same as the Weather modal). */
-    background: rgba(4, 8, 6, 0.42);
-    -webkit-backdrop-filter: blur(9px) saturate(115%);
-    backdrop-filter: blur(9px) saturate(115%);
+    /* PERF: full-viewport backdrop — cooler blur, denser dim (the dialog
+       in front owns the glass look). */
+    background: rgba(4, 8, 6, 0.47);
+    -webkit-backdrop-filter: blur(6px) saturate(115%);
+    backdrop-filter: blur(6px) saturate(115%);
     animation: disease-overlay-in 200ms ease both;
 }
 

@@ -9,9 +9,11 @@
     align-items: center;
     justify-content: center;
     padding: 24px;
-    background: rgba(4, 8, 6, 0.5);
-    -webkit-backdrop-filter: blur(9px) saturate(115%);
-    backdrop-filter: blur(9px) saturate(115%);
+    /* PERF: full-viewport backdrop — cooler blur, denser dim (see
+       WeatherModal); the camera panel itself keeps its full glass. */
+    background: rgba(4, 8, 6, 0.55);
+    -webkit-backdrop-filter: blur(6px) saturate(115%);
+    backdrop-filter: blur(6px) saturate(115%);
     animation: camodal-overlay-in 220ms ease both;
 }
 

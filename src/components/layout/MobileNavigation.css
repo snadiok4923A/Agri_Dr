@@ -4,10 +4,14 @@
   bottom: 0;
   left: 0;
   right: 0;
-  /* Floating glass bar */
-  background: color-mix(in srgb, var(--sidebar-bg) 72%, transparent);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.3);
-  backdrop-filter: blur(var(--glass-blur)) saturate(1.3);
+  /* Floating glass bar.
+     PERF: the bottom nav is fixed OVER the scrolling page on every phone,
+     so it re-blurs each frame — it uses the cooler chrome blur with a
+     denser tint instead of the full 24px panel blur. Same look, much less
+     per-frame work on mid-range Android. */
+  background: color-mix(in srgb, var(--sidebar-bg) 80%, transparent);
+  -webkit-backdrop-filter: blur(var(--chrome-blur)) saturate(1.3);
+  backdrop-filter: blur(var(--chrome-blur)) saturate(1.3);
   border-top: 1px solid var(--glass-border);
   box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.25);
   padding: 6px 8px;

@@ -4,6 +4,7 @@ import {
     useState,
     useEffect,
     useCallback,
+    useMemo,
     useRef,
 } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -202,16 +203,25 @@ export function VoiceModeProvider({ children }) {
         };
     }, [navigate, location.pathname, setTheme, changeLanguage]);
 
-    const value = {
-        active,
-        status,
-        transcript,
-        supported,
-        lastCommand,
-        start,
-        stop,
-        toggle,
-    };
+    /* PERF: recognition streams interim transcripts constantly while
+       listening — every one of those setState calls re-renders the
+       provider. A stable value object (plus the already-useCallback'd
+       actions) keeps that churn scoped to the components that actually
+       show voice state (the Voice Mode card and the header indicator)
+       instead of cascading through the whole app. */
+    const value = useMemo(
+        () => ({
+            active,
+            status,
+            transcript,
+            supported,
+            lastCommand,
+            start,
+            stop,
+            toggle,
+        }),
+        [active, status, transcript, supported, lastCommand, start, stop, toggle]
+    );
 
     return (
         <VoiceModeContext.Provider value={value}>

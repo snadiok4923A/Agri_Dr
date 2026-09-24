@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowUpRight, ArrowDownRight, ChevronRight } from "lucide-react";
 import { marketData } from "../../data/mockData";
@@ -10,7 +11,9 @@ import "./DashboardFeatureCards.css";
  * crop name, price, change pill and a "Market Intelligence" link. Green
  * accents when the price is up, red when down. Fully i18n-driven.
  */
-export default function MarketCard() {
+/* PERF: same as VoiceModeCard — no props, so memo keeps the market card
+   out of every unrelated Dashboard re-render (spec §11). */
+export default memo(function MarketCard() {
     const navigate = useNavigate();
     const { t, formatNumber } = useLanguage();
 
@@ -70,4 +73,4 @@ export default function MarketCard() {
             </span>
         </div>
     );
-}
+});

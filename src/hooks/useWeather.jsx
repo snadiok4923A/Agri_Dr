@@ -28,7 +28,7 @@
  * (coalesced in locationService) are all covered.
  */
 
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { getCurrentLocation, LOCATION_ERRORS, isGeolocationSupported } from "../services/locationService";
 import { fetchWeather } from "../services/weatherService";
 
@@ -130,17 +130,35 @@ export function WeatherProvider({ children }) {
         run({ force: true });
     }, [run]);
 
-    const value = {
-        phase, // "locating" | "loading" | "ready" | "locError" | "wxError"
-        status: phase, // legacy alias for existing consumers
-        weather,
-        coords,
-        locationError,
-        weatherError,
-        isStale: weather ? Date.now() - lastFetchRef.current > REFRESH_INTERVAL_MS : false,
-        retryLocation,
-        refreshWeather,
-    };
+    /* PERF: the provider sits above the router, so a fresh object on every
+       render would re-render every consumer (the weather card AND the
+       floating weather modal) for unrelated reasons. Memoized on the
+       actual state values, the consumers only update when the weather
+       pipeline really moves. */
+    const value = useMemo(
+        () => ({
+            phase, // "locating" | "loading" | "ready" | "locError" | "wxError"
+            status: phase, // legacy alias for existing consumers
+            weather,
+            coords,
+            locationError,
+            weatherError,
+            isStale: weather
+                ? Date.now() - lastFetchRef.current > REFRESH_INTERVAL_MS
+                : false,
+            retryLocation,
+            refreshWeather,
+        }),
+        [
+            phase,
+            weather,
+            coords,
+            locationError,
+            weatherError,
+            retryLocation,
+            refreshWeather,
+        ]
+    );
 
     return <WeatherContext.Provider value={value}>{children}</WeatherContext.Provider>;
 }

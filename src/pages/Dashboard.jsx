@@ -1,18 +1,12 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { Suspense, lazy, useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, useReducedMotion } from "framer-motion";
 import { useLanguage } from "../hooks/useLanguage";
 import useMediaQuery from "../hooks/useMediaQuery";
-import {
-    farmData,
-    crops,
-    analyticsData,
-} from "../data/mockData";
+import { farmData, crops } from "../data/mockData";
 import {
     ChevronRight,
     Wheat,
     Camera,
-    Upload,
     RotateCcw,
     ScanLine,
     Pill,
@@ -21,7 +15,6 @@ import {
     Droplets,
     Wind,
 } from "lucide-react";
-import { AreaChart, Area, ResponsiveContainer, XAxis, Tooltip } from "recharts";
 import {
     AgriActionIcon,
     WeatherConditionIllustration,
@@ -31,7 +24,7 @@ import WeatherModal from "../components/common/WeatherModal";
 import CameraModal from "../components/common/CameraModal";
 import VoiceModeCard from "../components/dashboard/VoiceModeCard";
 import MarketCard from "../components/dashboard/MarketCard";
-import { useVoiceMode, VOICE_OPEN_WEATHER_EVENT } from "../hooks/useVoiceMode";
+import { VOICE_OPEN_WEATHER_EVENT } from "../hooks/useVoiceMode";
 import { registerOverlay } from "../voice/overlayBus";
 import { useWeather } from "../hooks/useWeather";
 import "./Dashboard.css";
@@ -40,19 +33,25 @@ import "./Dashboard.css";
 // base-path aware so it resolves identically on localhost and GitHub Pages.
 const PLANT_LOGO = `${import.meta.env.BASE_URL}plant.svg`;
 
-// Reveal sections with a subtle, staggered fade-up (skipped for reduced motion)
-const sectionVariants = {
-    hidden: { opacity: 0, y: 14 },
-    show: (i) => ({
-        opacity: 1,
-        y: 0,
-        transition: {
-            duration: 0.45,
-            delay: i * 0.06,
-            ease: [0.16, 1, 0.3, 1],
-        },
-    }),
-};
+/* The one recharts surface on this page (the Production Trends mini chart)
+   is a below-the-fold decoration, so it is its own lazily-loaded chunk.
+   That keeps the whole charting library OUT of the eager dashboard bundle
+   — the first paint only pays for the shell, and the chart streams in on
+   the same frame budget as the rest of the page (spec §22). Its fallback
+   is the chart's own fixed-height wrapper, so nothing ever shifts (§9). */
+const ProductionTrendChart = lazy(
+    () => import("../components/dashboard/ProductionTrendChart"),
+);
+
+/* Staggered mount reveal for the page sections.
+   PERF: this replaces the framer-motion `variants` that used to drive these
+   nine sections. A CSS animation on transform/opacity runs entirely on the
+   compositor and needs no JS driving style writes per frame, so the reveal
+   costs nothing during hydration or interaction — and it lets framer-motion
+   leave the eagerly-loaded dashboard bundle altogether. The delay is passed
+   per section as an inline custom property; the visual result (14px rise,
+   0.45s, cubic-bezier(0.16, 1, 0.3, 1), 60ms stagger) is unchanged. */
+const reveal = (i) => ({ style: { "--reveal-delay": `${i * 60}ms` } });
 
 export default function Dashboard() {
     const { t, formatNumber, language } = useLanguage();
@@ -123,21 +122,45 @@ export default function Dashboard() {
     useEffect(() => {
         const el = condRef.current;
         if (!el) return;
+        /* PERF: the original fit shrank the type 0.5px at a time and re-read
+           `scrollWidth` after every single write — up to 40 forced
+           synchronous layouts in one pass, re-run on every weather and
+           language change and on every parent resize. Rendered text width
+           scales linearly with font-size, so one proportional estimate
+           lands within a fraction of a pixel and a single verification
+           pass covers the wrap-threshold edge cases: 2 measurements
+           instead of 40, for the same visual result (still one line, never
+           clipped, never ellipsised). */
+        const MIN_SIZE = 9;
         const fit = () => {
-            const avail = el.parentElement.clientWidth;
+            const avail = el.parentElement?.clientWidth;
             if (!avail) return;
             el.style.fontSize = "";
-            let size = parseFloat(getComputedStyle(el).fontSize);
-            let guard = 0;
-            while (el.scrollWidth > avail && size > 9 && guard < 40) {
-                size -= 0.5;
+            const base = parseFloat(getComputedStyle(el).fontSize);
+            if (!base) return;
+            const width = el.scrollWidth;
+            if (width <= avail) return; // already fits — no writes at all
+            let size = Math.max(MIN_SIZE, base * (avail / width));
+            el.style.fontSize = `${size}px`;
+            const check = el.scrollWidth;
+            if (check > avail && size > MIN_SIZE) {
+                size = Math.max(MIN_SIZE, size * (avail / check));
                 el.style.fontSize = `${size}px`;
-                guard += 1;
             }
         };
         fit();
-        const ro = new ResizeObserver(fit);
-        ro.observe(el.parentElement);
+        /* ResizeObserver only re-fits when the available width ACTUALLY
+           changed — the font-size writes above would otherwise feed the
+           observer back into itself on every pass. */
+        const parent = el.parentElement;
+        if (!parent) return;
+        let lastAvail = parent.clientWidth;
+        const ro = new ResizeObserver(() => {
+            if (parent.clientWidth === lastAvail) return;
+            lastAvail = parent.clientWidth;
+            fit();
+        });
+        ro.observe(parent);
         return () => ro.disconnect();
     }, [weatherReady, weather, language]);
     const locationMsg =
@@ -151,7 +174,6 @@ export default function Dashboard() {
     // Mobile breakpoint — switches Voice Mode + Market into the side-by-side
     // pair below Crop Diagnosis without touching the desktop grid pairing.
     const isMobile = useMediaQuery("(max-width: 900px)");
-    const shouldReduceMotion = useReducedMotion();
 
     // Time-of-day greeting, translated (শুভ সকাল / शुभ प्रभात / …)
     const greeting = (() => {
@@ -189,17 +211,6 @@ export default function Dashboard() {
             unregisterDiag();
         };
     }, []);
-
-    // Helper to spread the fade-up reveal props onto a section, in order
-    const reveal = (i) =>
-        shouldReduceMotion
-            ? {}
-            : {
-                  variants: sectionVariants,
-                  initial: "hidden",
-                  animate: "show",
-                  custom: i,
-              };
 
     const totalYield = farmData.expectedYield;
     const currentEst = farmData.currentProductionEstimate;
@@ -308,7 +319,7 @@ export default function Dashboard() {
                 Mobile: single column — Voice Mode and Market pair up side-by-side
                 after Crop Diagnosis. */}
             {/* ==================== 1. GREETING + WEATHER ==================== */}
-            <motion.section className="dashboard-greeting-row" {...reveal(0)}>
+            <section className="dashboard-reveal dashboard-greeting-row" {...reveal(0)}>
                 <div className="dashboard-greeting-left">
                     <span className="dashboard-greeting-tag">
                         <Wheat size={14} className="dashboard-greeting-icon" />
@@ -320,14 +331,14 @@ export default function Dashboard() {
                     </h1>
                 </div>
 
-            </motion.section>
+            </section>
 
             {/* Desktop row 1: [Production + Weather | Voice Mode]. On mobile
                 this wrapper is a plain pass-through (single child) — Voice Mode
                 renders separately below, inside the mobile pair. */}
             <div className="dashboard-desktop-row">
             {/* ==================== 2. PRODUCTION + WEATHER ROW ==================== */}
-            <motion.section className="dashboard-top-row" {...reveal(1)}>
+            <section className="dashboard-reveal dashboard-top-row" {...reveal(1)}>
                 {/* Compact Production Summary (left) */}
                 <div className="dashboard-hero-card">
                     {/* Rice visual inside a subtle progress ring */}
@@ -363,6 +374,7 @@ export default function Dashboard() {
                                 alt=""
                                 className="dashboard-ring-artwork-img"
                                 draggable={false}
+                                decoding="async"
                             />
                         </div>
                     </div>
@@ -547,14 +559,14 @@ export default function Dashboard() {
                         </div>
                     )}
                 </div>
-            </motion.section>
+            </section>
 
             {/* Voice Mode: desktop — beside the Weather card (inside row 1);
                 mobile — rendered inside the pair below, after Crop Diagnosis. */}
             {!isMobile && (
-                <motion.section className="dashboard-voice-row" {...reveal(2)}>
+                <section className="dashboard-reveal dashboard-voice-row" {...reveal(2)}>
                     <VoiceModeCard />
-                </motion.section>
+                </section>
             )}
             </div>
 
@@ -583,7 +595,7 @@ export default function Dashboard() {
                 separately below, inside the mobile pair. */}
             <div className="dashboard-desktop-row">
             {/* ==================== 3. CROP DIAGNOSIS (AI PHOTO) ==================== */}
-            <motion.section className="dashboard-diagnosis-section" {...reveal(2)}>
+            <section className="dashboard-reveal dashboard-diagnosis-section" {...reveal(2)}>
                 <div className="dashboard-diagnosis-card">
                     <div className="dashboard-diagnosis-info">
                         <span className="dashboard-diagnosis-tag">
@@ -684,14 +696,14 @@ export default function Dashboard() {
                         />
                     </div>
                 </div>
-            </motion.section>
+            </section>
 
             {/* Market: desktop — beside Crop Diagnosis (inside row 2); mobile —
                 rendered inside the pair below. */}
             {!isMobile && (
-                <motion.section className="dashboard-market-row" {...reveal(3)}>
+                <section className="dashboard-reveal dashboard-market-row" {...reveal(3)}>
                     <MarketCard />
-                </motion.section>
+                </section>
             )}
             </div>
 
@@ -699,18 +711,18 @@ export default function Dashboard() {
                 Diagnosis, before "What Needs Attention?" */}
             {isMobile && (
                 <div className="dashboard-mobile-pair">
-                    <motion.section className="dashboard-voice-row" {...reveal(2)}>
+                    <section className="dashboard-reveal dashboard-voice-row" {...reveal(2)}>
                         <VoiceModeCard />
-                    </motion.section>
-                    <motion.section className="dashboard-market-row" {...reveal(3)}>
+                    </section>
+                    <section className="dashboard-reveal dashboard-market-row" {...reveal(3)}>
                         <MarketCard />
-                    </motion.section>
+                    </section>
                 </div>
             )}
 
             {/* ==================== 4. IMPORTANT ACTIONS ==================== */}
-            <motion.section
-                className="dashboard-section dashboard-section--actions"
+            <section
+                className="dashboard-reveal dashboard-section dashboard-section--actions"
                 {...reveal(3)}
             >
                 <div className="dashboard-section-header">
@@ -755,11 +767,11 @@ export default function Dashboard() {
                         </div>
                     ))}
                 </div>
-            </motion.section>
+            </section>
 
             {/* ==================== 5. SIMPLE PRODUCTION INSIGHTS ==================== */}
-            <motion.section
-                className="dashboard-section dashboard-section--insights"
+            <section
+                className="dashboard-reveal dashboard-section dashboard-section--insights"
                 {...reveal(4)}
             >
                 <div className="dashboard-section-header">
@@ -791,69 +803,20 @@ export default function Dashboard() {
                             </span>
                         </div>
 
-                        <div className="dashboard-insight-card__chart">
-                            <ResponsiveContainer width="100%" height={90}>
-                                <AreaChart
-                                    data={analyticsData.productionTrend}
-                                    margin={{
-                                        top: 4,
-                                        right: 4,
-                                        left: 4,
-                                        bottom: 0,
-                                    }}
-                                >
-                                    <defs>
-                                        <linearGradient
-                                            id="agriAreaGrad"
-                                            x1="0"
-                                            y1="0"
-                                            x2="0"
-                                            y2="1"
-                                        >
-                                            <stop
-                                                offset="0%"
-                                                stopColor="var(--accent)"
-                                                stopOpacity={0.25}
-                                            />
-                                            <stop
-                                                offset="100%"
-                                                stopColor="var(--accent)"
-                                                stopOpacity={0}
-                                            />
-                                        </linearGradient>
-                                    </defs>
-                                    <XAxis
-                                        dataKey="month"
-                                        tick={{
-                                            fontSize: "min(max(calc(10px * var(--ts-small, 1)), 8px), 17px)",
-                                            fill: "var(--text-muted)",
-                                        }}
-                                        axisLine={false}
-                                        tickLine={false}
-                                    />
-                                    <Tooltip
-                                        formatter={(val) => [
-                                            `${formatNumber(val)} ${t("common.ton")}`,
-                                            t("dashboard.projectedYield"),
-                                        ]}
-                                        contentStyle={{
-                                            background: "var(--bg-surface)",
-                                            border: "1px solid var(--border)",
-                                            borderRadius: "var(--radius-sm)",
-                                            fontSize: "min(max(calc(12px * var(--ts-body, 1)), 9px), 24px)",
-                                            padding: "4px 8px",
-                                        }}
-                                    />
-                                    <Area
-                                        type="monotone"
-                                        dataKey="production"
-                                        stroke="var(--accent)"
-                                        strokeWidth={2.5}
-                                        fill="url(#agriAreaGrad)"
-                                    />
-                                </AreaChart>
-                            </ResponsiveContainer>
-                        </div>
+                        {/* The one recharts surface on the page streams in as
+                            its own chunk (below the fold); the fallback
+                            reserves the chart's exact height, so the card
+                            never shifts when the chart lands. */}
+                        <Suspense
+                            fallback={
+                                <div
+                                    className="dashboard-insight-card__chart"
+                                    style={{ height: 90 }}
+                                />
+                            }
+                        >
+                            <ProductionTrendChart />
+                        </Suspense>
                     </div>
 
                     {/* Variety Profit Breakdown */}
@@ -907,7 +870,7 @@ export default function Dashboard() {
                         </div>
                     </div>
                 </div>
-            </motion.section>
+            </section>
         </div>
     );
 }

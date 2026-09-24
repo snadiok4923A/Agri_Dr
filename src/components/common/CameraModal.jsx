@@ -332,7 +332,7 @@ export default function CameraModal({
                 {flow === "photo-preview" && photo && (
                     <>
                         <div className="camodal__photo-frame">
-                            <img className="camodal__photo" src={photo.url} alt={t("dashboard.cropDiagnosis")} />
+                            <img className="camodal__photo" src={photo.url} alt={t("dashboard.cropDiagnosis")} decoding="async" />
                         </div>
                         <div className="camodal__actions">
                             {photo.source === "camera" ? (
@@ -361,7 +361,7 @@ export default function CameraModal({
                 {flow === "analysis" && photo && (
                     <div className="camodal__analysis">
                         <div className="camodal__thumb-frame">
-                            <img className="camodal__thumb" src={photo.url} alt="" />
+                            <img className="camodal__thumb" src={photo.url} alt="" decoding="async" />
                         </div>
 
                         {analysis?.status === "ok" ? (

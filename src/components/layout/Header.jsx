@@ -4,7 +4,7 @@ import {
   Bug, TrendingDown, FlaskConical, TrendingUp, Activity, CheckCheck,
   LogIn, UserPlus, LogOut,
 } from 'lucide-react';
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, memo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useTheme } from '../../hooks/useTheme';
@@ -39,7 +39,7 @@ const NOTIF_META = {
    page is where these alerts are actionable. */
 const NOTIF_TARGET = '/improve';
 
-export default function Header({ onMenuToggle }) {
+export default memo(function Header({ onMenuToggle }) {
   const { language, changeLanguage, languages, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
   const { active: voiceActive, stop: stopVoiceMode } = useVoiceMode();
@@ -63,6 +63,12 @@ export default function Header({ onMenuToggle }) {
     } catch { /* corrupted seed → re-seed */ }
     return NOTIF_SEED_READ;
   });
+  /* Panel anchor, measured ONCE per open (on the bell click) instead of on
+     every render. Reading getBoundingClientRect during render forced a
+     synchronous layout on each pass while the panel was open — the classic
+     read-after-write thrash. Now the DOM is measured only when the panel
+     actually opens, and the render just formats numbers. */
+  const [notifAnchor, setNotifAnchor] = useState(null);
   const langRef = useRef(null);
   const notifRef = useRef(null);
   const notifPanelRef = useRef(null);
@@ -102,8 +108,12 @@ export default function Header({ onMenuToggle }) {
     localStorage.setItem(NOTIF_READ_KEY, JSON.stringify(next));
   };
 
-  /* Language dropdown: outside-click close (existing behaviour). */
+  /* Language dropdown: outside-click close (existing behaviour).
+     PERF: the document listener only exists while the dropdown is open —
+     no permanently-attached global mousedown handler for a menu that is
+     closed 99% of the time. */
   useEffect(() => {
+    if (!langOpen) return undefined;
     const handleClick = (e) => {
       if (langRef.current && !langRef.current.contains(e.target)) {
         setLangOpen(false);
@@ -111,7 +121,23 @@ export default function Header({ onMenuToggle }) {
     };
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
-  }, []);
+  }, [langOpen]);
+
+  /* Bell toggle — measures the anchor at click time (before the panel
+     renders), so the open render stays free of layout reads. */
+  const toggleNotifs = useCallback(() => {
+    if (notifOpen) {
+      setNotifOpen(false);
+      return;
+    }
+    const r = notifBtnRef.current?.getBoundingClientRect();
+    setNotifAnchor({
+      x: Math.round((r?.left ?? 0) + (r?.width ?? 0) / 2),
+      y: Math.round((r?.bottom ?? 0) + 6),
+      right: Math.round(window.innerWidth - (r?.right ?? 0)),
+    });
+    setNotifOpen(true);
+  }, [notifOpen]);
 
   /* Notification panel: outside-click + Escape close (spec §14).
      The panel is portaled to <body>, so it is NOT inside notifRef —
@@ -268,7 +294,7 @@ export default function Header({ onMenuToggle }) {
           <button
             ref={notifBtnRef}
             className="header__icon-btn header__notification"
-            onClick={() => setNotifOpen(o => !o)}
+            onClick={toggleNotifs}
             aria-label={t("common.notifications")}
             aria-haspopup="true"
             aria-expanded={notifOpen}
@@ -283,15 +309,13 @@ export default function Header({ onMenuToggle }) {
               className="notif-panel"
               role="dialog"
               aria-label={t("common.notifications")}
-              style={(() => {
-                /* Anchor precisely under the bell, measured at open time. */
-                const r = notifBtnRef.current?.getBoundingClientRect();
-                return {
-                  '--notif-x': `${Math.round((r?.left ?? 0) + (r?.width ?? 0) / 2)}px`,
-                  '--notif-y': `${Math.round((r?.bottom ?? 0) + 6)}px`,
-                  '--notif-right-offset': `${Math.round(window.innerWidth - (r?.right ?? 0))}px`,
-                };
-              })()}
+              style={{
+                /* Anchor precisely under the bell — values measured on the
+                   click that opened the panel (never during render). */
+                '--notif-x': `${notifAnchor?.x ?? 0}px`,
+                '--notif-y': `${notifAnchor?.y ?? 0}px`,
+                '--notif-right-offset': `${notifAnchor?.right ?? 0}px`,
+              }}
             >
               <div className="notif-panel__head">
                 <div className="notif-panel__head-text">
@@ -495,4 +519,4 @@ export default function Header({ onMenuToggle }) {
       )}
     </header>
   );
-}
+});

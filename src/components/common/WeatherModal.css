@@ -9,9 +9,12 @@
   padding: 24px;
   /* Light touch: the dashboard must stay recognizable behind the glass,
      just softly blurred and slightly darkened. */
-  background: rgba(4, 8, 6, 0.42);
-  -webkit-backdrop-filter: blur(9px) saturate(115%);
-  backdrop-filter: blur(9px) saturate(115%);
+  /* PERF: full-viewport backdrop — a cooler blur with a slightly denser
+     dim is visually interchangeable (the dashboard still reads through it)
+     and much cheaper while the overlay animates in. */
+  background: rgba(4, 8, 6, 0.47);
+  -webkit-backdrop-filter: blur(6px) saturate(115%);
+  backdrop-filter: blur(6px) saturate(115%);
   animation: wmodal-overlay-in 220ms ease both;
 }
 

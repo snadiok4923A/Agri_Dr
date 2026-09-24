@@ -138,7 +138,7 @@ export default function Disease() {
             </div>
 
             {/* Cards grid */}
-            <div className="disease-page__grid">
+            <div className="disease-page__grid cv-grid">
                 {visible.map((d) => (
                     <button
                         key={d.id}
@@ -155,6 +155,7 @@ export default function Disease() {
                                             src={d.image}
                                             alt=""
                                             loading="lazy"
+                                            decoding="async"
                                         />
                             </span>
                             <span className={`disease-page__status disease-page__status--${d.tone}`}>
@@ -232,6 +233,10 @@ export default function Disease() {
                                     className="disease-page__modal-img"
                                     src={selected.image}
                                     alt={selected.name}
+                                    /* Decoded off the main thread: opening the
+                                       details window must never jank the
+                                       animation that brings it in. */
+                                    decoding="async"
                                 />
                         </div>
 

@@ -48,6 +48,10 @@ function VarietyImage({ src, alt, className }) {
             src={broken ? RICE_FALLBACK : cropAsset(src)}
             alt={alt}
             loading="lazy"
+            /* PERF: decode off the main thread — the card frames already
+               reserve their box, so this only removes decode jank while
+               scrolling a long grid. */
+            decoding="async"
             onError={() => setBroken(true)}
         />
     );
@@ -248,7 +252,7 @@ export default function Market() {
             {results.length === 0 ? (
                 <p className="market-page__empty">{t("market.noResults")}</p>
             ) : (
-                <div className="market-page__grid">
+                <div className="market-page__grid cv-grid">
                     {results.map((r) => (
                         <button
                             key={r.id}

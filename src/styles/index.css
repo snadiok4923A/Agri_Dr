@@ -15,6 +15,12 @@
     --transition-slow: 350ms ease;
     --sidebar-width: 240px;
     --header-height: 64px;
+    /* PERF: blur radius for CHROME that permanently sits over scrolling
+       content (sticky header, floating bottom nav, sticky AI chat bar).
+       These re-blur on every scroll frame, so they run cooler than the
+       static glass panels (--glass-blur) with a slightly denser tint to
+       keep the same read. */
+    --chrome-blur: 16px;
     /* Agricultural accent palette — Sonali gold + Kacha kolapata leaf green */
     --gold: #e8b84b;
     --gold-soft: rgba(232, 184, 75, 0.12);
@@ -160,9 +166,26 @@ body {
 
 /* ============================================================
    ATMOSPHERIC GRADIENT BACKGROUND (dark theme)
-   Large, heavily-softened gold + leaf-green glows drifting very
-   slowly behind the glass panels. Scoped to dark theme so the
-   coffee light theme remains untouched.
+   Large, heavily-softened gold + leaf-green glows behind the glass
+   panels, with the faint seating vignette painted in the SAME layer.
+   Scoped to dark theme so the coffee light theme is untouched.
+
+   PERFORMANCE (this is the single most important rule on the page):
+   the aurora is STATIC. It used to run `auroraDrift` — a 22s loop
+   animating `filter: hue-rotate()` AND `background-position` on a
+   fixed, full-viewport layer. That forced a full-screen repaint on
+   every single frame, and worse: because the layer sits BEHIND every
+   `.card` / header / nav that uses `backdrop-filter`, a continuously
+   changing backdrop invalidates the blur cache, so every glass
+   surface on screen re-blurred every frame — the dashboard was
+   fighting the compositor while scrolling. A static layer is painted
+   once, cached, and lets every `backdrop-filter` result be reused.
+
+   The gradients, their geometry and their colors are byte-identical;
+   only the imperceptible ±3% drift is gone. The vignette that used to
+   be a separate `body::after` full-screen layer is folded in here as
+   the top-most backdrop layer (same paint order), so the page keeps
+   one full-viewport layer instead of two.
    ============================================================ */
 [data-theme="dark"] body::before {
     content: "";
@@ -170,7 +193,14 @@ body {
     inset: 0;
     z-index: -2;
     pointer-events: none;
-    background:        radial-gradient(
+    background:
+        /* vignette (was body::after) — paints above the glows below */
+        radial-gradient(
+            120rem 80rem at 50% 40%,
+            transparent 55%,
+            rgba(0, 0, 0, 0.28) 100%
+        ),
+        radial-gradient(
             48rem 38rem at 10% -8%,
             rgba(232, 184, 75, 0.17),
             transparent 70%
@@ -186,38 +216,6 @@ body {
             transparent 74%
         ),
         var(--bg-primary);
-    animation: auroraDrift 22s ease-in-out infinite alternate;
-}
-
-/* Faint vignette to seat the glow — keeps the centre calm for content */
-[data-theme="dark"] body::after {
-    content: "";
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    pointer-events: none;
-    background: radial-gradient(
-        120rem 80rem at 50% 40%,
-        transparent 55%,
-        rgba(0, 0, 0, 0.28) 100%
-    );
-}
-
-@keyframes auroraDrift {
-    0% {
-        background-position:
-            0% 0%,
-            0% 0%,
-            50% 100%;
-        filter: hue-rotate(0deg);
-    }
-    100% {
-        background-position:
-            4% 3%,
-            -3% -2%,
-            46% 96%;
-        filter: hue-rotate(6deg);
-    }
 }
 
 /* ============================================================
@@ -335,11 +333,6 @@ body {
     }
 }
 
-@media (prefers-reduced-motion: reduce) {
-    [data-theme="dark"] body::before {
-        animation: none;
-    }
-}
 
 #root {
     min-height: 100vh;
@@ -685,14 +678,36 @@ html[data-textsize="200"] {
     }
 }
 
-/* Respect the user's OS-level motion preference everywhere */
+/* Respect the user's OS-level motion preference everywhere.
+   animation-delay is collapsed too: entrance reveals are staggered with a
+   delay, and leaving it in place would keep content invisible for up to a
+   few hundred ms before snapping in — reduced motion should be immediate. */
 @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
     *::after {
         animation-duration: 0.001ms !important;
         animation-iteration-count: 1 !important;
+        animation-delay: 0.001ms !important;
         transition-duration: 0.001ms !important;
         scroll-behavior: auto !important;
     }
 }
+
+/* ============================================================
+   BELOW-THE-FOLD RENDERING SKIP
+   Long card grids (Market / Crops / Disease listings) are pure
+   static content with no entrance animations. `content-visibility:
+   auto` lets the browser skip their layout, paint AND any animation
+   work while they are off screen, which keeps the initial render
+   and scrolling cheaper on mid-range phones.
+
+   `contain-intrinsic-size: auto <h>` remembers the last rendered
+   height, so the scrollbar never jumps once a grid has been seen
+   (§17 — used only on plain, non-sticky, non-animated content).
+   ============================================================ */
+.cv-grid {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 900px;
+}
+

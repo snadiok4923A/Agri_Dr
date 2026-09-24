@@ -1,27 +1,33 @@
+import { lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './hooks/useTheme';
 import { LanguageProvider } from './hooks/useLanguage';
 import { TextSizeProvider } from './hooks/useTextSize';
 import { VoiceModeProvider } from './hooks/useVoiceMode';
 import { WeatherProvider } from './hooks/useWeather';
-import { AuthProvider, useAuth } from './hooks/useAuth';
+import { AuthProvider } from './hooks/useAuth';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import Layout from './components/layout/Layout';
 import Login from './components/auth/Login';
 import Signup from './components/auth/Signup';
+/* First screen stays eager (Dashboard is the landing route, Login/Signup
+   are tiny) — everything else is split per route. This keeps the initial
+   JS to the shell + dashboard instead of parsing all 13 pages (and the
+   charting library only two of them use) before the first paint.
+   Each page chunk is fetched on first visit and cached by the browser. */
 import Dashboard from './pages/Dashboard';
-import MyFarm from './pages/MyFarm';
-import Crops from './pages/Crops';
-import CropDetails from './pages/CropDetails';
-import AIDoctor from './pages/AIDoctor';
-import Soil from './pages/Soil';
-import Disease from './pages/Disease';
-import Fertilizer from './pages/Fertilizer';
-import Finance from './pages/Finance';
-import Market from './pages/Market';
-import Insights from './pages/Insights';
-import Improve from './pages/Improve';
-import Settings from './pages/Settings';
+const MyFarm = lazy(() => import('./pages/MyFarm'));
+const Crops = lazy(() => import('./pages/Crops'));
+const CropDetails = lazy(() => import('./pages/CropDetails'));
+const AIDoctor = lazy(() => import('./pages/AIDoctor'));
+const Soil = lazy(() => import('./pages/Soil'));
+const Disease = lazy(() => import('./pages/Disease'));
+const Fertilizer = lazy(() => import('./pages/Fertilizer'));
+const Finance = lazy(() => import('./pages/Finance'));
+const Market = lazy(() => import('./pages/Market'));
+const Insights = lazy(() => import('./pages/Insights'));
+const Improve = lazy(() => import('./pages/Improve'));
+const Settings = lazy(() => import('./pages/Settings'));
 
 export default function App() {
   return (
@@ -46,6 +52,11 @@ export default function App() {
 
               {/* Protected app shell — all dashboard pages require a
                   session; unauthenticated visitors land on /login. */}
+              {/* Lazy page chunks suspend inside the Layout shell (see
+                  Layout.jsx) — the header/sidebar never unmount, so
+                  switching pages keeps the app frame perfectly still
+                  (spec §22: lazy-load heavy features, never the
+                  above-the-fold shell). */}
               <Route
                 path="/"
                 element={

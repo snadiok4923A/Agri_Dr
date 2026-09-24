@@ -286,10 +286,12 @@
   align-items: center;
   gap: 4px;
   padding: 11px 12px;
-  /* Semi-transparent dark glass, matching the app's glass system */
-  background: color-mix(in srgb, var(--bg-surface) 72%, transparent);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
-  backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
+  /* Semi-transparent dark glass, matching the app's glass system.
+     PERF: this bar is sticky over a scrolling message list, so it
+     re-blurs on every scroll frame — chrome blur + denser tint. */
+  background: color-mix(in srgb, var(--bg-surface) 80%, transparent);
+  -webkit-backdrop-filter: blur(var(--chrome-blur)) saturate(1.35);
+  backdrop-filter: blur(var(--chrome-blur)) saturate(1.35);
   border: 1px solid var(--glass-border);
   border-radius: 20px;
   box-shadow:

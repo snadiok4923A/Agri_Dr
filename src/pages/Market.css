@@ -219,9 +219,11 @@
     position: absolute;
     inset: 0;
     z-index: 0;
-    background: rgba(4, 12, 8, 0.55);
-    -webkit-backdrop-filter: blur(16px) saturate(120%);
-    backdrop-filter: blur(16px) saturate(120%);
+    /* PERF: full-viewport layer — cooler blur, slightly denser dim (the
+       dialog in front owns the actual glass look). */
+    background: rgba(4, 12, 8, 0.6);
+    -webkit-backdrop-filter: blur(10px) saturate(120%);
+    backdrop-filter: blur(10px) saturate(120%);
     pointer-events: auto;
     /* NO entrance animation here: visibility must never depend on an
        animation actually starting. A fade-in that begins at `from {opacity:0}`
