@@ -33,7 +33,7 @@ export default function AuthLayout({ title, subtitle, children, footer }) {
                     />
                 </div>
                 <span className="auth-brand__name">Krisiveda</span>
-                </div>
+            </div>
 
                 <div className="auth-card">
                     <div className="auth-card__head">
