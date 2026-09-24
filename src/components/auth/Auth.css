@@ -6,8 +6,8 @@
    Design language: static agricultural photo backdrop (pc.jpg on
    desktop, mob.jpg on mobile — BASE_URL-safe URLs passed as
    custom properties from AuthLayout.jsx) under a subtle dark
-   scrim, frosted glass card, premium typography. Light mode gets
-   a warm, reduced-intensity variant (not a straight inversion).
+   scrim, frosted glass card,   premium typography. FIXED DARK PREMIUM THEME — the page never
+   switches to light mode, regardless of the main website theme.
    ============================================================ */
 
 /* ---------- page + photographic background ---------- */
@@ -22,6 +22,7 @@
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
+    color-scheme: dark;
     color: #eef2f8;
     font-family: var(--font-primary);
 }
@@ -29,7 +30,24 @@
 .auth-bg {
     position: absolute;
     inset: 0;
-    background-color: rgba(0, 0, 0, 0.5); /* subtle dark overlay */
+/* Deep cinematic scrim — above the photo, below the card (panel z-index 1). */
+.auth-bg {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(6, 9, 16, 0.62);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Subtle vignette for a richer, more cinematic base.
+   No animation — the background stays completely static. */
+.auth-bg::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(120% 85% at 50% 42%, transparent 42%, rgba(4, 6, 12, 0.55) 100%);
+    pointer-events: none;
+}
     pointer-events: none;
     z-index: 0;
 }
@@ -382,128 +400,6 @@
     border-radius: 4px;
 }
 
-/* ============================================================
-   LIGHT MODE — warm cream variant (not an inversion):
-   pastel light shapes, warm-white glass card, dark text.
-   ============================================================ */
-
-[data-theme="light"] .auth-page {
-    background-color: transparent;
-    color: #29261f;
-}
-
-/* Light theme keeps dark text readable: warm light veil instead of the dark scrim */
-[data-theme="light"] .auth-bg {
-    background-color: rgba(255, 252, 245, 0.45);
-}
-
-[data-theme="light"] .auth-brand__name {
-    color: #29261f;
-}
-
-[data-theme="light"] .auth-card {
-    background: rgba(255, 255, 255, 0.68);
-    border-color: rgba(41, 38, 31, 0.1);
-    box-shadow:
-        0 24px 60px rgba(41, 38, 31, 0.14),
-        inset 0 1px 0 rgba(255, 255, 255, 0.7);
-}
-
-[data-theme="light"] .auth-card__title {
-    color: #29261f;
-}
-
-[data-theme="light"] .auth-card__subtitle {
-    color: #5f584c;
-}
-
-[data-theme="light"] .auth-alert--error {
-    background: rgba(217, 68, 82, 0.08);
-    border-color: rgba(217, 68, 82, 0.26);
-    color: #b2303c;
-}
-
-[data-theme="light"] .auth-alert--success {
-    background: rgba(63, 128, 81, 0.09);
-    border-color: rgba(63, 128, 81, 0.28);
-    color: #2c6a40;
-}
-
-[data-theme="light"] .auth-field__label {
-    color: #3f3a30;
-}
-
-[data-theme="light"] .auth-field__icon {
-    color: #9a9182;
-}
-
-[data-theme="light"] .auth-field__input {
-    color: #29261f;
-    background: rgba(255, 255, 255, 0.72);
-    border-color: rgba(41, 38, 31, 0.16);
-}
-
-[data-theme="light"] .auth-field__input::placeholder {
-    color: #9a9182;
-}
-
-[data-theme="light"] .auth-field__input:hover {
-    border-color: rgba(41, 38, 31, 0.28);
-}
-
-[data-theme="light"] .auth-field__input:focus {
-    border-color: rgba(37, 99, 235, 0.55);
-    background: rgba(255, 255, 255, 0.9);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
-}
-
-[data-theme="light"] .auth-field__toggle {
-    color: #9a9182;
-}
-
-[data-theme="light"] .auth-field__toggle:hover {
-    color: #5f584c;
-    background: rgba(41, 38, 31, 0.06);
-}
-
-[data-theme="light"] .auth-field__error {
-    color: #b2303c;
-}
-
-[data-theme="light"] .auth-btn--google {
-    background: rgba(255, 255, 255, 0.78);
-    color: #29261f;
-    border-color: rgba(41, 38, 31, 0.16);
-}
-
-[data-theme="light"] .auth-btn--google:not(:disabled):hover {
-    background: rgba(255, 255, 255, 0.95);
-    border-color: rgba(41, 38, 31, 0.3);
-}
-
-[data-theme="light"] .auth-divider {
-    color: #7c7466;
-}
-
-[data-theme="light"] .auth-divider::before {
-    background: linear-gradient(90deg, transparent, rgba(41, 38, 31, 0.16), transparent);
-}
-
-[data-theme="light"] .auth-divider::after {
-    background: linear-gradient(90deg, rgba(41, 38, 31, 0.16), transparent);
-}
-
-[data-theme="light"] .auth-card__footer {
-    color: #5f584c;
-}
-
-[data-theme="light"] .auth-card__footer a {
-    color: #2563eb;
-}
-
-[data-theme="light"] .auth-card__footer a:hover {
-    color: #1d4ed8;
-}
 
 /* ---------- mobile ---------- */
 
