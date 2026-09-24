@@ -9,18 +9,19 @@
 import "./Auth.css";
 
 export default function AuthLayout({ title, subtitle, children, footer }) {
+    const pcBg = `${import.meta.env.BASE_URL}logpic/pc.jpg`;
+    const mobBg = `${import.meta.env.BASE_URL}logpic/mob.jpg`;
+
     return (
-        <div className="auth-page">
-            {/* Cinematic background — pure CSS, decorative, no interaction.
-                aria-hidden: screen readers skip it entirely. */}
-            <div className="auth-bg" aria-hidden="true">
-                <div className="auth-bg__orb auth-bg__orb--a" />
-                <div className="auth-bg__orb auth-bg__orb--b" />
-                <div className="auth-bg__orb auth-bg__orb--c" />
-                <div className="auth-bg__ribbon" />
-                <div className="auth-bg__ring auth-bg__ring--a" />
-                <div className="auth-bg__ring auth-bg__ring--b" />
-            </div>
+        <div 
+            className="auth-page"
+            style={{ 
+                '--bg-desktop': `url(${pcBg})`,
+                '--bg-mobile': `url(${mobBg})`
+            }}
+        >
+            {/* Dark translucent overlay */}
+            <div className="auth-bg" aria-hidden="true" />
 
             <div className="auth-panel">
                 <div className="auth-brand">

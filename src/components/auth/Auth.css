@@ -16,10 +16,11 @@
     min-height: 100svh;
     display: flex;
     padding: 36px 16px;
-    background:
-        radial-gradient(1100px 700px at 72% -12%, #0d1a2e 0%, transparent 62%),
-        radial-gradient(900px 640px at -8% 104%, #141031 0%, transparent 58%),
-        #04060c;
+    background-color: #04060c;
+    background-image: var(--bg-desktop);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
     color: #eef2f8;
     font-family: var(--font-primary);
 }
@@ -27,130 +28,9 @@
 .auth-bg {
     position: absolute;
     inset: 0;
-    overflow: hidden;
+    background-color: rgba(0, 0, 0, 0.5); /* subtle dark overlay */
     pointer-events: none;
     z-index: 0;
-}
-
-/* Soft blurred light sources */
-.auth-bg__orb {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(72px);
-    will-change: transform;
-}
-
-.auth-bg__orb--a {
-    width: 52vmax;
-    height: 52vmax;
-    top: -22vmax;
-    right: -14vmax;
-    background: radial-gradient(circle at 35% 40%, rgba(37, 99, 235, 0.34), transparent 65%);
-    animation: authDriftA 52s ease-in-out infinite alternate;
-}
-
-.auth-bg__orb--b {
-    width: 44vmax;
-    height: 44vmax;
-    bottom: -20vmax;
-    left: -12vmax;
-    background: radial-gradient(circle at 60% 45%, rgba(6, 182, 212, 0.24), transparent 66%);
-    animation: authDriftB 64s ease-in-out infinite alternate;
-}
-
-.auth-bg__orb--c {
-    width: 38vmax;
-    height: 38vmax;
-    top: 32%;
-    left: 34%;
-    background: radial-gradient(circle at 50% 50%, rgba(147, 51, 234, 0.22), transparent 64%);
-    animation: authDriftC 70s ease-in-out infinite alternate;
-}
-
-/* Thin curved light trails — glowing arcs on the dark canvas */
-.auth-bg__ring {
-    position: absolute;
-    border-radius: 50%;
-    background: conic-gradient(
-        from 210deg,
-        transparent 0deg,
-        rgba(56, 189, 248, 0.5) 42deg,
-        rgba(168, 85, 247, 0.34) 84deg,
-        rgba(236, 72, 153, 0.18) 108deg,
-        transparent 150deg
-    );
-    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 1.5px));
-    mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 1.5px));
-    filter: blur(0.4px);
-}
-
-.auth-bg__ring--a {
-    width: 115vmax;
-    height: 115vmax;
-    top: -62vmax;
-    left: -34vmax;
-    animation: authSpin 140s linear infinite;
-}
-
-.auth-bg__ring--b {
-    width: 96vmax;
-    height: 96vmax;
-    bottom: -56vmax;
-    right: -30vmax;
-    background: conic-gradient(
-        from 20deg,
-        transparent 0deg,
-        rgba(6, 182, 212, 0.42) 48deg,
-        rgba(99, 102, 241, 0.3) 96deg,
-        transparent 148deg
-    );
-    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1px));
-    mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1px));
-    animation: authSpin 180s linear infinite reverse;
-}
-
-/* One wide flowing ribbon crossing behind the card */
-.auth-bg__ribbon {
-    position: absolute;
-    top: 42%;
-    left: -24vmax;
-    width: 150vmax;
-    height: 26vmax;
-    transform: rotate(-16deg);
-    background: linear-gradient(
-        90deg,
-        transparent 4%,
-        rgba(56, 189, 248, 0.13) 30%,
-        rgba(147, 51, 234, 0.14) 55%,
-        rgba(236, 72, 153, 0.08) 72%,
-        transparent 96%
-    );
-    filter: blur(46px);
-    animation: authRibbon 58s ease-in-out infinite alternate;
-}
-
-@keyframes authDriftA {
-    from { transform: translate3d(0, 0, 0) scale(1); }
-    to   { transform: translate3d(-6vmax, 4vmax, 0) scale(1.08); }
-}
-
-@keyframes authDriftB {
-    from { transform: translate3d(0, 0, 0) scale(1); }
-    to   { transform: translate3d(5vmax, -4vmax, 0) scale(1.06); }
-}
-
-@keyframes authDriftC {
-    from { transform: translate3d(0, 0, 0); }
-    to   { transform: translate3d(-4vmax, 3vmax, 0); }
-}
-
-@keyframes authSpin {
-    to { transform: rotate(360deg); }
-}
-
-@keyframes authRibbon {
-    from { transform: rotate(-16deg) translateX(-3vmax); opacity: 0.85; }
-    to   { transform: rotate(-14deg) translateX(3vmax); opacity: 1; }
 }
 
 /* ---------- panel + brand ---------- */
@@ -507,55 +387,8 @@
    ============================================================ */
 
 [data-theme="light"] .auth-page {
-    background:
-        radial-gradient(1100px 700px at 72% -12%, rgba(59, 130, 246, 0.1) 0%, transparent 62%),
-        radial-gradient(900px 640px at -8% 104%, rgba(139, 92, 246, 0.09) 0%, transparent 58%),
-        #f6f2e9;
+    background-color: transparent;
     color: #29261f;
-}
-
-[data-theme="light"] .auth-bg__orb--a {
-    background: radial-gradient(circle at 35% 40%, rgba(96, 165, 250, 0.3), transparent 65%);
-}
-
-[data-theme="light"] .auth-bg__orb--b {
-    background: radial-gradient(circle at 60% 45%, rgba(45, 212, 191, 0.2), transparent 66%);
-}
-
-[data-theme="light"] .auth-bg__orb--c {
-    background: radial-gradient(circle at 50% 50%, rgba(196, 181, 253, 0.24), transparent 64%);
-}
-
-[data-theme="light"] .auth-bg__ring {
-    background: conic-gradient(
-        from 210deg,
-        transparent 0deg,
-        rgba(59, 130, 246, 0.4) 42deg,
-        rgba(139, 92, 246, 0.28) 84deg,
-        rgba(236, 72, 153, 0.14) 108deg,
-        transparent 150deg
-    );
-}
-
-[data-theme="light"] .auth-bg__ring--b {
-    background: conic-gradient(
-        from 20deg,
-        transparent 0deg,
-        rgba(6, 182, 212, 0.32) 48deg,
-        rgba(99, 102, 241, 0.22) 96deg,
-        transparent 148deg
-    );
-}
-
-[data-theme="light"] .auth-bg__ribbon {
-    background: linear-gradient(
-        90deg,
-        transparent 4%,
-        rgba(59, 130, 246, 0.1) 30%,
-        rgba(139, 92, 246, 0.1) 55%,
-        rgba(236, 72, 153, 0.06) 72%,
-        transparent 96%
-    );
 }
 
 [data-theme="light"] .auth-brand__name {
@@ -671,6 +504,7 @@
 @media (max-width: 480px) {
     .auth-page {
         padding: 28px 16px;
+        background-image: var(--bg-mobile);
     }
 
     .auth-card {
