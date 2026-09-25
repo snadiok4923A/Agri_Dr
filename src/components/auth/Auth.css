@@ -219,20 +219,20 @@
     font-size: 14.5px;
     font-family: inherit;
     color: #eef2f8;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(20, 30, 28, 0.22);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 13px;
     outline: none;
-    /* Frosted-glass surface: blurs only what sits BEHIND the field.
-       Icons/placeholder/text are content (or positioned siblings),
-       so they stay perfectly sharp. */
-    -webkit-backdrop-filter: blur(12px) saturate(120%);
-    backdrop-filter: blur(12px) saturate(120%);
+    /* Strong frosted-glass surface: heavily diffuses the field
+       BEHIND the control while icons/placeholder/text (content or
+       positioned siblings) stay perfectly sharp. */
+    -webkit-backdrop-filter: blur(22px) saturate(130%);
+    backdrop-filter: blur(22px) saturate(130%);
     transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
 }
 
 .auth-field__input::placeholder {
-    color: #5d6b80;
+    color: #75839a;
 }
 
 .auth-field__input--icon {
@@ -244,12 +244,12 @@
 }
 
 .auth-field__input:hover {
-    border-color: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.26);
 }
 
 .auth-field__input:focus {
     border-color: rgba(56, 189, 248, 0.65);
-    background: rgba(255, 255, 255, 0.09);
+    background: rgba(26, 36, 34, 0.3);
     box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.14);
 }
 
@@ -341,17 +341,17 @@
 }
 
 .auth-btn--google {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(20, 30, 28, 0.26);
     color: #e8edf5;
-    border-color: rgba(255, 255, 255, 0.18);
-    /* Same frosted glass as the inputs — background blurs, icon
-       and label stay crisp (they are content, not backdrop). */
-    -webkit-backdrop-filter: blur(12px) saturate(120%);
-    backdrop-filter: blur(12px) saturate(120%);
+    border-color: rgba(255, 255, 255, 0.2);
+    /* Strong frosted glass matching the inputs — background heavily
+       blurs, logo and label stay crisp (content, not backdrop). */
+    -webkit-backdrop-filter: blur(22px) saturate(130%);
+    backdrop-filter: blur(22px) saturate(130%);
 }
 
 .auth-btn--google:not(:disabled):hover {
-    background: rgba(255, 255, 255, 0.13);
+    background: rgba(26, 36, 34, 0.34);
     border-color: rgba(255, 255, 255, 0.28);
 }
 
