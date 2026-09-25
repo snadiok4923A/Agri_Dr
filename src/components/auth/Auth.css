@@ -210,6 +210,10 @@
 .auth-field__icon {
     position: absolute;
     left: 14px;
+    /* Above the input in paint order: with the input's backdrop
+       blur active, an unstacked sibling icon underneath would be
+       sampled and diffused INTO the glass. z-index lifts it out. */
+    z-index: 1;
     display: grid;
     place-items: center;
     /* Bright light-slate + faint dark drop shadow: crisp against
@@ -274,6 +278,9 @@
 .auth-field__toggle {
     position: absolute;
     right: 7px;
+    /* Same stacking fix as the field icon: stays above the input's
+       frosted backdrop and clickable. */
+    z-index: 1;
     display: grid;
     place-items: center;
     width: 34px;
