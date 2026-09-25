@@ -12,7 +12,7 @@ import Login from './components/auth/Login';
 import Signup from './components/auth/Signup';
 /* First screen stays eager (Dashboard is the landing route, Login/Signup
    are tiny) — everything else is split per route. This keeps the initial
-   JS to the shell + dashboard instead of parsing all 13 pages (and the
+   JS to the shell + dashboard instead of parsing all 12 pages (and the
    charting library only two of them use) before the first paint.
    Each page chunk is fetched on first visit and cached by the browser. */
 import Dashboard from './pages/Dashboard';
@@ -20,7 +20,6 @@ const MyFarm = lazy(() => import('./pages/MyFarm'));
 const Crops = lazy(() => import('./pages/Crops'));
 const CropDetails = lazy(() => import('./pages/CropDetails'));
 const AIDoctor = lazy(() => import('./pages/AIDoctor'));
-const Soil = lazy(() => import('./pages/Soil'));
 const Disease = lazy(() => import('./pages/Disease'));
 const Fertilizer = lazy(() => import('./pages/Fertilizer'));
 const Finance = lazy(() => import('./pages/Finance'));
@@ -70,7 +69,6 @@ export default function App() {
                 <Route path="crops" element={<Crops />} />
                 <Route path="crops/:id" element={<CropDetails />} />
                 <Route path="ai-doctor" element={<AIDoctor />} />
-                <Route path="soil" element={<Soil />} />
                 <Route path="disease" element={<Disease />} />
                 <Route path="fertilizer" element={<Fertilizer />} />
                 <Route path="finance" element={<Finance />} />

@@ -44,7 +44,6 @@ const NAV_ROUTES = {
     OPEN_MY_FARM: "/farm",
     OPEN_RICE_VARIETIES: "/crops",
     OPEN_AI_DOCTOR: "/ai-doctor",
-    OPEN_SOIL_FERTILITY: "/soil",
     OPEN_DISEASE_MEDICINE: "/disease",
     OPEN_FERTILIZER_PLAN: "/fertilizer",
     OPEN_COST_PROFIT: "/finance",

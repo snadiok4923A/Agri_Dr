@@ -3,7 +3,7 @@ import { useLanguage } from '../../hooks/useLanguage';
 import { demoUser } from '../../data/mockData';
 import {
   LayoutDashboard, Tractor, Leaf, TrendingUp,
-  BarChart3, Stethoscope, FlaskConical,
+  BarChart3, Stethoscope,
   Bug, Beaker, Wallet, Store, Settings, User, ChevronLeft, ChevronRight, Sprout,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -20,7 +20,6 @@ export const navItems = [
 ];
 
 export const subItems = [
-  { path: '/soil', icon: FlaskConical, labelKey: 'nav.soil' },
   { path: '/disease', icon: Bug, labelKey: 'nav.disease' },
   { path: '/fertilizer', icon: Beaker, labelKey: 'nav.fertilizer' },
   { path: '/finance', icon: Wallet, labelKey: 'nav.finance' },

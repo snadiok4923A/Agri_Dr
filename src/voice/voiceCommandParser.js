@@ -82,7 +82,6 @@ const BARE_WORDS = [
     ["disease", "OPEN_DISEASE_MEDICINE", 95],
     ["doctor", "OPEN_AI_DOCTOR", 95],
     ["farm", "OPEN_MY_FARM", 92],
-    ["soil", "OPEN_SOIL_FERTILITY", 95],
     ["fertilizer", "OPEN_FERTILIZER_PLAN", 95],
     ["profit", "OPEN_COST_PROFIT", 95],
     ["cost", "OPEN_COST_PROFIT", 92],

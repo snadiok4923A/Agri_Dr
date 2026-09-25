@@ -402,97 +402,6 @@ export const weatherData = {
     ],
 };
 
-// ==================== SOIL TESTING DATA (LAB REPORTS) ====================
-export const soilData = {
-    lastLabTestDate: "12 May 2024",
-    testingAgency: "ICAR State Agricultural University Soil Testing Lab",
-    overall: {
-        ph: 6.7,
-        status: "Optimal for Rice Paddy (Slightly Acidic)",
-        issue: "Slight Phosphorus fixation in Field B; requires SSP/DAP top-dressing",
-        organicCarbon: "0.68% (Medium)",
-        cationExchangeCapacity: "18.4 meq/100g",
-        yieldImpact:
-            "Optimal pH and Potassium availability support high grain filling (up to 4.5 T/ac).",
-    },
-    nutrients: [
-        {
-            name: "Available Nitrogen (N)",
-            value: "245 kg/ha",
-            status: "Medium",
-            rating: 68,
-            recommendation: "Apply split dose Urea @ 40 kg/ac at panicle stage",
-        },
-        {
-            name: "Available Phosphorus (P)",
-            value: "14.2 kg/ha",
-            status: "Low-Medium",
-            rating: 52,
-            recommendation: "Apply DAP @ 25 kg/ac to prevent tillering delay",
-        },
-        {
-            name: "Available Potassium (K)",
-            value: "280 kg/ha",
-            status: "High",
-            rating: 88,
-            recommendation: "MOP basal application adequate; maintain schedule",
-        },
-        {
-            name: "Organic Carbon (OC)",
-            value: "0.68%",
-            status: "Medium",
-            rating: 65,
-            recommendation:
-                "Incorporate crop residue post harvest to boost carbon",
-        },
-        {
-            name: "Zinc (Zn)",
-            value: "0.78 ppm",
-            status: "Adequate",
-            rating: 75,
-            recommendation: "Zinc Sulphate 21% spray in nursery completed",
-        },
-    ],
-    fields: {
-        "field-a": {
-            variety: "IR-64",
-            ph: 6.8,
-            nitrogen: "255 kg/ha",
-            phosphorus: "16 kg/ha",
-            potassium: "290 kg/ha",
-            organicMatter: "0.72%",
-            yieldPotential: "4.8 Ton",
-        },
-        "field-b": {
-            variety: "Swarna",
-            ph: 6.4,
-            nitrogen: "230 kg/ha",
-            phosphorus: "12 kg/ha",
-            potassium: "265 kg/ha",
-            organicMatter: "0.62%",
-            yieldPotential: "3.4 Ton",
-        },
-        "field-c": {
-            variety: "Basmati",
-            ph: 7.1,
-            nitrogen: "260 kg/ha",
-            phosphorus: "18 kg/ha",
-            potassium: "310 kg/ha",
-            organicMatter: "0.75%",
-            yieldPotential: "4.1 Ton",
-        },
-        "field-d": {
-            variety: "Samba Mahsuri",
-            ph: 6.6,
-            nitrogen: "240 kg/ha",
-            phosphorus: "14 kg/ha",
-            potassium: "275 kg/ha",
-            organicMatter: "0.65%",
-            yieldPotential: "3.8 Ton",
-        },
-    },
-};
-
 // ==================== DISEASE & MEDICINE DATA ====================
 export const diseaseData = [
     {
@@ -1192,6 +1101,4 @@ export const askAgricultureAI = (question, fieldContext) => {
     );
 };
 
-export const getSoilData = () => {
-    return new Promise((resolve) => setTimeout(() => resolve(soilData), 300));
-};
+

@@ -261,29 +261,6 @@ export const VOICE_COMMANDS = [
 
     /* ===== Tools ===== */
     {
-        intent: "OPEN_SOIL_FERTILITY",
-        feedback: "Opening Soil Fertility…",
-        phrases: [
-            "open soil fertility",
-            "show soil fertility",
-            "soil fertility kholo",
-            "soil fertility dekhao",
-            "soil check kholo",
-            "soil report dekhao",
-            "soil report kholo",
-            "soil kholo",
-            "soil dekhao",
-            "open soil",
-            "soil",
-            "soil check",
-            "মাটির স্বাস্থ্য দেখাও",
-            "মাটি পরীক্ষা খোলো",
-            "মাটির রিপোর্ট দেখাও",
-            "মাটি দেখাও",
-            "মাটির রিপোর্ট",
-        ],
-    },
-    {
         intent: "OPEN_DISEASE_MEDICINE",
         feedback: "Opening Disease & Medicine…",
         feedback: "Opening Disease & Medicine…",
