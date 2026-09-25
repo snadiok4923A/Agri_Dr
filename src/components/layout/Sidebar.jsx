@@ -4,7 +4,7 @@ import { demoUser } from '../../data/mockData';
 import {
   LayoutDashboard, Tractor, Leaf, TrendingUp,
   BarChart3, Stethoscope,
-  Bug, Beaker, Wallet, Store, Settings, User, ChevronLeft, ChevronRight, Sprout,
+  Bug, Beaker, Wallet, Store, Settings, User, ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import { useState } from 'react';
 import './Sidebar.css';
@@ -38,7 +38,11 @@ export default function Sidebar() {
   return (
     <aside className={`sidebar ${collapsed ? 'sidebar--collapsed' : ''}`}>
       <div className="sidebar__logo">
-        <Sprout size={24} className="sidebar__logo-icon" />
+        <img
+          src={`${import.meta.env.BASE_URL}bit.png`}
+          alt="Krisiveda"
+          className="sidebar__logo-icon"
+        />
         {!collapsed && <span className="sidebar__logo-text">Krisiveda</span>}
       </div>
 

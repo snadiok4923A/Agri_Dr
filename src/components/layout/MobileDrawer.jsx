@@ -1,7 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { useLanguage } from '../../hooks/useLanguage';
 import { X } from 'lucide-react';
-import { Sprout } from 'lucide-react';
 import { navItems, subItems, bottomItems } from './Sidebar';
 import { mobileNavItems } from './MobileNavigation';
 import './MobileDrawer.css';
@@ -39,7 +38,11 @@ export default function MobileDrawer({ open, onClose }) {
                 aria-label={t("common.navigation")}
             >
                 <div className="mobile-drawer__logo">
-                    <Sprout size={22} className="mobile-drawer__logo-icon" />
+                    <img
+                        src={`${import.meta.env.BASE_URL}bit.png`}
+                        alt="Krisiveda"
+                        className="mobile-drawer__logo-icon"
+                    />
                     <span className="mobile-drawer__logo-text">Krisiveda</span>
                     <button
                         className="mobile-drawer__close"
