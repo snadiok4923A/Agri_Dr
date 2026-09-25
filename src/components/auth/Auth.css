@@ -5,10 +5,11 @@
 
    Design language: static agricultural photo backdrop (pc.jpg on
    desktop, mob.jpg on mobile — BASE_URL-safe URLs passed as
-   custom properties from AuthLayout.jsx) under a cinematic dark
-   scrim, frosted glass card, premium typography. FIXED DARK
-   PREMIUM THEME — the page never switches to light mode,
-   regardless of the main website theme.
+   custom properties from AuthLayout.jsx) under a subtle uniform
+   scrim, true transparent glass card (low-alpha white tint +
+   frosted blur + thin glass border + soft shadow), premium
+   typography. FIXED DARK PREMIUM THEME — the page never switches
+   to light mode, regardless of the main website theme.
    ============================================================ */
 
 /* ---------- page + photographic background ---------- */
@@ -28,25 +29,17 @@
     font-family: var(--font-primary);
 }
 
-/* Deep cinematic scrim — above the photo, below the card
-   (panel z-index 1). Transparent enough that the rice-field
-   photo stays recognizable through it. Static — never animated. */
+/* Subtle uniform scrim — above the photo, below the card
+   (panel z-index 1). One flat color top-to-bottom: no gradient,
+   no vignette, no bottom fade — the rice-field photo keeps the
+   same brightness across the entire viewport. Static — never
+   animated. */
 .auth-bg {
     position: absolute;
     inset: 0;
-    background-color: rgba(6, 9, 16, 0.62);
+    background-color: rgba(6, 9, 16, 0.15);
     pointer-events: none;
     z-index: 0;
-}
-
-/* Subtle vignette for a richer, more cinematic base.
-   No animation — the background stays completely static. */
-.auth-bg::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(120% 85% at 50% 42%, transparent 42%, rgba(4, 6, 12, 0.55) 100%);
-    pointer-events: none;
 }
 
 /* ---------- panel + brand ---------- */
@@ -110,18 +103,22 @@
 
 /* ---------- glass card ---------- */
 
+/* True glassmorphism: see-through white tint (never black),
+   medium frosted blur so the rice field stays recognizable
+   through the panel, thin glass border, soft diffused shadow
+   and a faint top-edge highlight for the premium glass read. */
 .auth-card {
     width: min(412px, 100%);
-    background: linear-gradient(168deg, rgba(19, 26, 41, 0.74) 0%, rgba(10, 15, 26, 0.62) 100%);
-    -webkit-backdrop-filter: blur(26px) saturate(140%);
-    backdrop-filter: blur(26px) saturate(140%);
-    border: 1px solid rgba(255, 255, 255, 0.09);
+    background: rgba(255, 255, 255, 0.06);
+    -webkit-backdrop-filter: blur(18px) saturate(130%);
+    backdrop-filter: blur(18px) saturate(130%);
+    border: 1px solid rgba(255, 255, 255, 0.18);
     border-radius: 26px;
     padding: 34px 32px 30px;
     box-sizing: border-box;
     box-shadow:
-        0 26px 70px rgba(0, 0, 0, 0.5),
-        inset 0 1px 0 rgba(255, 255, 255, 0.07);
+        0 24px 60px rgba(4, 8, 16, 0.38),
+        inset 0 1px 0 rgba(255, 255, 255, 0.14);
 }
 
 .auth-card__head {
@@ -218,8 +215,8 @@
     font-size: 14.5px;
     font-family: inherit;
     color: #eef2f8;
-    background: rgba(255, 255, 255, 0.045);
-    border: 1px solid rgba(255, 255, 255, 0.11);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.16);
     border-radius: 13px;
     outline: none;
     transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
@@ -243,7 +240,7 @@
 
 .auth-field__input:focus {
     border-color: rgba(56, 189, 248, 0.65);
-    background: rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.09);
     box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.14);
 }
 
@@ -334,14 +331,14 @@
 }
 
 .auth-btn--google {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.08);
     color: #e8edf5;
-    border-color: rgba(255, 255, 255, 0.13);
+    border-color: rgba(255, 255, 255, 0.18);
 }
 
 .auth-btn--google:not(:disabled):hover {
-    background: rgba(255, 255, 255, 0.09);
-    border-color: rgba(255, 255, 255, 0.24);
+    background: rgba(255, 255, 255, 0.13);
+    border-color: rgba(255, 255, 255, 0.28);
 }
 
 .auth-btn__google-icon {
