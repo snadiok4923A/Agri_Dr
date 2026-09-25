@@ -52,7 +52,11 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    animation: authEnter 480ms cubic-bezier(0.22, 0.85, 0.35, 1) both;
+    /* fill-mode backwards (not both): once the entrance ends the
+       computed transform returns to none. A permanently frozen
+       transform creates a compositor render surface that breaks
+       backdrop-filter sampling for everything inside the panel. */
+    animation: authEnter 480ms cubic-bezier(0.22, 0.85, 0.35, 1) backwards;
 }
 
 @keyframes authEnter {
@@ -107,11 +111,16 @@
    medium frosted blur so the rice field stays recognizable
    through the panel, thin glass border, soft diffused shadow
    and a faint top-edge highlight for the premium glass read. */
+/* Glass card: translucent tint + thin border + soft shadow.
+   NOTE: intentionally NO backdrop-filter here — a backdrop-filter
+   element acts as a backdrop root and would trap the inputs'
+   blur, letting them sample only this card's flat tint instead of
+   the photo. Visuals are identical either way (its blur never
+   rendered inside the animated panel), but removing it lets the
+   form controls blur the real rice-field behind them. */
 .auth-card {
     width: min(412px, 100%);
     background: rgba(255, 255, 255, 0.06);
-    -webkit-backdrop-filter: blur(18px) saturate(130%);
-    backdrop-filter: blur(18px) saturate(130%);
     border: 1px solid rgba(255, 255, 255, 0.18);
     border-radius: 26px;
     padding: 34px 32px 30px;
@@ -219,15 +228,16 @@
     font-size: 14.5px;
     font-family: inherit;
     color: #eef2f8;
-    background: rgba(20, 30, 28, 0.22);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(25, 35, 30, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.24);
     border-radius: 13px;
     outline: none;
-    /* Strong frosted-glass surface: heavily diffuses the field
-       BEHIND the control while icons/placeholder/text (content or
-       positioned siblings) stay perfectly sharp. */
-    -webkit-backdrop-filter: blur(22px) saturate(130%);
-    backdrop-filter: blur(22px) saturate(130%);
+    /* Real frosted glass: with the card no longer acting as a
+       backdrop root and the panel's transform gone at rest, this
+       samples the actual photo — field roads behind the box diffuse
+       into soft color while content stays sharp. */
+    -webkit-backdrop-filter: blur(20px) saturate(115%);
+    backdrop-filter: blur(20px) saturate(115%);
     transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
 }
 
@@ -244,12 +254,12 @@
 }
 
 .auth-field__input:hover {
-    border-color: rgba(255, 255, 255, 0.26);
+    border-color: rgba(255, 255, 255, 0.3);
 }
 
 .auth-field__input:focus {
     border-color: rgba(56, 189, 248, 0.65);
-    background: rgba(26, 36, 34, 0.3);
+    background: rgba(31, 41, 38, 0.26);
     box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.14);
 }
 
@@ -341,18 +351,18 @@
 }
 
 .auth-btn--google {
-    background: rgba(20, 30, 28, 0.26);
+    background: rgba(25, 35, 30, 0.2);
     color: #e8edf5;
-    border-color: rgba(255, 255, 255, 0.2);
-    /* Strong frosted glass matching the inputs — background heavily
-       blurs, logo and label stay crisp (content, not backdrop). */
-    -webkit-backdrop-filter: blur(22px) saturate(130%);
-    backdrop-filter: blur(22px) saturate(130%);
+    border-color: rgba(255, 255, 255, 0.24);
+    /* Same real frosted glass as the inputs — now samples the
+       photo; logo and label stay crisp (content, not backdrop). */
+    -webkit-backdrop-filter: blur(20px) saturate(115%);
+    backdrop-filter: blur(20px) saturate(115%);
 }
 
 .auth-btn--google:not(:disabled):hover {
-    background: rgba(26, 36, 34, 0.34);
-    border-color: rgba(255, 255, 255, 0.28);
+    background: rgba(31, 41, 38, 0.28);
+    border-color: rgba(255, 255, 255, 0.3);
 }
 
 .auth-btn__google-icon {
