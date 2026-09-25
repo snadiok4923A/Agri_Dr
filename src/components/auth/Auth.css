@@ -219,6 +219,11 @@
     border: 1px solid rgba(255, 255, 255, 0.16);
     border-radius: 13px;
     outline: none;
+    /* Frosted-glass surface: blurs only what sits BEHIND the field.
+       Icons/placeholder/text are content (or positioned siblings),
+       so they stay perfectly sharp. */
+    -webkit-backdrop-filter: blur(12px) saturate(120%);
+    backdrop-filter: blur(12px) saturate(120%);
     transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
 }
 
@@ -334,6 +339,10 @@
     background: rgba(255, 255, 255, 0.08);
     color: #e8edf5;
     border-color: rgba(255, 255, 255, 0.18);
+    /* Same frosted glass as the inputs — background blurs, icon
+       and label stay crisp (they are content, not backdrop). */
+    -webkit-backdrop-filter: blur(12px) saturate(120%);
+    backdrop-filter: blur(12px) saturate(120%);
 }
 
 .auth-btn--google:not(:disabled):hover {
