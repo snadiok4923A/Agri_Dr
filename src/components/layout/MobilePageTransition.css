@@ -1,0 +1,25 @@
+/**
+ * MobilePageTransition.css — the transition viewport (spec §3/§16).
+ *
+ * Occupies exactly the page-content area the page previously filled:
+ * no padding, margins, width or height of its own. The page inside
+ * stays in normal document flow — the viewport only provides the
+ * positioning context and horizontal clipping that stop a mid-slide
+ * page from ever widening the scrollable area or sliding over the
+ * header / bottom navigation.
+ */
+
+.page-transition-viewport {
+  position: relative;
+  width: 100%;
+  overflow-x: hidden; /* spec §16: horizontal clip on the transition container only */
+  overflow-y: visible;
+}
+
+/* The page wrapper itself is layout-neutral: no padding, no margins,
+   no width/height overrides — children lay out exactly as they did
+   before the transition system existed (spec §5/§18). */
+.page-transition-page {
+  width: 100%;
+  min-width: 0;
+}
