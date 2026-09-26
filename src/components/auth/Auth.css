@@ -3,30 +3,61 @@
    PRESENTATION ONLY: no auth logic anywhere in this file.
    Redesign surface — restyle freely without touching logic.
 
-   Design language: static agricultural photo backdrop (pc.jpg on
-   desktop, mob.jpg on mobile — BASE_URL-safe URLs passed as
-   custom properties from AuthLayout.jsx) under a subtle uniform
-   scrim, true transparent glass card (low-alpha white tint +
-   frosted blur + thin glass border + soft shadow), premium
-   typography. FIXED DARK PREMIUM THEME — the page never switches
-   to light mode, regardless of the main website theme.
+   Design language: slowly cross-fading agricultural photo slideshow
+   (pc*.jpg on desktop, mob*.jpg on mobile — BASE_URL-safe URLs from
+   AuthLayout.jsx) under a subtle uniform scrim, true transparent
+   glass card (low-alpha white tint + frosted blur + thin glass
+   border + soft shadow), premium typography. FIXED DARK PREMIUM
+   THEME — the page never switches to light mode, regardless of the
+   main website theme.
    ============================================================ */
 
 /* ---------- page + photographic background ---------- */
 
+/* The photo itself now lives in two stacked slideshow layers
+   (.auth-bg-layer) that cross-fade every 5 s; .auth-page keeps the
+   fallback color and layout only. */
 .auth-page {
     position: relative;
     min-height: 100svh;
     display: flex;
     padding: 36px 16px;
     background-color: #04060c;
-    background-image: var(--bg-desktop);
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
     color-scheme: dark;
     color: #eef2f8;
     font-family: var(--font-primary);
+}
+
+/* One photo layer — identical cover/crop behavior the page always
+   had (full coverage, centered, no distortion). BASE shows the
+   current image; FRONT holds the NEXT image hidden at opacity 0 and
+   fades IN over the base while .auth-bg-layer--fading is present
+   (its opacity transition is declared only there, so the reset after
+   the fade is instant by construction — no reverse-fade, no blank
+   frame, no black flash). --bg-fade-ms is injected from
+   AuthLayout.jsx (FADE_MS — keep the two in sync). */
+.auth-bg-layer {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    pointer-events: none;
+}
+
+.auth-bg-layer {
+    background-image: var(--bg-base, none);
+}
+
+.auth-bg-layer--front {
+    background-image: var(--bg-front, none);
+    opacity: 0;
+}
+
+.auth-bg-layer--front.auth-bg-layer--fading {
+    opacity: 1;
+    transition: opacity var(--bg-fade-ms, 1600ms) ease-in-out;
+    will-change: opacity;
 }
 
 /* Subtle uniform scrim — above the photo, below the card
@@ -442,12 +473,10 @@
 
 /* ---------- mobile ---------- */
 
-@media (max-width: 768px) {
-    /* Mobile: automatically swap to the portrait mobile photo */
-    .auth-page {
-        background-image: var(--bg-mobile);
-    }
-}
+/* Mobile image selection no longer needs a CSS media query — the
+   slideshow layer in AuthLayout.jsx picks the mob*.jpg list via the
+   same 768px breakpoint (useMediaQuery), keeping photo choice and
+   fade timing in one place. */
 
 @media (max-width: 480px) {
     .auth-page {
