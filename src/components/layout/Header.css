@@ -104,10 +104,6 @@
   color: var(--leaf);
 }
 
-.header__lang-flag {
-  font-size: max(min(calc(16px * var(--ts-mid, 1)), 26px), 10px);
-}
-
 .header__icon-btn {
   display: flex;
   align-items: center;

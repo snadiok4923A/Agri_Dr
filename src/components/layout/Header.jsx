@@ -276,7 +276,6 @@ export default memo(function Header({ onMenuToggle }) {
                   className={`header__lang-option ${lang.code === language ? 'header__lang-option--active' : ''}`}
                   onClick={() => { changeLanguage(lang.code); setLangOpen(false); }}
                 >
-                  <span className="header__lang-flag">{lang.flag}</span>
                   <span>{lang.native}</span>
                 </button>
               ))}
