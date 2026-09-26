@@ -24,6 +24,18 @@
   min-width: 0;
   overflow-y: auto;
   padding-bottom: 32px;
+  /* Anchor for popLayout's absolutely-positioned exiting page during
+     mobile page transitions — keeps it inside the content column. */
+  position: relative;
+}
+
+/* Horizontal page-transition viewport lock: transform-offset pages must
+   never widen the scrollable area (no scrollbar flash / horizontal
+   scroll during transitions). clip is intentional — overflow-x hidden
+   on this scroller would turn it into overflow-y auto and break the
+   internal scroll while a page is mid-slide. */
+.layout__main {
+  overflow-x: clip;
 }
 
 @media (max-width: 1024px) {

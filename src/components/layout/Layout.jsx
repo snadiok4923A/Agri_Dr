@@ -4,6 +4,7 @@ import Sidebar from './Sidebar';
 import Header from './Header';
 import MobileNavigation from './MobileNavigation';
 import MobileDrawer from './MobileDrawer';
+import MobilePageTransition from './MobilePageTransition';
 import { registerOverlay } from '../../voice/overlayBus';
 import { VOICE_OPEN_SIDEBAR_EVENT } from '../../hooks/useVoiceMode';
 import './Layout.css';
@@ -43,6 +44,11 @@ export default function Layout() {
       <div className="layout__main">
         <Header {...headerProps} />
         <main className="layout__content">
+          {/* Horizontal page transitions (mobile bottom-nav routes only;
+              >1024px renders children untouched). NOT keyed here —
+              AnimatePresence inside keys by pathname and owns the
+              enter/exit lifecycle, which is what keeps rapid taps safe. */}
+          <MobilePageTransition>
           {/* Lazy route chunks suspend HERE: the sidebar, header and mobile
               nav stay mounted while a page chunk loads, so navigating never
               flashes an empty shell or remounts the app frame (§22). The
@@ -52,6 +58,7 @@ export default function Layout() {
           <Suspense fallback={null}>
             <Outlet />
           </Suspense>
+          </MobilePageTransition>
         </main>
       </div>
       <MobileNavigation />
