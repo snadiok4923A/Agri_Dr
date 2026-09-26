@@ -142,16 +142,22 @@
    medium frosted blur so the rice field stays recognizable
    through the panel, thin glass border, soft diffused shadow
    and a faint top-edge highlight for the premium glass read. */
-/* Glass card: translucent tint + thin border + soft shadow.
-   NOTE: intentionally NO backdrop-filter here — a backdrop-filter
-   element acts as a backdrop root and would trap the inputs'
-   blur, letting them sample only this card's flat tint instead of
-   the photo. Visuals are identical either way (its blur never
-   rendered inside the animated panel), but removing it lets the
-   form controls blur the real rice-field behind them. */
+/* Frosted-glass card: the panel's transform now releases at rest
+   (fill-mode backwards), so this backdrop-filter actually renders —
+   the photo behind the card is genuinely blurred while everything
+   painted INSIDE the card stays perfectly sharp (backdrop-filter
+   never touches an element's own content). The inputs'/Google
+   button's blur sits inside this backdrop root and samples the
+   already-frosted card surface — control surfaces read slightly
+   deeper-frosted than the panel, which is the intended premium
+   layering. Tint stays low-alpha: image recognizable, softly muted.
+   Blur is deliberately LIGHTER than the inner controls' 20px — the
+   panel is a subtle frost, the fields are the strong frost. */
 .auth-card {
     width: min(412px, 100%);
-    background: rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.14);
+    -webkit-backdrop-filter: blur(10px) saturate(125%);
+    backdrop-filter: blur(10px) saturate(125%);
     border: 1px solid rgba(255, 255, 255, 0.18);
     border-radius: 26px;
     padding: 34px 32px 30px;
@@ -171,18 +177,14 @@
     font-size: 27px;
     font-weight: 800;
     letter-spacing: -0.02em;
-    color: #f4f7fc;
+    color: #ffffff;
 }
 
 .auth-card__subtitle {
     margin: 0;
     font-size: 14px;
-    color: #93a0b4;
-    /* Subtle dark shadow lifts the subtitle off the rotating photo
-       behind the glass card — soft and premium, not a glow. */
-    text-shadow:
-        0 2px 6px rgba(0, 0, 0, 0.45),
-        0 1px 2px rgba(0, 0, 0, 0.35);
+    font-weight: 500; /* readability via weight, not shadow (spec: no text-shadow) */
+    color: #c5cfdd;
 }
 
 /* ---------- alerts (error / success) ---------- */
@@ -234,7 +236,7 @@
     font-size: 13px;
     font-weight: 600;
     letter-spacing: 0.01em;
-    color: #c4cddb;
+    color: #dfe6f0;
 }
 
 .auth-field__control {
@@ -282,7 +284,7 @@
 }
 
 .auth-field__input::placeholder {
-    color: #75839a;
+    color: #96a3b8;
 }
 
 .auth-field__input--icon {
@@ -433,9 +435,9 @@
     align-items: center;
     gap: 14px;
     margin: 20px 0;
-    color: #7c8aa0;
+    color: #98a5ba;
     font-size: 11.5px;
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
 }
