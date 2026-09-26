@@ -468,8 +468,9 @@ export default function Dashboard() {
                                 </span>
                             </div>
 
-                            {/* BOTTOM ROW — Wind left · Rain right (real
-                                precipitation probability). Reference layout:
+                            {/* BOTTOM ROW — Wind left · Humidity right (real
+                                current relative humidity from the same
+                                Open-Meteo response). Reference layout:
                                 large icon beside a two-line text block, the
                                 icon centered against the full text height. */}
                             <div className="dashboard-weather-card__meta">
@@ -486,17 +487,17 @@ export default function Dashboard() {
                                         </span>
                                     </span>
                                 </div>
-                                <div className="dashboard-weather-card__cell dashboard-weather-card__cell--rain">
+                                <div className="dashboard-weather-card__cell dashboard-weather-card__cell--humidity">
                                     <span className="dashboard-weather-card__cell-icon">
                                         <Droplets size={24} strokeWidth={1.9} />
                                     </span>
                                     <span className="dashboard-weather-card__cell-text">
                                         <span className="dashboard-weather-card__cell-label">
-                                            {t("weather.rain")}
+                                            {t("weather.humidity")}
                                         </span>
                                         <span className="dashboard-weather-card__cell-value">
-                                            {weather.current.rainProbability != null
-                                                ? `${formatNumber(Math.round(weather.current.rainProbability))}%`
+                                            {weather.current.humidity != null
+                                                ? `${formatNumber(Math.round(weather.current.humidity))}%`
                                                 : "—%"}
                                         </span>
                                     </span>

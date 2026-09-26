@@ -734,7 +734,7 @@
     color: var(--text-secondary);
 }
 
-.dashboard-weather-card__cell--rain .dashboard-weather-card__cell-icon {
+.dashboard-weather-card__cell--humidity .dashboard-weather-card__cell-icon {
     color: var(--info, #6bb8e8);
 }
 
@@ -771,8 +771,8 @@
     display: block;
 }
 
-/* Rain % carries the info-blue used elsewhere for rain chances */
-.dashboard-weather-card__cell--rain .dashboard-weather-card__cell-value {
+/* Humidity % carries the info-blue used elsewhere for % values */
+.dashboard-weather-card__cell--humidity .dashboard-weather-card__cell-value {
     color: var(--info, #6bb8e8);
 }
 
