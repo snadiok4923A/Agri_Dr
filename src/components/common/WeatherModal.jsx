@@ -64,6 +64,16 @@ export default function WeatherModal({ open, onClose }) {
     const { status, weather, locationError, coords } = useWeather();
     const ready = status === "ready" && !!weather;
 
+    /** Which forecast day the detail section shows — index into
+     *  weather.forecast (0 = Today). Every day card is clickable; the
+     *  selection resets to Today each time the modal opens. All detail
+     *  values derive from that day's REAL Open-Meteo forecast entry. */
+    const [selectedForecastDay, setSelectedForecastDay] = useState(0);
+
+    useEffect(() => {
+        if (open) setSelectedForecastDay(0); // Today selected by default on open
+    }, [open]);
+
     /** Small location caption beside the current temperature — city
      *  (line 1) + state (line 2), right-aligned in the main weather row.
      *  Resolved from the coordinates the weather pipeline already
@@ -104,6 +114,10 @@ export default function WeatherModal({ open, onClose }) {
     const cur = weather?.current;
     const rain = cur?.rainProbability ?? 0;
 
+    /** The forecast entry for the selected day (index 0 = Today). */
+    const sel = weather?.forecast?.[selectedForecastDay] ?? null;
+    const selIsToday = selectedForecastDay === 0;
+
     return (
         <div
             className="wmodal__overlay"
@@ -136,21 +150,32 @@ export default function WeatherModal({ open, onClose }) {
                 {ready ? (
                     <>
                         <div className="wmodal__main">
-                            <span className="wmodal__main-icon">
+                            {/* key={selectedForecastDay} remounts these blocks on
+                                day switch → CSS plays the subtle fade transition */}
+                            <span className="wmodal__main-icon" key={`icon-${selectedForecastDay}`}>
+                                {/* Today keeps the LIVE current conditions; future
+                                    days show their forecast condition. */}
                                 <WeatherConditionIllustration
-                                    condition={cur.conditionKey}
+                                    condition={selIsToday ? cur.conditionKey : sel.conditionKey}
                                     size={72}
                                 />
                             </span>
-                            <div className="wmodal__main-data">
+                            <div className="wmodal__main-data" key={`data-${selectedForecastDay}`}>
                                 <span className="wmodal__temp">
-                                    {formatNumber(Math.round(cur.temperature))}°C
+                                    {formatNumber(
+                                        Math.round(selIsToday ? cur.temperature : sel.high),
+                                    )}°C
                                 </span>
                                 <span className="wmodal__cond">
                                     {t(
-                                        `weather.cond${cur.conditionKey
+                                        `weather.cond${(selIsToday
+                                            ? cur.conditionKey
+                                            : sel.conditionKey
+                                        )
                                             .charAt(0)
-                                            .toUpperCase()}${cur.conditionKey.slice(1)}`,
+                                            .toUpperCase()}${(
+                                            selIsToday ? cur.conditionKey : sel.conditionKey
+                                        ).slice(1)}`,
                                     )}
                                 </span>
                             </div>
@@ -167,52 +192,79 @@ export default function WeatherModal({ open, onClose }) {
                             )}
                         </div>
 
-                        {/* ===== 3. Metric row (feels like from Open-Meteo) ===== */}
-                        <div className="wmodal__metrics">
-                            <div className="wmodal__metric">
-                                <Thermometer size={15} />
-                                <div>
-                                    <strong>{formatNumber(Math.round(cur.feelsLike))}°C</strong>
-                                    <span>{t("weather.feelsLike")}</span>
+                        {/* ===== 3. Metric row — REAL values for the SELECTED day.
+                                Today keeps the live current metrics (feels-like,
+                                humidity, wind, visibility). Future days show only
+                                what the Open-Meteo daily forecast actually
+                                provides (min temp, max wind); fields the API
+                                doesn't offer for future days are hidden instead
+                                of faked. ===== */}
+                        <div className="wmodal__metrics" key={`metrics-${selectedForecastDay}`}>
+                            {selIsToday && (
+                                <>
+                                    <div className="wmodal__metric">
+                                        <Thermometer size={15} />
+                                        <div>
+                                            <strong>{formatNumber(Math.round(cur.feelsLike))}°C</strong>
+                                            <span>{t("weather.feelsLike")}</span>
+                                        </div>
+                                    </div>
+                                    <div className="wmodal__metric">
+                                        <Droplets size={15} />
+                                        <div>
+                                            <strong>{formatNumber(Math.round(cur.humidity))}%</strong>
+                                            <span>{t("weather.humidity")}</span>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                            {!selIsToday && sel && (
+                                <div className="wmodal__metric">
+                                    <Thermometer size={15} />
+                                    <div>
+                                        <strong>{formatNumber(Math.round(sel.low))}°C</strong>
+                                        <span>{t("weather.low")}</span>
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="wmodal__metric">
-                                <Droplets size={15} />
-                                <div>
-                                    <strong>{formatNumber(Math.round(cur.humidity))}%</strong>
-                                    <span>{t("weather.humidity")}</span>
-                                </div>
-                            </div>
+                            )}
                             <div className="wmodal__metric">
                                 <Wind size={15} />
                                 <div>
-                                    <strong>{formatNumber(Math.round(cur.wind))} km/h</strong>
+                                    <strong>
+                                        {formatNumber(selIsToday ? cur.wind : sel?.wind)} km/h
+                                    </strong>
                                     <span>{t("weather.wind")}</span>
                                 </div>
                             </div>
-                            <div className="wmodal__metric">
-                                <Eye size={15} />
-                                <div>
-                                    <strong>{formatNumber(cur.visibility)} km</strong>
-                                    <span>{t("weather.visibility")}</span>
+                            {selIsToday && (
+                                <div className="wmodal__metric">
+                                    <Eye size={15} />
+                                    <div>
+                                        <strong>{formatNumber(cur.visibility)} km</strong>
+                                        <span>{t("weather.visibility")}</span>
+                                    </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
 
-                        {/* ===== 4. Single most important advisory (rain-based) ===== */}
-                        <div className="wmodal__advisory">
-                            <ShieldAlert size={17} className="wmodal__advisory-ico" />
-                            <div>
-                                <strong>{t("weather.sprayingAdvisory")}</strong>
-                                <span>
-                                    {rain >= 40
-                                        ? t("weather.advisoryHigh", { n: formatNumber(Math.round(rain)) })
-                                        : rain >= 20
-                                          ? t("weather.advisoryModerate", { n: formatNumber(Math.round(rain)) })
-                                          : t("weather.advisoryLow", { n: formatNumber(Math.round(rain)) })}
-                                </span>
+                        {/* ===== 4. Single most important advisory (rain-based).
+                                Worded for TODAY — shown only while Today is the
+                                selected forecast day. ===== */}
+                        {selIsToday && (
+                            <div className="wmodal__advisory">
+                                <ShieldAlert size={17} className="wmodal__advisory-ico" />
+                                <div>
+                                    <strong>{t("weather.sprayingAdvisory")}</strong>
+                                    <span>
+                                        {rain >= 40
+                                            ? t("weather.advisoryHigh", { n: formatNumber(Math.round(rain)) })
+                                            : rain >= 20
+                                              ? t("weather.advisoryModerate", { n: formatNumber(Math.round(rain)) })
+                                              : t("weather.advisoryLow", { n: formatNumber(Math.round(rain)) })}
+                                    </span>
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         {/* ===== 5. 7-Day Forecast (real Open-Meteo daily data) ===== */}
                         <div className="wmodal__forecast">
@@ -221,9 +273,14 @@ export default function WeatherModal({ open, onClose }) {
                                 {weather.forecast.map((day, i) => {
                                     const Icon = dayIcon(day.conditionKey);
                                     return (
-                                        <div
+                                        <button
                                             key={day.date || i}
-                                            className={`wmodal__day ${i === 0 ? "wmodal__day--today" : ""}`}
+                                            type="button"
+                                            onClick={() => setSelectedForecastDay(i)}
+                                            aria-pressed={selectedForecastDay === i}
+                                            className={`wmodal__day ${
+                                                i === selectedForecastDay ? "wmodal__day--selected" : ""
+                                            } ${i === 0 ? "wmodal__day--today" : ""}`}
                                         >
                                             <span className="wmodal__day-name">
                                                 {i === 0
@@ -248,7 +305,7 @@ export default function WeatherModal({ open, onClose }) {
                                                 <Droplets size={10} />
                                                 {formatNumber(Math.round(day.rain))}%
                                             </span>
-                                        </div>
+                                        </button>
                                     );
                                 })}
                             </div>

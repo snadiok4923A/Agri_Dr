@@ -192,7 +192,14 @@
 .wmodal__main-icon {
   display: flex;
   flex-shrink: 0;
-  animation: wmodal-float 5.5s ease-in-out infinite;
+  animation: wmodal-float 5.5s ease-in-out infinite, wmodalDayFade 240ms ease;
+}
+
+/* Subtle fade when the selected forecast day changes — the detail
+   blocks remount (React key) and play this once. Fast and quiet. */
+@keyframes wmodalDayFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes wmodal-float {
@@ -210,6 +217,7 @@
   flex-direction: column;
   gap: 3px;
   min-width: 0;
+  animation: wmodalDayFade 240ms ease;
 }
 
 .wmodal__temp {
@@ -347,15 +355,38 @@
   padding: 11px 2px 10px;
   border-radius: 13px;
   min-width: 0;
-  transition: background var(--transition-fast);
+  transition: background var(--transition-fast), transform var(--transition-fast);
+  /* Interactive day cards — full-card buttons */
+  cursor: pointer;
+  background: none;
+  border: none;
+  font: inherit;
+  color: inherit;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .wmodal__day:hover {
   background: rgba(255, 255, 255, 0.045);
 }
 
-.wmodal__day--today {
+.wmodal__day:active {
+  transform: scale(0.96); /* subtle press feedback, no bounce */
+}
+
+.wmodal__day:focus-visible {
+  outline: 2px solid rgba(111, 207, 142, 0.6);
+  outline-offset: 1px;
+}
+
+/* Currently selected forecast day — the highlighted state previously
+   hard-wired to Today, now driven by selection. */
+.wmodal__day--selected {
   background: rgba(111, 207, 142, 0.1);
+}
+
+.wmodal__day--selected .wmodal__day-name,
+.wmodal__day--today .wmodal__day-name {
+  color: var(--leaf);
 }
 
 .wmodal__day-name {
@@ -366,10 +397,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
-}
-
-.wmodal__day--today .wmodal__day-name {
-  color: var(--leaf);
 }
 
 .wmodal__day-icon {
