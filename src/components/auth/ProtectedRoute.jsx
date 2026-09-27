@@ -1,24 +1,22 @@
 /**
- * ProtectedRoute.jsx — gate for authenticated-only areas.
+ * ProtectedRoute.jsx — gate for the app shell.
  *
- * • While the initial session check runs (refreshing the page), a minimal
- *   splash renders instead of flashing the login screen.
- * • Unauthenticated visitors are redirected to /login; the attempted
- *   location is remembered so login can return them to it.
- * • Already-authenticated visitors hitting /login or /signup bounce back
- *   to the app (handled inside Login/Signup via the same pattern).
+ * TWO-STATE MODEL (strict): the Supabase session is the ONLY source of
+ * truth — real session → logged in; no session → logged out.
  *
- * Pure routing logic — zero styling coupling; the splash markup is the
- * only presentational bit and is trivially replaceable.
+ * "Skip for now" is a PUBLIC-BROWSING PREFERENCE, not authentication:
+ * visitors who skipped may browse the public website (same shell), but
+ * they get NO user object, NO authenticated account controls, and NO
+ * private farm data (farm pages render sign-in empty states instead).
  */
 
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 
 export default function ProtectedRoute({ children }) {
-    // Guests (auth "Skip for now") enter the protected shell too — they
-    // just get onboarding reduced to the language choice and empty farm
-    // states instead of personal data.
+    // Visitors who skipped auth may stay on the public website without an
+    // account (spec §11 — skip must keep working). This grants browsing,
+    // never identity.
     const { isAuthenticated, isGuest, initializing } = useAuth();
     const location = useLocation();
 
@@ -32,7 +30,8 @@ export default function ProtectedRoute({ children }) {
     }
 
     if (!isAuthenticated && !isGuest) {
-        // Remember where the user wanted to go; Login sends them back here.
+        // No session and never skipped: send the visitor to /login and
+        // remember where they wanted to go so login can return them there.
         return <Navigate to="/login" replace state={{ from: location.pathname }} />;
     }
 

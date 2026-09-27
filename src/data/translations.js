@@ -29,6 +29,8 @@ export const translations = {
             market: "Market Intelligence",
             settings: "Settings",
             profile: "Profile",
+            login: "Log in",
+            addAccount: "Add Account",
         },
         common: {
             tools: "Tools",
@@ -498,7 +500,6 @@ export const translations = {
         onboarding: {
             skip: "Skip for now",
             progress: "Step {x} of {n}",
-            displayNameFallback: "Farmer",
             back: "Back",
             next: "Next",
             done: "Go to Dashboard",
@@ -556,6 +557,8 @@ export const translations = {
                 finish: "Finish farm setup",
                 signInCta: "Sign in to add your farm",
                 signInToView: "Sign in to view your farm details.",
+                signInImprove: "Sign in to view personalized yield insights.",
+                signInInsights: "Sign in to view your farm insights.",
             },
             stages: {
                 seedling: "Seedling / Nursery",
@@ -594,6 +597,8 @@ export const translations = {
             market: "বাজার তথ্য",
             settings: "সেটিংস",
             profile: "প্রোফাইল",
+            login: "লগ ইন",
+            addAccount: "অ্যাকাউন্ট যোগ করুন",
         },
         common: {
             tools: "টুলস",
@@ -1063,7 +1068,6 @@ export const translations = {
         onboarding: {
             skip: "এখন এড়িয়ে যান",
             progress: "ধাপ {x} / {n}",
-            displayNameFallback: "কৃষক",
             back: "পিছনে",
             next: "পরবর্তী",
             done: "ড্যাশবোর্ডে যান",
@@ -1121,6 +1125,8 @@ export const translations = {
                 finish: "খামার সেটআপ শেষ করুন",
                 signInCta: "আপনার খামার যোগ করতে সাইন ইন করুন",
                 signInToView: "আপনার খামারের বিবরণ দেখতে সাইন ইন করুন।",
+                signInImprove: "ব্যক্তিগত ফলন পরামর্শ দেখতে সাইন ইন করুন।",
+                signInInsights: "আপনার খামারের বিশ্লেষণ দেখতে সাইন ইন করুন।",
             },
             stages: {
                 seedling: "চারা / বীজতলা",
@@ -1159,6 +1165,8 @@ export const translations = {
             market: "मंडी जानकारी",
             settings: "सेटिंग्स",
             profile: "प्रोफ़ाइल",
+            login: "लॉग इन",
+            addAccount: "खाता जोड़ें",
         },
         common: {
             tools: "टूल्स",
@@ -1608,7 +1616,6 @@ export const translations = {
         onboarding: {
             skip: "अभी छोड़ें",
             progress: "चरण {x} / {n}",
-            displayNameFallback: "किसान",
             back: "वापस",
             next: "आगे",
             done: "डैशबोर्ड पर जाएँ",
@@ -1666,6 +1673,8 @@ export const translations = {
                 finish: "खेत सेटअप पूरा करें",
                 signInCta: "अपना खेत जोड़ने के लिए साइन इन करें",
                 signInToView: "अपने खेत का विवरण देखने के लिए साइन इन करें।",
+                signInImprove: "व्यक्तिगत उपज सुझाव देखने के लिए साइन इन करें।",
+                signInInsights: "अपने खेत की जानकारी देखने के लिए साइन इन करें।",
             },
             stages: {
                 seedling: "पौध / नर्सरी",
@@ -1704,6 +1713,8 @@ export const translations = {
             market: "మార్కెట్ సమాచారం",
             settings: "సెట్టింగులు",
             profile: "ప్రొఫైల్",
+            login: "లాగిన్",
+            addAccount: "ఖాతా జోడించండి",
         },
         common: {
             tools: "టూల్స్",
@@ -2153,7 +2164,6 @@ export const translations = {
         onboarding: {
             skip: "ఇప్పుడు దాటవేయి",
             progress: "దశ {x} / {n}",
-            displayNameFallback: "రైతు",
             back: "వెనుకకు",
             next: "తర్వాత",
             done: "డాష్‌బోర్డ్‌కి వెళ్లండి",
@@ -2211,6 +2221,8 @@ export const translations = {
                 finish: "పొల సెటప్ పూర్తి చేయండి",
                 signInCta: "మీ పొలాన్ని జోడించడానికి సైన్ ఇన్ చేయండి",
                 signInToView: "మీ పొల వివరాలు చూడటానికి సైన్ ఇన్ చేయండి.",
+                signInImprove: "వ్యక్తిగత దిగుబడి సూచనలు చూడటానికి సైన్ ఇన్ చేయండి.",
+                signInInsights: "మీ పొల విశ్లేషణలు చూడటానికి సైన్ ఇన్ చేయండి.",
             },
             stages: {
                 seedling: "నారు / నర్సరీ",
@@ -2249,6 +2261,8 @@ export const translations = {
             market: "சந்தை தகவல்",
             settings: "அமைப்புகள்",
             profile: "சுயவிவரம்",
+            login: "உள்நுழைவு",
+            addAccount: "கணக்கைச் சேர்க்கவும்",
         },
         common: {
             tools: "கருவிகள்",
@@ -2698,7 +2712,6 @@ export const translations = {
         onboarding: {
             skip: "இப்போது தவிர்க்கவும்",
             progress: "படி {x} / {n}",
-            displayNameFallback: "விவசாயி",
             back: "பின்செல்",
             next: "அடுத்து",
             done: "டாஷ்போர்டுக்குச் செல்லவும்",
@@ -2756,6 +2769,8 @@ export const translations = {
                 finish: "பண்ணை அமைப்பை முடிக்கவும்",
                 signInCta: "உங்கள் பண்ணையைச் சேர்க்க உள்நுழையுங்கள்",
                 signInToView: "உங்கள் பண்ணை விவரங்களைக் காண உள்நுழையுங்கள்.",
+                signInImprove: "தனிப்பயன் விளைச்சல் நுண்ணறிவுகளைக் காண உள்நுழையுங்கள்.",
+                signInInsights: "உங்கள் பண்ணை நுண்ணறிவுகளைக் காண உள்நுழையுங்கள்.",
             },
             stages: {
                 seedling: "நாற்று / நர்சரி",

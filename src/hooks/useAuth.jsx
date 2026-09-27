@@ -13,6 +13,20 @@
  * `useAuth()` and read `user / session / loading / initializing`. They
  * can be redesigned freely without touching auth logic.
  *
+ * AUTHENTICATION MODEL (strict): there are exactly TWO states.
+ *
+ *   real Supabase session/user  → LOGGED IN  (authenticated UI + data)
+ *   no Supabase session         → LOGGED OUT (public UI, no private data)
+ *
+ * Nothing else is authentication: not onboarding state, not localStorage
+ * flags, not a "guest"/"demo" identity. The old guest user object was a
+ * fabricated logged-in state and has been removed (spec: no fake user).
+ *
+ * "Skip for now" on the auth pages is ONLY a routing preference: it keeps
+ * the visitor on the public website after they skip, and survives refresh
+ * so the redirect flow isn't re-forced. It grants NO user object, NO
+ * authenticated controls, and NO private farm data.
+ *
  * Detected states (spec §9): logged in, logged out, Google login
  * completed (via detectSessionInUrl + onAuthStateChange), session
  * restored after refresh (persistSession), session expiration.
@@ -29,39 +43,30 @@ import {
 
 const AuthContext = createContext(null);
 
-/** Guest mode — "Skip for now" on the auth pages. A guest gets the app
- *  WITHOUT an account: onboarding reduces to the language choice, farm
- *  pages show empty states, nothing is persisted to Supabase. The flag
- *  survives refresh (localStorage) and clears the moment a real session
- *  appears (fresh sign-in or OAuth return). */
-const GUEST_KEY = "krisiveda.guest";
-const GUEST_USER = Object.freeze({
-    id: null,
-    email: "",
-    name: "",
-    avatarUrl: "",
-    provider: "guest",
-    emailConfirmed: true,
-    isGuest: true,
-});
+/** "Skip for now" routing preference (spec §11: skip must keep working).
+ *  Pure navigation state — never authentication, never a user identity.
+ *  Keeps the historical "krisiveda.guest" key name so visitors who
+ *  skipped before this change keep their preference across refresh. */
+const SKIPPED_KEY = "krisiveda.guest";
 
-function readGuestFlag() {
+function readSkippedFlag() {
     try {
-        return localStorage.getItem(GUEST_KEY) === "1";
+        return localStorage.getItem(SKIPPED_KEY) === "1";
     } catch {
         return false;
     }
 }
 
-function clearGuestFlag() {
+function clearSkippedFlag() {
     try {
-        localStorage.removeItem(GUEST_KEY);
+        localStorage.removeItem(SKIPPED_KEY);
     } catch {
         /* private mode — flag simply won't persist */
     }
 }
 
-/** Flatten a Supabase session into the shape the app consumes. */
+/** Flatten a Supabase session into the shape the app consumes.
+ *  Returns a REAL user or null — no fabricated objects, ever. */
 function toAuthUser(session) {
     if (!session?.user) return null;
     const u = session.user;
@@ -84,8 +89,8 @@ export function AuthProvider({ children }) {
     /** Per-request busy flag — true while any auth operation runs
      *  (sign-in / sign-up / Google / sign-out). UI disables buttons. */
     const [loading, setLoading] = useState(false);
-    /** "Skip for now" state — kept in sync with the localStorage flag. */
-    const [guestMode, setGuestMode] = useState(readGuestFlag);
+    /** "Skip for now" routing preference — NOT an auth state. */
+    const [skipped, setSkipped] = useState(readSkippedFlag);
 
     // Initial session restore (also handles the Google OAuth return URL)
     useEffect(() => {
@@ -95,11 +100,10 @@ export function AuthProvider({ children }) {
             .then(({ data }) => {
                 if (!mounted) return;
                 setSession(data.session ?? null);
-                // A real session always outranks guest mode (refresh while
-                // flagged as guest after signing in on another tab, etc.).
+                // A real session outranks the skip preference.
                 if (data.session) {
-                    setGuestMode(false);
-                    clearGuestFlag();
+                    setSkipped(false);
+                    clearSkippedFlag();
                 }
             })
             .catch(console.warn)
@@ -108,21 +112,20 @@ export function AuthProvider({ children }) {
             });
 
         // Live updates: login, logout, token refresh/expiration, OAuth return
-        // The Supabase session IS the source of truth (spec §3): every
-        // consumer re-renders from this single state change.
+        // The Supabase session IS the single source of truth: every
+        // consumer re-renders from this one state change.
         const { data: sub } = supabase.auth.onAuthStateChange((event, newSession) => {
             if (!mounted) return;
             setSession(newSession ?? null);
             if (newSession) {
-                setGuestMode(false);
-                clearGuestFlag();
+                setSkipped(false);
+                clearSkippedFlag();
             } else if (event === "SIGNED_OUT") {
-                // Signing out also leaves guest mode — the user is fully
-                // anonymous now, not "browsing as guest" (spec §10). The
-                // onboarding provider reacts to the same identity change
-                // and wipes ALL user-specific farm state + scratch keys.
-                setGuestMode(false);
-                clearGuestFlag();
+                // Signing out clears the skip preference too — the user is
+                // plain LOGGED OUT. The onboarding provider reacts to the
+                // same identity change and wipes all user-specific state.
+                setSkipped(false);
+                clearSkippedFlag();
             }
         });
 
@@ -165,8 +168,8 @@ export function AuthProvider({ children }) {
     /** Sign out: Supabase clears the session (incl. its auth storage
      *  entry) and emits SIGNED_OUT; the listener above updates the app
      *  state and the onboarding provider wipes every piece of user-
-     *  specific data (spec §2/§10). Nothing is deleted on the server —
-     *  the user's farm rows stay in Supabase for their next login (§6). */
+     *  specific data. Nothing is deleted on the server — the user's farm
+     *  rows stay in Supabase for their next login. */
     const signOut = useCallback(async () => {
         setLoading(true);
         try {
@@ -176,30 +179,35 @@ export function AuthProvider({ children }) {
         }
     }, []);
 
-    /** "Skip for now" on Login/Signup — browse without an account. */
+    /** "Skip for now" on Login/Signup — remember the PUBLIC-browsing
+     *  preference so refreshes don't bounce the visitor back to /login.
+     *  This grants NOTHING else: no user object, no authenticated UI. */
     const enterGuestMode = useCallback(() => {
-        setGuestMode(true);
+        setSkipped(true);
         try {
-            localStorage.setItem(GUEST_KEY, "1");
+            localStorage.setItem(SKIPPED_KEY, "1");
         } catch {
-            /* private mode — guest only lasts this page load */
+            /* private mode — preference only lasts this page load */
         }
     }, []);
 
-    /** Leaving guest mode explicitly (sign-in prompt from an empty state). */
+    /** Clearing the skip preference (e.g. explicit sign-in prompt path). */
     const exitGuestMode = useCallback(() => {
-        setGuestMode(false);
-        clearGuestFlag();
+        setSkipped(false);
+        clearSkippedFlag();
     }, []);
 
     const value = useMemo(
         () => ({
-            user: session ? toAuthUser(session) : guestMode ? GUEST_USER : null,
+            // A user object ONLY when a real Supabase session exists.
+            user: session ? toAuthUser(session) : null,
             session,
             loading,
             initializing,
             isAuthenticated: !!session,
-            isGuest: !session && guestMode,
+            /** Public-browsing preference after "Skip for now". Deliberately
+             *  NOT auth state: true never implies a user or session. */
+            isGuest: !session && skipped,
             enterGuestMode,
             exitGuestMode,
             signIn,
@@ -211,7 +219,7 @@ export function AuthProvider({ children }) {
             session,
             loading,
             initializing,
-            guestMode,
+            skipped,
             enterGuestMode,
             exitGuestMode,
             signIn,

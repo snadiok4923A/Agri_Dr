@@ -1,7 +1,7 @@
 import { useLanguage } from '../hooks/useLanguage';
 import { useTheme } from '../hooks/useTheme';
 import { useTextSize } from '../hooks/useTextSize';
-import { demoUser } from '../data/mockData';
+import { useAuth } from '../hooks/useAuth';
 import { Settings as SettingsIcon, Globe, Palette, Type } from 'lucide-react';
 import './Settings.css';
 
@@ -18,6 +18,11 @@ const TEXT_SIZE_LABELS = {
 export default function Settings() {
   const { language, changeLanguage, languages, t } = useLanguage();
   const { theme, setTheme } = useTheme();
+  // Real account identity only (two-state model): no demo-user fallback.
+  // Logged-out visitors see the section without a fabricated name.
+  const { user } = useAuth();
+  const storedName = localStorage.getItem('krisiveda.profileName') || '';
+  const accountName = user?.name || storedName || '';
   const { textSize, setTextSize, textSizes } = useTextSize();
 
   return (
@@ -41,7 +46,7 @@ export default function Settings() {
           <div className="settings-page__section-content">
             <div className="settings-page__field">
               <label className="settings-page__label">{t('settings.name')}</label>
-              <input className="settings-page__input" defaultValue={demoUser.name} />
+              <input className="settings-page__input" defaultValue={accountName} />
             </div>
             <div className="settings-page__field">
               <label className="settings-page__label">{t('settings.farmName')}</label>

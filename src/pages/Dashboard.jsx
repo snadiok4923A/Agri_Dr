@@ -227,14 +227,13 @@ export default function Dashboard() {
     /* Greeting identity + land summary come from the user's real profile
        name (Header's localStorage field) and their onboarding parcels —
        never from the demo farm. */
-    /* Greeting identity prefers the signed-in account's real name (data
-       isolation: never shows the previous user's stored profile name after
-       sign-out), then the locally-edited profile name, then a neutral
-       fallback. */
+    /* Greeting identity (two-state model): a real signed-in account's
+       name, else the locally-edited profile name, else the real account's
+       email prefix — never a demo/fake user or placeholder. */
     const ownerName =
         user?.name ||
         localStorage.getItem("krisiveda.profileName") ||
-        t("onboarding.displayNameFallback");
+        (user?.email ? user.email.split("@")[0] : "");
     const totalArea = parcels.reduce((sum, p) => sum + (Number(p.area) || 0), 0);
     const yieldPct = Math.round((currentEst / totalYield) * 100);
 

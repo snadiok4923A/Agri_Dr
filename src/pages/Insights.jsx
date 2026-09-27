@@ -28,7 +28,7 @@ export default function Insights() {
                 <section className="insights-page__header section">
                     <h1 className="insights-page__title">{t("nav.insights")}</h1>
                 </section>
-                <EmptyFarmNotice variant="page" />
+                <EmptyFarmNotice variant="page" topic="insights" />
             </div>
         );
     }

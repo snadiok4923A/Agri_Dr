@@ -6,19 +6,21 @@
  * → website.
  *
  * This gate wraps the PROTECTED shell and renders the farm-details survey
- * INSTEAD of the shell exactly when an authenticated user still needs it:
+ * INSTEAD of the shell exactly when an AUTHENTICATED user still needs it
+ * (two-state model — the session is the only source of truth):
  *
- *   signed-in user → needs onboarding unless the server (or local
- *                    mirror, when tables are absent) says completed;
- *                    a previously-skipped user is asked once per visit
- *                    and can skip again (skip ≠ complete)
- *   guest          → NEVER sees the survey. They skipped authentication,
- *                    so their farm details stay local-only/absent and the
- *                    farm-dependent pages show empty states (spec: no
- *                    fake data, no authenticated records without auth).
+ *   authenticated user → needs onboarding unless the server (or the
+ *                    user-scoped local mirror, when tables are absent)
+ *                    says completed; a user who skipped the FARM DETAILS
+ *                    step is asked once per visit and can skip again
+ *                    (skipping farm details ≠ skipping authentication)
+ *   no session      → NEVER sees the survey. Visitors who skipped auth
+ *                    (or simply logged out) have no account to onboard:
+ *                    farm-dependent pages show "Sign in to view your
+ *                    farm details." empty states instead.
  *
  * RESUME: a partially-completed survey (Back/Next drafts) is re-offered
- * with values prefilled from the local mirror.
+ * with values prefilled from the user-scoped local mirror.
  *
  * While the identity/persistence state is still loading, the shell holds
  * with the same minimal splash ProtectedRoute uses — no flicker of the
@@ -38,16 +40,22 @@ function OnboardingSplash() {
 }
 
 export default function OnboardingGate({ children }) {
-    const { status, completed } = useOnboarding();
-    const { isGuest } = useAuth();
+    const { status, completed, skipped } = useOnboarding();
+    const { isAuthenticated } = useAuth();
 
     if (status === "loading") return <OnboardingSplash />;
 
-    // Guests bypass the survey entirely — authentication was skipped, so
-    // no authenticated farm record may exist (spec §4/§12).
-    if (isGuest) return children;
+    // The farm-details survey exists ONLY for real authenticated users
+    // (two-state model): without a Supabase session there is no account
+    // to onboard — public visitors (incl. "Skip for now") go straight
+    // through and see sign-in prompts on farm pages instead.
+    if (!isAuthenticated) return children;
 
-    if (!completed) return <OnboardingWizard />;
+    // Skipping FARM DETAILS does not re-block the website (spec §8): a
+    // logged-in user who skipped lands in the app and the farm-dependent
+    // pages show "Complete your farm details…" empty states. The survey
+    // re-opens only via those empty states' CTA (resetOnboarding).
+    if (!completed && !skipped) return <OnboardingWizard />;
 
     return children;
 }

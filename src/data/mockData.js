@@ -1,16 +1,8 @@
-// ==================== DEMO USER (single source of truth) ====================
-// Every UI surface that shows the user's name derives it from here so all
-// parts of the website stay synchronized.
-export const demoUser = {
-    name: "Anantā Maurya",
-    initials: "AM",
-    role: "Farmer",
-};
-
 // ==================== FARM DATA ====================
+// NOTE: no demo/example user exists anywhere in the app — identity comes
+// exclusively from the real Supabase session (two-state auth model).
 export const farmData = {
     name: "Green Valley Rice Farm",
-    owner: demoUser.name,
     totalLand: 8.6,
     activeCrops: 4,
     expectedYield: 16.1,

@@ -109,7 +109,7 @@ export default function Improve() {
                 <section className="improve-page__header section">
                     <h1 className="improve-page__title">{t("nav.improve")}</h1>
                 </section>
-                <EmptyFarmNotice variant="page" />
+                <EmptyFarmNotice variant="page" topic="improve" />
             </div>
         );
     }

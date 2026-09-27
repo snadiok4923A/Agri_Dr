@@ -19,18 +19,32 @@ import { useOnboarding } from "../../hooks/useOnboarding";
 import { useAuth } from "../../hooks/useAuth";
 import "./EmptyFarmNotice.css";
 
-export default function EmptyFarmNotice({ variant = "page", finance = false }) {
+/* Per-topic signed-out messages (spec §8): each farm-dependent area
+   explains what signing in unlocks, via the existing i18n system. */
+const SIGNED_OUT_TITLE_KEY = {
+    farm: "onboarding.empty.signInToView",
+    finance: "onboarding.empty.signInToView",
+    improve: "onboarding.empty.signInImprove",
+    insights: "onboarding.empty.signInInsights",
+};
+
+export default function EmptyFarmNotice({
+    variant = "page",
+    finance = false,
+    topic = "farm",
+}) {
     const { t } = useLanguage();
-    const { isGuest, resetOnboarding } = useOnboarding();
+    const { resetOnboarding } = useOnboarding();
     const { isAuthenticated } = useAuth();
     const navigate = useNavigate();
 
-    /* Signed-out users and guests must SIGN IN before any farm record can
-       exist for them (spec §7: "Sign in to view your farm details.").
-       Only authenticated users resume/re-open the survey. */
-    const needsSignIn = !isAuthenticated;
+    /* TWO-STATE MODEL (spec): signed in or not. Skipped-auth visitors and
+       plain logged-out users are the SAME state — not authenticated — so
+       they all get the sign-in prompt. Only a real authenticated user
+       resumes/re-opens the survey. */
+    const signedOut = !isAuthenticated;
     const handleClick = () => {
-        if (needsSignIn || isGuest) navigate("/login");
+        if (signedOut) navigate("/login");
         else resetOnboarding();
     };
 
@@ -44,8 +58,8 @@ export default function EmptyFarmNotice({ variant = "page", finance = false }) {
             </span>
             <h3 className="emptyfarm__title">
                 {t(
-                    needsSignIn || isGuest
-                        ? "onboarding.empty.signInToView"
+                    signedOut
+                        ? SIGNED_OUT_TITLE_KEY[topic] || "onboarding.empty.signInToView"
                         : finance
                           ? "onboarding.empty.financeTitle"
                           : "onboarding.empty.farmTitle",
@@ -58,7 +72,7 @@ export default function EmptyFarmNotice({ variant = "page", finance = false }) {
                 onClick={handleClick}
             >
                 {t(
-                    needsSignIn || isGuest
+                    signedOut
                         ? "onboarding.empty.signInCta"
                         : "onboarding.empty.finish",
                 )}

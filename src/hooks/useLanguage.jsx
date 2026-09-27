@@ -30,7 +30,7 @@ function lookup(tree, key) {
 }
 
 /* Fill {name}-style placeholders: t("dashboard.greetingTime", { name })
- * → "Good morning, Anantā Maurya". Unknown placeholders are left intact. */
+ * → "Good morning, Meera". Unknown placeholders are left intact. */
 function interpolate(template, params) {
   if (!params) return template;
   return template.replace(/\{(\w+)\}/g, (m, p) =>

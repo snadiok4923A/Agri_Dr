@@ -2,7 +2,7 @@ import { createPortal } from 'react-dom';
 import {
   Bell, Sun, Moon, ChevronDown, Globe, Menu, Mic, Camera, X,
   Bug, TrendingDown, FlaskConical, TrendingUp, Activity, CheckCheck,
-  LogIn, UserPlus, LogOut,
+  UserPlus, LogOut,
 } from 'lucide-react';
 import { useState, useRef, useEffect, useCallback, memo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
@@ -11,7 +11,7 @@ import { useTheme } from '../../hooks/useTheme';
 import { useVoiceMode } from '../../hooks/useVoiceMode';
 import { useAuth } from '../../hooks/useAuth';
 import { friendlyAuthError } from '../../lib/authService';
-import { demoUser, recommendations } from '../../data/mockData';
+import { recommendations } from '../../data/mockData';
 import './Header.css';
 
 /* localStorage keys — one shared profile state drives the header avatar,
@@ -54,8 +54,10 @@ export default memo(function Header({ onMenuToggle }) {
   const [photoError, setPhotoError] = useState('');
   const [accountError, setAccountError] = useState('');
   const [profileImage, setProfileImage] = useState(() => localStorage.getItem(PROFILE_IMAGE_KEY) || '');
-  const [profileName, setProfileName] = useState(() => localStorage.getItem(PROFILE_NAME_KEY) || demoUser.name);
-  const [profileRole, setProfileRole] = useState(() => localStorage.getItem(PROFILE_ROLE_KEY) || demoUser.role);
+  // Real identity ONLY: no demo-user fallback. A skipped/logged-out
+  // visitor has no profile — authenticated controls stay hidden entirely.
+  const [profileName, setProfileName] = useState(() => localStorage.getItem(PROFILE_NAME_KEY) || '');
+  const [profileRole, setProfileRole] = useState(() => localStorage.getItem(PROFILE_ROLE_KEY) || ROLES[0]);
   const [readMap, setReadMap] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem(NOTIF_READ_KEY));
@@ -81,7 +83,7 @@ export default memo(function Header({ onMenuToggle }) {
     .map(w => w[0])
     .slice(0, 2)
     .join('')
-    .toUpperCase() || demoUser.initials;
+    .toUpperCase();
 
   const unreadCount = readMap.filter(r => !r).length;
 
@@ -185,6 +187,13 @@ export default memo(function Header({ onMenuToggle }) {
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = prev; };
   }, [panelOpen]);
+
+  /* Session ended while the profile window was open — sign-out from the
+     modal itself, a token revoked elsewhere, or expiry. Close it at once:
+     a logged-out user must never see account actions (incl. Sign out). */
+  useEffect(() => {
+    if (panelOpen && !isAuthenticated) setPanelOpen(false);
+  }, [panelOpen, isAuthenticated]);
 
   /* Notification click: mark read + navigate to the relevant feature (spec §9). */
   const openNotification = useCallback((index) => {
@@ -364,19 +373,16 @@ export default memo(function Header({ onMenuToggle }) {
           )}
         </div>
 
-        {/* Account area — signed out: compact Login / Sign Up buttons in
-            place of the avatar (spec §17, minimal navbar change). */}
+        {/* Account area — the ONLY account control, driven by the real
+            Supabase session. Logged out: a single "Add Account" button at
+            the same top-right position (opens the existing authentication
+            flow — log in, sign up, or Google). Logged in: the real user's
+            avatar. No fake profiles, no placeholders. */}
         {!isAuthenticated && (
-          <>
-            <Link className="header__auth-btn" to="/login">
-              <LogIn size={14} />
-              <span>Login</span>
-            </Link>
-            <Link className="header__auth-btn header__auth-btn--primary" to="/signup">
-              <UserPlus size={14} />
-              <span>Sign Up</span>
-            </Link>
-          </>
+          <Link className="header__auth-btn header__auth-btn--primary" to="/login" title={t('nav.addAccount')}>
+            <UserPlus size={14} />
+            <span>{t('nav.addAccount')}</span>
+          </Link>
         )}
 
         {/* Small circular header avatar — opens the LARGE floating profile
@@ -403,7 +409,10 @@ export default memo(function Header({ onMenuToggle }) {
           dialog, the same battle-tested architecture as the Market
           Intelligence modal (production-safe backdrop blur). The photo
           fills the window; name/role sit OVER it on a subtle gradient. */}
-      {panelOpen && createPortal(
+      {/* Gated on isAuthenticated too (not just the state flag): the
+          moment the Supabase session becomes null the portal unmounts —
+          no logged-out user can ever glimpse the Sign out control. */}
+      {panelOpen && isAuthenticated && createPortal(
         <div className="profile-modal__portal">
           <div
             className="profile-modal__backdrop"

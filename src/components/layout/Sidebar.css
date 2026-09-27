@@ -131,6 +131,13 @@
     margin-top: 4px;
 }
 
+/* Logged-out variant: the block is a sign-in LINK (no fake profile). */
+.sidebar__user--signin {
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+}
+
 .sidebar--collapsed .sidebar__user {
     justify-content: center;
     padding: 10px;

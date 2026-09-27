@@ -56,6 +56,7 @@ const LS_LANG = "krisiveda.onboarding.lang"; // chosen during onboarding
 /** User-scoped mirrors for the signed-in tier (never cross accounts). */
 const draftKeyFor = (userId) => `krisiveda.onboarding.draft.${userId}`;
 const completedKeyFor = (userId) => `krisiveda.onboarding.completed.${userId}`;
+const skippedKeyFor = (userId) => `krisiveda.onboarding.skipped.${userId}`;
 
 function lsGet(key) {
     try {
@@ -112,7 +113,9 @@ function clearPrivateState(setters) {
 
 export function OnboardingProvider({ children }) {
     const { user, isGuest, isAuthenticated } = useAuth();
-    const userId = user && !isGuest ? user.id : null;
+    /* A user id exists ONLY for a real Supabase session — the skipped
+       preference never yields an identity (no fake user objects). */
+    const userId = user?.id || null;
 
     /** "loading" = still loading from Supabase/localStorage (gates hold UI). */
     const [status, setStatus] = useState("loading");
@@ -156,6 +159,7 @@ export function OnboardingProvider({ children }) {
         setStatus("loading");
         const draftKey = draftKeyFor(userId);
         const completedKey = completedKeyFor(userId);
+        const skippedKey = skippedKeyFor(userId);
 
         // One-time migration: adopt the pre-fix GLOBAL mirror (the bug
         // shipped this way) into this user's scoped keys, then drop the
@@ -190,9 +194,12 @@ export function OnboardingProvider({ children }) {
                through onboarding. */
             const serverCompleted = !!profile?.onboardingCompleted;
             const localCompleted = lsGet(completedKey) === "1";
+            const localSkipped = lsGet(skippedKey) === "1";
             setCompleted(serverCompleted || localCompleted);
             setSkipped(
-                !serverCompleted && !localCompleted && !!profile?.onboardingSkipped,
+                !serverCompleted &&
+                    !localCompleted &&
+                    (!!profile?.onboardingSkipped || localSkipped),
             );
             if (profile?.selectedLanguage) lsSet(LS_LANG, profile.selectedLanguage);
 
@@ -238,6 +245,7 @@ export function OnboardingProvider({ children }) {
                 // Signed-in tier: write the USER-SCOPED mirror only.
                 lsSet(draftKeyFor(userId), JSON.stringify(nextFarm));
                 lsSet(completedKeyFor(userId), "1");
+                lsDel(skippedKeyFor(userId));
                 lsDel(LS_COMPLETED);
                 lsDel(LS_SKIPPED);
                 if (selectedLanguage) lsSet(LS_LANG, selectedLanguage);
@@ -268,6 +276,11 @@ export function OnboardingProvider({ children }) {
             if (selectedLanguage) lsSet(LS_LANG, selectedLanguage);
             if (userId) {
                 lsDel(completedKeyFor(userId));
+                // Persist the farm-details skip locally so the user lands
+                // in the website on the next visit too (spec §8: skipping
+                // farm details must not re-block the app), with the
+                // server flag as the durable copy when the tables exist.
+                lsSet(skippedKeyFor(userId), "1");
                 await saveProfileState(userId, {
                     selectedLanguage: selectedLanguage || undefined,
                     onboardingCompleted: false,
@@ -308,6 +321,7 @@ export function OnboardingProvider({ children }) {
             // source of truth. The user's Supabase farm rows are NOT
             // touched here (only the completion flag flips).
             lsDel(completedKeyFor(userId));
+            lsDel(skippedKeyFor(userId));
             saveProfileState(userId, {
                 onboardingCompleted: false,
                 onboardingSkipped: false,
