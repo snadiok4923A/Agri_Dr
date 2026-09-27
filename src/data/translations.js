@@ -554,6 +554,7 @@ export const translations = {
                 farmBody: "Add your land parcels, varieties and crop stages to unlock your farm overview.",
                 financeTitle: "Complete your farm details to view cost & profit.",
                 finish: "Finish farm setup",
+                signInCta: "Sign in to add your farm",
             },
             stages: {
                 seedling: "Seedling / Nursery",
@@ -1117,6 +1118,7 @@ export const translations = {
                 farmBody: "খামারের সংক্ষিপ্ত বিবরণ আনলক করতে আপনার প্লট, কিসম ও ফসলের ধাপ যোগ করুন।",
                 financeTitle: "খরচ ও লাভ দেখতে আপনার খামারের তথ্য সম্পূর্ণ করুন।",
                 finish: "খামার সেটআপ শেষ করুন",
+                signInCta: "আপনার খামার যোগ করতে সাইন ইন করুন",
             },
             stages: {
                 seedling: "চারা / বীজতলা",
@@ -1660,6 +1662,7 @@ export const translations = {
                 farmBody: "खेत का अवलोकन देखने के लिए अपने प्लॉट, किस्में और फ़सल अवस्थाएँ जोड़ें।",
                 financeTitle: "लागत व मुनाफ़ा देखने के लिए अपने खेत की जानकारी पूरी करें।",
                 finish: "खेत सेटअप पूरा करें",
+                signInCta: "अपना खेत जोड़ने के लिए साइन इन करें",
             },
             stages: {
                 seedling: "पौध / नर्सरी",
@@ -2203,6 +2206,7 @@ export const translations = {
                 farmBody: "మీ పొల సమాచారాన్ని చూడటానికి మీ ప్లాట్లు, రకాలు మరియు పంట దశలను జోడించండి.",
                 financeTitle: "ఖర్చు & లాభం చూడటానికి మీ పొల వివరాలను పూర్తి చేయండి.",
                 finish: "పొల సెటప్ పూర్తి చేయండి",
+                signInCta: "మీ పొలాన్ని జోడించడానికి సైన్ ఇన్ చేయండి",
             },
             stages: {
                 seedling: "నారు / నర్సరీ",
@@ -2746,6 +2750,7 @@ export const translations = {
                 farmBody: "உங்கள் பண்ணை மேலோட்டத்தைக் காண உங்கள் பாகங்கள், ரகங்கள் மற்றும் பயிர் நிலைகளைச் சேர்க்கவும்.",
                 financeTitle: "செலவு & லாபத்தைக் காண உங்கள் பண்ணை விவரங்களை முடிக்கவும்.",
                 finish: "பண்ணை அமைப்பை முடிக்கவும்",
+                signInCta: "உங்கள் பண்ணையைச் சேர்க்க உள்நுழையுங்கள்",
             },
             stages: {
                 seedling: "நாற்று / நர்சரி",

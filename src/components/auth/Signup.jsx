@@ -98,6 +98,22 @@ export default function Signup() {
                     </Link>
                 </span>
             }
+            belowCard={
+                /* "Skip for now" — OUTSIDE the glass card (belowCard slot of
+                   AuthLayout): visually separate from the auth window. Enters
+                   the app as a guest (no Supabase user → no authenticated
+                   farm records). */
+                <button
+                    type="button"
+                    className="auth-skip-external"
+                    onClick={() => {
+                        enterGuestMode();
+                        navigate("/", { replace: true });
+                    }}
+                >
+                    Skip for now
+                </button>
+            }
         >
             {successMsg && (
                 <p className="auth-alert auth-alert--success" role="status">
@@ -189,18 +205,6 @@ export default function Signup() {
                 ) : (
                     "Continue with Google"
                 )}
-            </button>
-
-            {/* "Skip for now" — same guest escape hatch as Login. */}
-            <button
-                type="button"
-                className="auth-btn auth-btn--skip"
-                onClick={() => {
-                    enterGuestMode();
-                    navigate("/", { replace: true });
-                }}
-            >
-                Skip for now
             </button>
         </AuthLayout>
     );

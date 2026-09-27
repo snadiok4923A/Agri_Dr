@@ -92,9 +92,6 @@ export function OnboardingProvider({ children }) {
     const [completed, setCompleted] = useState(false);
     const [skipped, setSkipped] = useState(false);
     const [farm, setFarm] = useState({ name: "", parcels: [] });
-    /** Guest re-onboarding: the empty-state CTA re-opens the FULL wizard
-     *  for a guest (fresh guests must NOT see it — they already skipped). */
-    const [redo, setRedo] = useState(false);
 
     const loadedForRef = useRef(undefined); // last identity the state was loaded for
 
@@ -198,7 +195,6 @@ export function OnboardingProvider({ children }) {
             setFarm(nextFarm);
             setCompleted(true);
             setSkipped(false);
-            setRedo(false);
             mirror(nextFarm);
             lsSet(LS_COMPLETED, "1");
             lsDel(LS_SKIPPED);
@@ -224,7 +220,6 @@ export function OnboardingProvider({ children }) {
         async ({ selectedLanguage } = {}) => {
             setSkipped(true);
             setCompleted(false);
-            setRedo(false);
             if (selectedLanguage) lsSet(LS_LANG, selectedLanguage);
             lsSet(LS_SKIPPED, "1");
             lsDel(LS_COMPLETED);
@@ -255,7 +250,6 @@ export function OnboardingProvider({ children }) {
     const resetOnboarding = useCallback(() => {
         setCompleted(false);
         setSkipped(false);
-        setRedo(true);
         lsDel(LS_COMPLETED);
         lsDel(LS_SKIPPED);
         if (userId) {
@@ -279,7 +273,6 @@ export function OnboardingProvider({ children }) {
             isGuest,
             isAuthenticated,
             isFarmComplete,
-            redo,
             completeOnboarding,
             skipOnboarding,
             saveDraft,
@@ -293,7 +286,6 @@ export function OnboardingProvider({ children }) {
             isGuest,
             isAuthenticated,
             isFarmComplete,
-            redo,
             completeOnboarding,
             skipOnboarding,
             saveDraft,

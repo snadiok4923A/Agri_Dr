@@ -4,6 +4,11 @@
  * All auth behaviour comes from useAuth() → authService. This component
  * only: renders inputs, runs client-side validation, manages loading/
  * error/success UI, and calls the auth actions. Redesign freely.
+ *
+ * Flow (spec): Language (already picked) → THIS auth window → successful
+ * auth → farm-details survey. "Skip for now" sits OUTSIDE the glass card
+ * (belowCard slot) and enters the app as a guest — the card itself keeps
+ * the exact designed layout, with no reserved space for a skip button.
  */
 
 import { useState } from "react";
@@ -85,13 +90,30 @@ export default function Login() {
     return (
         <AuthLayout
             title="Welcome back"
-            subtitle="Sign in to continue to Krisiveda"            footer={
+            subtitle="Sign in to continue to Krisiveda"
+            footer={
                 <span>
-                    Don&apos;t have an account? {" "}
+                    Don&apos;t have an account?{" "}
                     <Link to="/signup" state={{ from: whereTo }}>
                         Sign up
                     </Link>
                 </span>
+            }
+            belowCard={
+                /* "Skip for now" — OUTSIDE the glass card (belowCard slot of
+                   AuthLayout): visually separate from the auth window, never
+                   inside the form or button group. Enters the app as a guest
+                   (no Supabase user → no authenticated farm records). */
+                <button
+                    type="button"
+                    className="auth-skip-external"
+                    onClick={() => {
+                        enterGuestMode();
+                        navigate(whereTo, { replace: true });
+                    }}
+                >
+                    Skip for now
+                </button>
             }
         >
             {notice && (
@@ -117,7 +139,6 @@ export default function Login() {
                     error={fieldErrors.email}
                     icon={<Mail size={16} />}
                 />
-            
 
                 <AuthField
                     id="login-password"
@@ -173,19 +194,6 @@ export default function Login() {
                 ) : (
                     "Continue with Google"
                 )}
-            </button>
-
-            {/* "Skip for now" — browse the app without an account. Onboarding
-                reduces to the language choice; farm pages show empty states. */}
-            <button
-                type="button"
-                className="auth-btn auth-btn--skip"
-                onClick={() => {
-                    enterGuestMode();
-                    navigate(whereTo, { replace: true });
-                }}
-            >
-                Skip for now
             </button>
         </AuthLayout>
     );

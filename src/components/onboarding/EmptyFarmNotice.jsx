@@ -10,13 +10,24 @@
  */
 
 import { Sprout } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../../hooks/useLanguage";
 import { useOnboarding } from "../../hooks/useOnboarding";
 import "./EmptyFarmNotice.css";
 
 export default function EmptyFarmNotice({ variant = "page", finance = false }) {
     const { t } = useLanguage();
-    const { resetOnboarding } = useOnboarding();
+    const { isGuest, resetOnboarding } = useOnboarding();
+    const navigate = useNavigate();
+
+    /* Guests skipped authentication — there is no survey session to resume
+       for them, so the CTA routes to sign-in (spec §4: no authenticated
+       farm records without auth). Authenticated users resume/re-open the
+       survey via resetOnboarding; the gate picks it up instantly. */
+    const handleClick = () => {
+        if (isGuest) navigate("/login");
+        else resetOnboarding();
+    };
 
     return (
         <section
@@ -33,9 +44,9 @@ export default function EmptyFarmNotice({ variant = "page", finance = false }) {
             <button
                 type="button"
                 className="emptyfarm__cta"
-                onClick={resetOnboarding}
+                onClick={handleClick}
             >
-                {t("onboarding.empty.finish")}
+                {t(isGuest ? "onboarding.empty.signInCta" : "onboarding.empty.finish")}
             </button>
         </section>
     );

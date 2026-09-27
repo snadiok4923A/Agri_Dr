@@ -8,6 +8,7 @@ import { WeatherProvider } from './hooks/useWeather';
 import { AuthProvider } from './hooks/useAuth';
 import { OnboardingProvider } from './hooks/useOnboarding';
 import OnboardingGate from './components/onboarding/OnboardingGate';
+import AuthLanguageGate from './components/onboarding/AuthLanguageGate';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import Layout from './components/layout/Layout';
 import Login from './components/auth/Login';
@@ -50,9 +51,25 @@ export default function App() {
           <VoiceModeProvider>
             <Routes>
               {/* Public auth routes — replaceable UI, logic stays in
-                  AuthProvider/authService (spec §14). */}
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
+                  AuthProvider/authService (spec §14). AuthLanguageGate
+                  enforces the mandatory FIRST step: choose language →
+                  then authentication appears (spec: no skip here). */}
+              <Route
+                path="/login"
+                element={
+                  <AuthLanguageGate>
+                    <Login />
+                  </AuthLanguageGate>
+                }
+              />
+              <Route
+                path="/signup"
+                element={
+                  <AuthLanguageGate>
+                    <Signup />
+                  </AuthLanguageGate>
+                }
+              />
 
               {/* Protected app shell — all dashboard pages require a
                   session; unauthenticated visitors land on /login. */}

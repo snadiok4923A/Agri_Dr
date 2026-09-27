@@ -1,20 +1,24 @@
 /*
- * OnboardingGate.jsx — routing logic for first-run onboarding.
+ * OnboardingGate.jsx — routing logic for onboarding.
  *
- * Decides, on every render of the protected shell, whether the user
- * still needs onboarding and renders the wizard INSTEAD of the shell
- * until they finish or skip:
+ * FLOW (spec): Language (mandatory, BEFORE auth, in AuthLanguageGate on
+ * the public auth routes) → Authentication → survey (this gate) → Done
+ * → website.
+ *
+ * This gate wraps the PROTECTED shell and renders the farm-details survey
+ * INSTEAD of the shell exactly when an authenticated user still needs it:
  *
  *   signed-in user → needs onboarding unless the server (or local
  *                    mirror, when tables are absent) says completed;
  *                    a previously-skipped user is asked once per visit
  *                    and can skip again (skip ≠ complete)
- *   guest          → only the language step is required, then never
- *                    again (local flag)
+ *   guest          → NEVER sees the survey. They skipped authentication,
+ *                    so their farm details stay local-only/absent and the
+ *                    farm-dependent pages show empty states (spec: no
+ *                    fake data, no authenticated records without auth).
  *
- * RESUME: a partially-completed wizard (Back/Next drafts) is re-offered
- * with values prefilled from the local mirror — the user never re-enters
- * what they already typed.
+ * RESUME: a partially-completed survey (Back/Next drafts) is re-offered
+ * with values prefilled from the local mirror.
  *
  * While the identity/persistence state is still loading, the shell holds
  * with the same minimal splash ProtectedRoute uses — no flicker of the
@@ -22,7 +26,6 @@
  */
 
 import OnboardingWizard from "./OnboardingWizard";
-import GuestLanguageGate from "./GuestLanguageGate";
 import { useOnboarding } from "../../hooks/useOnboarding";
 import { useAuth } from "../../hooks/useAuth";
 
@@ -35,19 +38,14 @@ function OnboardingSplash() {
 }
 
 export default function OnboardingGate({ children }) {
-    const { status, completed, isGuest: onboardingIsGuest, redo } = useOnboarding();
-    const { isGuest: authIsGuest } = useAuth();
-    const isGuest = onboardingIsGuest || authIsGuest;
+    const { status, completed } = useOnboarding();
+    const { isGuest } = useAuth();
 
     if (status === "loading") return <OnboardingSplash />;
 
-    // Guest WITH redo (empty-state CTA): the full survey, but the auth
-    // step is skipped — they already declined sign-in once.
-    if (isGuest && redo) return <OnboardingWizard includeAuth={false} />;
-
-    // Fresh guests only ever answer the language question; they are never
-    // forced through auth or the farm survey, and the answer is remembered.
-    if (isGuest) return <GuestLanguageGate>{children}</GuestLanguageGate>;
+    // Guests bypass the survey entirely — authentication was skipped, so
+    // no authenticated farm record may exist (spec §4/§12).
+    if (isGuest) return children;
 
     if (!completed) return <OnboardingWizard />;
 

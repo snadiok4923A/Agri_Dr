@@ -1,5 +1,7 @@
 import { useLanguage } from "../hooks/useLanguage";
 import { analyticsData, activityData, calendarData } from "../data/mockData";
+import EmptyFarmNotice from "../components/onboarding/EmptyFarmNotice";
+import { useOnboarding } from "../hooks/useOnboarding";
 import { Clock, TrendingUp, Award, Sparkles, Sprout } from "lucide-react";
 import {
     AreaChart,
@@ -16,6 +18,20 @@ import "./Insights.css";
 
 export default function Insights() {
     const { t, formatNumber } = useLanguage();
+    const { isFarmComplete } = useOnboarding();
+
+    /* Farm-data-dependent page (spec §13): farm insights without a farm
+       would be fabricated — empty state until details are complete. */
+    if (!isFarmComplete) {
+        return (
+            <div className="page-container insights-page">
+                <section className="insights-page__header section">
+                    <h1 className="insights-page__title">{t("nav.insights")}</h1>
+                </section>
+                <EmptyFarmNotice variant="page" />
+            </div>
+        );
+    }
 
     return (
         <div className="page-container insights-page">

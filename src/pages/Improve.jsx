@@ -16,6 +16,8 @@ import {
     ArrowRight,
 } from "lucide-react";
 import AnimatedNumber from "../components/common/AnimatedNumber";
+import EmptyFarmNotice from "../components/onboarding/EmptyFarmNotice";
+import { useOnboarding } from "../hooks/useOnboarding";
 import "./Improve.css";
 
 // Staggered fade-up reveal (same pattern as the Dashboard)
@@ -94,8 +96,23 @@ const URGENCY_KEY = {
 
 export default function Improve() {
     const { t, formatNumber } = useLanguage();
+    const { isFarmComplete } = useOnboarding();
     const shouldReduceMotion = useReducedMotion();
     const [goal, setGoal] = useState("all");
+
+    /* Farm-data-dependent page (spec §13): without the user's own farm
+       details there is nothing real to improve — show the empty state
+       instead of demo recommendations. */
+    if (!isFarmComplete) {
+        return (
+            <div className="page-container improve-page">
+                <section className="improve-page__header section">
+                    <h1 className="improve-page__title">{t("nav.improve")}</h1>
+                </section>
+                <EmptyFarmNotice variant="page" />
+            </div>
+        );
+    }
 
     const reveal = (i) =>
         shouldReduceMotion

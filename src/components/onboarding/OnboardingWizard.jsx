@@ -24,8 +24,7 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import AuthLayout from "../auth/AuthLayout";
-import { useLanguage, LANGUAGES } from "../../hooks/useLanguage";
-import { useAuth } from "../../hooks/useAuth";
+import { useLanguage } from "../../hooks/useLanguage";
 import { useOnboarding } from "../../hooks/useOnboarding";
 import { riceVarieties } from "../../data/riceVarieties";
 import { CROP_STAGES } from "../../data/cropStages";
@@ -54,29 +53,23 @@ function parcelFromDraft(draft, unitFallback) {
     };
 }
 
-export default function OnboardingWizard({ includeAuth = true }) {
-    const { t, language, changeLanguage, formatNumber } = useLanguage();
-    const { isGuest, signInWithGoogle } = useAuth();
+export default function OnboardingWizard() {
+    const { t, formatNumber } = useLanguage();
     const { farm, completeOnboarding, skipOnboarding, saveDraft } = useOnboarding();
     const navigate = useNavigate();
 
-    /* Auth step exists only for guests — signed-in users already have an
-       account, so their flow is one step shorter (and stays correct when
-       Google sign-in returns straight here). Guests re-entering from an
-       empty-state CTA (includeAuth=false) already declined sign-in, so
-       their redo run never asks again. */
+    /* SURVEY-ONLY wizard (spec flow): language is chosen BEFORE auth
+       (AuthLanguageGate) and this component only renders for SUCCESSFULLY
+       AUTHENTICATED users (OnboardingGate) — so the flow here is exactly
+       count → area → variety → stage → review (Done). */
     const steps = useMemo(
-        () =>
-            ["language", "auth", "count", "area", "variety", "stage", "review"].filter(
-                (s) => s !== "auth" || (includeAuth && isGuest),
-            ),
-        [includeAuth, isGuest],
+        () => ["count", "area", "variety", "stage", "review"],
+        [],
     );
     const [stepIndex, setStepIndex] = useState(0);
     const step = steps[stepIndex];
 
     /* ---- form state (all steps live here so Back never loses data) ---- */
-    const [lang, setLang] = useState(language);
     const [count, setCount] = useState(() =>
         Math.min(MAX_PARCELS, Math.max(MIN_PARCELS, farm.parcels.length || 1)),
     );
@@ -163,10 +156,15 @@ export default function OnboardingWizard({ includeAuth = true }) {
         setStepIndex((i) => Math.max(0, i - 1));
     };
 
+    /* The user's language was chosen in the mandatory FIRST step (before
+       auth) via the existing changeLanguage system — read it from its
+       localStorage home so the profile write stays in sync. */
+    const chosenLanguage = () => localStorage.getItem("krisiveda-lang") || undefined;
+
     const handleSkip = async () => {
         persistDraft();
         setSaving(true);
-        await skipOnboarding({ selectedLanguage: lang || undefined });
+        await skipOnboarding({ selectedLanguage: chosenLanguage() });
         setSaving(false);
         navigate("/", { replace: true });
     };
@@ -182,7 +180,7 @@ export default function OnboardingWizard({ includeAuth = true }) {
                 riceVariety: p.variety.trim(),
                 stage: p.stage,
             })),
-            selectedLanguage: lang || undefined,
+            selectedLanguage: chosenLanguage(),
         });
         setSaving(false);
         navigate("/", { replace: true });
@@ -190,14 +188,6 @@ export default function OnboardingWizard({ includeAuth = true }) {
 
     /* ---- per-step copy ---- */
     const copy = {
-        language: {
-            title: t("onboarding.language.title"),
-            subtitle: t("onboarding.language.subtitle"),
-        },
-        auth: {
-            title: t("onboarding.auth.googleTitle"),
-            subtitle: t("onboarding.auth.googleSubtitle"),
-        },
         count: {
             title: t("onboarding.count.title"),
             subtitle: t("onboarding.count.subtitle"),
@@ -240,7 +230,24 @@ export default function OnboardingWizard({ includeAuth = true }) {
     );
 
     return (
-        <AuthLayout title={copy.title} subtitle={copy.subtitle}>
+        <AuthLayout
+            title={copy.title}
+            subtitle={copy.subtitle}
+            belowCard={
+                /* "Skip for now" — OUTSIDE the survey card (belowCard slot
+                   of AuthLayout): visually separate, never inside the form
+                   or the Back/Next navigation. Draft values are preserved,
+                   so a later visit resumes where the user left off. */
+                <button
+                    type="button"
+                    className="auth-skip-external"
+                    onClick={handleSkip}
+                    disabled={saving}
+                >
+                    {t("onboarding.skip")}
+                </button>
+            }
+        >
             {/* Progress: "Step X of N" + bar — first thing inside the card */}
             <div className="obw-progress" aria-live="polite">
                 <span className="obw-progress__label">
@@ -253,53 +260,6 @@ export default function OnboardingWizard({ includeAuth = true }) {
                     />
                 </div>
             </div>
-
-            {/* ==================== STEP: LANGUAGE ==================== */}
-            {step === "language" && (
-                <div className="obw-lang-grid" role="listbox" aria-label={copy.title}>
-                    {LANGUAGES.map((l) => (
-                        <button
-                            key={l.code}
-                            type="button"
-                            role="option"
-                            aria-selected={lang === l.code}
-                            className={`obw-lang ${lang === l.code ? "obw-lang--active" : ""}`}
-                            onClick={() => {
-                                setLang(l.code);
-                                // Live i18n: every later step instantly speaks
-                                // the picked language (existing system, one call).
-                                changeLanguage(l.code);
-                            }}
-                        >
-                            <span className="obw-lang__flag" aria-hidden="true">
-                                {l.flag}
-                            </span>
-                            <span className="obw-lang__native">{l.native}</span>
-                            <span className="obw-lang__name">{l.name}</span>
-                        </button>
-                    ))}
-                </div>
-            )}
-
-            {/* ==================== STEP: AUTH (guests only) ==================== */}
-            {step === "auth" && (
-                <div className="obw-auth">
-                    <button
-                        type="button"
-                        className="auth-btn auth-btn--primary"
-                        onClick={() => signInWithGoogle()}
-                    >
-                        {t("onboarding.auth.googleBtn")}
-                    </button>
-                    <button
-                        type="button"
-                        className="auth-btn auth-btn--google"
-                        onClick={() => navigate("/login", { state: { from: "/onboarding" } })}
-                    >
-                        {t("onboarding.auth.emailBtn")}
-                    </button>
-                </div>
-            )}
 
             {/* ==================== STEP: PARCEL COUNT ==================== */}
             {step === "count" && (
@@ -493,14 +453,6 @@ export default function OnboardingWizard({ includeAuth = true }) {
                     <span />
                 )}
                 <div className="obw-nav__right">
-                    <button
-                        type="button"
-                        className="obw-nav__skip"
-                        onClick={handleSkip}
-                        disabled={saving}
-                    >
-                        {t("onboarding.skip")}
-                    </button>
                     {step === "review" ? (
                         <button
                             type="button"
