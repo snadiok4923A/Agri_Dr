@@ -41,13 +41,14 @@ export default function Sidebar() {
   const storedName = localStorage.getItem('krisiveda.profileName') || '';
   const storedRole = localStorage.getItem('krisiveda.profileRole') || '';
   // Only a real account's information is shown: profile name, else the
-  // real account's email prefix. No placeholder identity ever appears.
+  // real account's email prefix. Role only if the user actually picked one.
   const displayName =
     user?.name || storedName || (user?.email ? user.email.split('@')[0] : '');
-  const displayRole =
-    storedRole === 'Business Man'
+  const displayRole = storedRole
+    ? storedRole === 'Business Man'
       ? t('common.profile.businessMan')
-      : t('common.profile.farmer');
+      : t('common.profile.farmer')
+    : '';
 
   return (
     <aside className={`sidebar ${collapsed ? 'sidebar--collapsed' : ''}`}>
@@ -122,7 +123,7 @@ export default function Sidebar() {
             {!collapsed && (
               <div className="sidebar__user-info">
                 <span className="sidebar__user-name">{displayName}</span>
-                <span className="sidebar__user-role">{displayRole}</span>
+                {displayRole && <span className="sidebar__user-role">{displayRole}</span>}
               </div>
             )}
           </div>

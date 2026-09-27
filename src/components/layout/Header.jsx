@@ -2,7 +2,7 @@ import { createPortal } from 'react-dom';
 import {
   Bell, Sun, Moon, ChevronDown, Globe, Menu, Mic, Camera, X,
   Bug, TrendingDown, FlaskConical, TrendingUp, Activity, CheckCheck,
-  UserPlus, LogOut,
+  UserPlus, LogOut, User,
 } from 'lucide-react';
 import { useState, useRef, useEffect, useCallback, memo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
@@ -57,7 +57,9 @@ export default memo(function Header({ onMenuToggle }) {
   // Real identity ONLY: no demo-user fallback. A skipped/logged-out
   // visitor has no profile — authenticated controls stay hidden entirely.
   const [profileName, setProfileName] = useState(() => localStorage.getItem(PROFILE_NAME_KEY) || '');
-  const [profileRole, setProfileRole] = useState(() => localStorage.getItem(PROFILE_ROLE_KEY) || ROLES[0]);
+  // Role is ONLY what the user actually picked (stored). Empty default —
+  // the app never assigns or displays a role the user didn't choose.
+  const [profileRole, setProfileRole] = useState(() => localStorage.getItem(PROFILE_ROLE_KEY) || '');
   const [readMap, setReadMap] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem(NOTIF_READ_KEY));
@@ -78,7 +80,9 @@ export default memo(function Header({ onMenuToggle }) {
   const fileRef = useRef(null);
 
   const currentLang = languages.find(l => l.code === language);
-  const initials = profileName
+  /* Initials come ONLY from real information (auth name, else the name
+     the user typed). Empty → the caller renders a neutral account icon. */
+  const initials = (user?.name || profileName)
     .split(/\s+/)
     .map(w => w[0])
     .slice(0, 2)
@@ -400,7 +404,9 @@ export default memo(function Header({ onMenuToggle }) {
               ? <img className="header__avatar-img" src={profileImage} alt={displayName} />
               : user?.avatarUrl
                 ? <img className="header__avatar-img" src={user.avatarUrl} alt={displayName} referrerPolicy="no-referrer" />
-                : <span>{initials}</span>}
+                : initials
+                  ? <span>{initials}</span>
+                  : <User size={18} aria-hidden="true" />}
           </button>
         )}
       </div>
@@ -432,7 +438,9 @@ export default memo(function Header({ onMenuToggle }) {
                   ? <img src={profileImage} alt={displayName} />
                   : user?.avatarUrl
                     ? <img src={user.avatarUrl} alt={displayName} referrerPolicy="no-referrer" />
-                    : <span className="profile-modal__initials">{initials}</span>}
+                    : initials
+                      ? <span className="profile-modal__initials">{initials}</span>
+                      : <User size={22} aria-hidden="true" />}
                 <div className="profile-modal__scrim" aria-hidden="true" />
 
                 {/* Circular close button, top-right (spec §7). */}
@@ -494,12 +502,15 @@ export default memo(function Header({ onMenuToggle }) {
                   </div>
                 ) : (
                   <div className="profile-modal__identity">
-                    <h3 className="profile-modal__name">{displayName}</h3>
-                    {/* Signed-in account identity — real auth email (spec §17). */}
+                    <h3 className="profile-modal__name">{displayName || t("common.profile.nameUnavailable")}</h3>
+                    {/* Signed-in account identity — real auth email only. */}
                     {authEmail && <p className="profile-modal__email">{authEmail}</p>}
-                    <p className="profile-modal__role-line">
-                      {profileRole === 'Business Man' ? t("common.profile.businessMan") : t("common.profile.farmer")}
-                    </p>
+                    {/* Role line ONLY when the user actually chose one. */}
+                    {profileRole && (
+                      <p className="profile-modal__role-line">
+                        {profileRole === 'Business Man' ? t("common.profile.businessMan") : t("common.profile.farmer")}
+                      </p>
+                    )}
                     <div className="profile-modal__actions">
                       <button className="profile-modal__pill" onClick={startEditing}>
                         {t("common.profile.editProfile")}
