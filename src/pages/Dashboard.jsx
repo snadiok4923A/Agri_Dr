@@ -28,6 +28,7 @@ import { VOICE_OPEN_WEATHER_EVENT } from "../hooks/useVoiceMode";
 import { registerOverlay } from "../voice/overlayBus";
 import { useWeather } from "../hooks/useWeather";
 import { useOnboarding } from "../hooks/useOnboarding";
+import { useAuth } from "../hooks/useAuth";
 import EmptyFarmNotice from "../components/onboarding/EmptyFarmNotice";
 import "./Dashboard.css";
 
@@ -62,6 +63,7 @@ export default function Dashboard() {
     // action items, insights) render from the user's OWN farm data or
     // show an empty state; demo numbers never appear for real users.
     const { isFarmComplete, farm } = useOnboarding();
+    const { user } = useAuth();
     const parcels = farm.parcels || [];
     const hasFarm = isFarmComplete && parcels.length > 0;
     // Real weather state — location permission → Open-Meteo fetch → this card.
@@ -225,7 +227,12 @@ export default function Dashboard() {
     /* Greeting identity + land summary come from the user's real profile
        name (Header's localStorage field) and their onboarding parcels —
        never from the demo farm. */
+    /* Greeting identity prefers the signed-in account's real name (data
+       isolation: never shows the previous user's stored profile name after
+       sign-out), then the locally-edited profile name, then a neutral
+       fallback. */
     const ownerName =
+        user?.name ||
         localStorage.getItem("krisiveda.profileName") ||
         t("onboarding.displayNameFallback");
     const totalArea = parcels.reduce((sum, p) => sum + (Number(p.area) || 0), 0);

@@ -108,10 +108,19 @@ export function AuthProvider({ children }) {
             });
 
         // Live updates: login, logout, token refresh/expiration, OAuth return
-        const { data: sub } = supabase.auth.onAuthStateChange((_event, newSession) => {
+        // The Supabase session IS the source of truth (spec §3): every
+        // consumer re-renders from this single state change.
+        const { data: sub } = supabase.auth.onAuthStateChange((event, newSession) => {
             if (!mounted) return;
             setSession(newSession ?? null);
             if (newSession) {
+                setGuestMode(false);
+                clearGuestFlag();
+            } else if (event === "SIGNED_OUT") {
+                // Signing out also leaves guest mode — the user is fully
+                // anonymous now, not "browsing as guest" (spec §10). The
+                // onboarding provider reacts to the same identity change
+                // and wipes ALL user-specific farm state + scratch keys.
                 setGuestMode(false);
                 clearGuestFlag();
             }
@@ -153,6 +162,11 @@ export function AuthProvider({ children }) {
         }
     }, []);
 
+    /** Sign out: Supabase clears the session (incl. its auth storage
+     *  entry) and emits SIGNED_OUT; the listener above updates the app
+     *  state and the onboarding provider wipes every piece of user-
+     *  specific data (spec §2/§10). Nothing is deleted on the server —
+     *  the user's farm rows stay in Supabase for their next login (§6). */
     const signOut = useCallback(async () => {
         setLoading(true);
         try {

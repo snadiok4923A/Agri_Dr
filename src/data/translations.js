@@ -555,6 +555,7 @@ export const translations = {
                 financeTitle: "Complete your farm details to view cost & profit.",
                 finish: "Finish farm setup",
                 signInCta: "Sign in to add your farm",
+                signInToView: "Sign in to view your farm details.",
             },
             stages: {
                 seedling: "Seedling / Nursery",
@@ -1119,6 +1120,7 @@ export const translations = {
                 financeTitle: "খরচ ও লাভ দেখতে আপনার খামারের তথ্য সম্পূর্ণ করুন।",
                 finish: "খামার সেটআপ শেষ করুন",
                 signInCta: "আপনার খামার যোগ করতে সাইন ইন করুন",
+                signInToView: "আপনার খামারের বিবরণ দেখতে সাইন ইন করুন।",
             },
             stages: {
                 seedling: "চারা / বীজতলা",
@@ -1663,6 +1665,7 @@ export const translations = {
                 financeTitle: "लागत व मुनाफ़ा देखने के लिए अपने खेत की जानकारी पूरी करें।",
                 finish: "खेत सेटअप पूरा करें",
                 signInCta: "अपना खेत जोड़ने के लिए साइन इन करें",
+                signInToView: "अपने खेत का विवरण देखने के लिए साइन इन करें।",
             },
             stages: {
                 seedling: "पौध / नर्सरी",
@@ -2207,6 +2210,7 @@ export const translations = {
                 financeTitle: "ఖర్చు & లాభం చూడటానికి మీ పొల వివరాలను పూర్తి చేయండి.",
                 finish: "పొల సెటప్ పూర్తి చేయండి",
                 signInCta: "మీ పొలాన్ని జోడించడానికి సైన్ ఇన్ చేయండి",
+                signInToView: "మీ పొల వివరాలు చూడటానికి సైన్ ఇన్ చేయండి.",
             },
             stages: {
                 seedling: "నారు / నర్సరీ",
@@ -2751,6 +2755,7 @@ export const translations = {
                 financeTitle: "செலவு & லாபத்தைக் காண உங்கள் பண்ணை விவரங்களை முடிக்கவும்.",
                 finish: "பண்ணை அமைப்பை முடிக்கவும்",
                 signInCta: "உங்கள் பண்ணையைச் சேர்க்க உள்நுழையுங்கள்",
+                signInToView: "உங்கள் பண்ணை விவரங்களைக் காண உள்நுழையுங்கள்.",
             },
             stages: {
                 seedling: "நாற்று / நர்சரி",

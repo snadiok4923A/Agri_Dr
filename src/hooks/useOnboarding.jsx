@@ -9,11 +9,19 @@
  *            ↓
  *   OnboardingWizard / OnboardingGate / empty states  ← presentation only
  *
- * Two persistence tiers, chosen automatically:
+ * Three persistence tiers, chosen by identity:
  *   • signed-in user  → Supabase (profiles/farms/land_parcels; tables may
- *     be absent — onboardingService degrades silently) + a local mirror
- *   • guest           → localStorage only ("skipped" counts as a terminal
- *     choice, so guests are never re-prompted)
+ *     be absent — onboardingService degrades silently) + a USER-SCOPED
+ *     local mirror for instant UI on the next visit
+ *   • guest           → anonymous localStorage scratch only
+ *   • signed out      → NOTHING: all private state is wiped from memory
+ *     and the anonymous scratch is cleared (data-isolation spec §1/§2/§5)
+ *
+ * DATA ISOLATION (spec §12/§13): a signed-in user's draft + completed
+ * flags live under USER-SCOPED keys that no other identity ever reads.
+ * The un-scoped keys are anonymous scratch space; they are wiped on
+ * sign-out and on guest entry, so the previous user's farm can never
+ * leak into a guest or pre-login session.
  *
  * Identity changes (login/logout) reload the state from the new source.
  */
@@ -40,10 +48,14 @@ import {
 const OnboardingContext = createContext(null);
 
 /* localStorage namespace — one key per tier, never mixed. */
-const LS_COMPLETED = "krisiveda.onboarding.completed";
-const LS_SKIPPED = "krisiveda.onboarding.skipped";
-const LS_DRAFT = "krisiveda.onboarding.draft"; // guest: full farm data
+const LS_COMPLETED = "krisiveda.onboarding.completed"; // anonymous scratch
+const LS_SKIPPED = "krisiveda.onboarding.skipped"; // anonymous scratch
+const LS_DRAFT = "krisiveda.onboarding.draft"; // anonymous scratch
 const LS_LANG = "krisiveda.onboarding.lang"; // chosen during onboarding
+
+/** User-scoped mirrors for the signed-in tier (never cross accounts). */
+const draftKeyFor = (userId) => `krisiveda.onboarding.draft.${userId}`;
+const completedKeyFor = (userId) => `krisiveda.onboarding.completed.${userId}`;
 
 function lsGet(key) {
     try {
@@ -67,9 +79,9 @@ function lsDel(key) {
     }
 }
 
-/** Persisted guest/user farm snapshot (mirrors the Supabase parcel shape). */
-function readLocalFarm() {
-    const raw = lsGet(LS_DRAFT);
+/** Persisted farm snapshot (mirrors the Supabase parcel shape). */
+function readLocalFarm(key) {
+    const raw = lsGet(key);
     if (!raw) return null;
     try {
         const parsed = JSON.parse(raw);
@@ -83,11 +95,26 @@ function readLocalFarm() {
     }
 }
 
+/**
+ * Drop every piece of private onboarding state — memory AND the anonymous
+ * scratch keys. The user-scoped mirrors are intentionally KEPT: they belong
+ * to the signed-out account and are restored when that account logs back
+ * in (spec §6: sign-out clears local state, never Supabase data).
+ */
+function clearPrivateState(setters) {
+    setters.setFarm({ name: "", parcels: [] });
+    setters.setCompleted(false);
+    setters.setSkipped(false);
+    lsDel(LS_DRAFT);
+    lsDel(LS_COMPLETED);
+    lsDel(LS_SKIPPED);
+}
+
 export function OnboardingProvider({ children }) {
     const { user, isGuest, isAuthenticated } = useAuth();
     const userId = user && !isGuest ? user.id : null;
 
-    /** undefined = still loading from Supabase/localStorage (gates hold UI). */
+    /** "loading" = still loading from Supabase/localStorage (gates hold UI). */
     const [status, setStatus] = useState("loading");
     const [completed, setCompleted] = useState(false);
     const [skipped, setSkipped] = useState(false);
@@ -106,29 +133,47 @@ export function OnboardingProvider({ children }) {
         let cancelled = false;
 
         if (isGuest) {
-            const local = readLocalFarm();
-            setFarm(local || { name: "", parcels: [] });
-            setCompleted(lsGet(LS_COMPLETED) === "1");
-            setSkipped(lsGet(LS_SKIPPED) === "1");
+            /* Anonymous tier — NEVER reads signed-in user data (spec §13).
+               The scratch keys may still hold the PREVIOUS user's farm
+               (e.g. a SIGNED_OUT event that never fired because the tab
+               was closed), so start by wiping them. A guest session starts
+               with an empty farm; their own wizard scratch is rebuilt. */
+            clearPrivateState({ setFarm, setCompleted, setSkipped });
             setStatus("ready");
             return undefined;
         }
 
         if (!userId) {
-            // Signed out (pre-login page visits) — anonymous mirror only.
-            setFarm({ name: "", parcels: [] });
-            setCompleted(false);
-            setSkipped(false);
+            /* Signed out: hard-clear ALL private state immediately (spec
+               §1/§2/§5) — memory AND the anonymous scratch keys. Farm data
+               is never read from localStorage without a real session. */
+            clearPrivateState({ setFarm, setCompleted, setSkipped });
             setStatus("ready");
             return undefined;
         }
 
+        /* ---------------- real, authenticated user ---------------- */
         setStatus("loading");
+        const draftKey = draftKeyFor(userId);
+        const completedKey = completedKeyFor(userId);
+
+        // One-time migration: adopt the pre-fix GLOBAL mirror (the bug
+        // shipped this way) into this user's scoped keys, then drop the
+        // shared copy so the anonymous tier can never read it again.
+        if (!lsGet(draftKey) && lsGet(LS_DRAFT)) {
+            lsSet(draftKey, lsGet(LS_DRAFT));
+            lsDel(LS_DRAFT);
+        }
+        if (lsGet(completedKey) !== "1" && lsGet(LS_COMPLETED) === "1") {
+            lsSet(completedKey, "1");
+            lsDel(LS_COMPLETED);
+        }
+
         (async () => {
-            // Local mirror first (instant UI), then Supabase truth.
-            const local = readLocalFarm();
+            // User-scoped local mirror first (instant UI), then Supabase truth.
+            const local = readLocalFarm(draftKey);
             if (!cancelled) setFarm(local || { name: "", parcels: [] });
-            setCompleted(lsGet(LS_COMPLETED) === "1");
+            setCompleted(lsGet(completedKey) === "1");
             setSkipped(false); // server flag decides for real users
 
             const [profile, farmRow, parcels] = await Promise.all([
@@ -138,18 +183,16 @@ export function OnboardingProvider({ children }) {
             ]);
             if (cancelled) return;
 
-            /* Server is the source of truth, BUT the local mirror counts
-               too: when the schema/migration is absent (profile === null)
-               a user who already finished once locally is never re-prompted,
-               and brand-new sign-ups still flow through onboarding. */
+            /* Server is the source of truth, BUT the user's local mirror
+               counts too: when the schema/migration is absent
+               (profile === null) a user who already finished once locally
+               is never re-prompted, and brand-new sign-ups still flow
+               through onboarding. */
             const serverCompleted = !!profile?.onboardingCompleted;
-            const localCompleted = lsGet(LS_COMPLETED) === "1";
-            const localSkipped = lsGet(LS_SKIPPED) === "1";
+            const localCompleted = lsGet(completedKey) === "1";
             setCompleted(serverCompleted || localCompleted);
             setSkipped(
-                !serverCompleted &&
-                    !localCompleted &&
-                    (!!profile?.onboardingSkipped || localSkipped),
+                !serverCompleted && !localCompleted && !!profile?.onboardingSkipped,
             );
             if (profile?.selectedLanguage) lsSet(LS_LANG, profile.selectedLanguage);
 
@@ -159,7 +202,7 @@ export function OnboardingProvider({ children }) {
                     parcels: parcels || [],
                 };
                 setFarm(nextFarm);
-                lsSet(LS_DRAFT, JSON.stringify(nextFarm));
+                lsSet(draftKey, JSON.stringify(nextFarm));
             } else if (!local) {
                 setFarm({ name: "", parcels: [] });
             }
@@ -170,11 +213,6 @@ export function OnboardingProvider({ children }) {
             cancelled = true;
         };
     }, [isGuest, userId]);
-
-    /** Write-through helper: Supabase first (fire-and-forget), local mirror. */
-    const mirror = useCallback((nextFarm) => {
-        lsSet(LS_DRAFT, JSON.stringify(nextFarm));
-    }, []);
 
     /* ------------------------------------------------------------------
      * Actions — consumed by the wizard and empty states.
@@ -195,11 +233,13 @@ export function OnboardingProvider({ children }) {
             setFarm(nextFarm);
             setCompleted(true);
             setSkipped(false);
-            mirror(nextFarm);
-            lsSet(LS_COMPLETED, "1");
-            lsDel(LS_SKIPPED);
 
             if (userId) {
+                // Signed-in tier: write the USER-SCOPED mirror only.
+                lsSet(draftKeyFor(userId), JSON.stringify(nextFarm));
+                lsSet(completedKeyFor(userId), "1");
+                lsDel(LS_COMPLETED);
+                lsDel(LS_SKIPPED);
                 if (selectedLanguage) lsSet(LS_LANG, selectedLanguage);
                 await saveProfileState(userId, {
                     selectedLanguage: selectedLanguage || undefined,
@@ -208,10 +248,15 @@ export function OnboardingProvider({ children }) {
                 });
                 const farmId = await upsertFarm(userId, nextFarm.name);
                 if (farmId) await replaceParcels(userId, farmId, nextFarm.parcels);
+            } else {
+                // Guest tier: anonymous scratch only (never user data).
+                lsSet(LS_DRAFT, JSON.stringify(nextFarm));
+                lsSet(LS_COMPLETED, "1");
+                lsDel(LS_SKIPPED);
             }
             return nextFarm;
         },
-        [userId, mirror],
+        [userId],
     );
 
     /** "Skip for now" inside the wizard (or re-skip later). The language
@@ -221,39 +266,48 @@ export function OnboardingProvider({ children }) {
             setSkipped(true);
             setCompleted(false);
             if (selectedLanguage) lsSet(LS_LANG, selectedLanguage);
-            lsSet(LS_SKIPPED, "1");
-            lsDel(LS_COMPLETED);
             if (userId) {
+                lsDel(completedKeyFor(userId));
                 await saveProfileState(userId, {
                     selectedLanguage: selectedLanguage || undefined,
                     onboardingCompleted: false,
                     onboardingSkipped: true,
                 });
+            } else {
+                lsSet(LS_SKIPPED, "1");
+                lsDel(LS_COMPLETED);
             }
         },
         [userId],
     );
 
-    /** Draft autosave (Back/Next between steps) — local only. */
+    /** Draft autosave (Back/Next between steps) — user-scoped, local only. */
     const saveDraft = useCallback(
         (draft) => {
             if (!draft) return;
-            mirror({
-                farmName: draft.farmName || "",
-                parcels: draft.parcels || [],
-            });
+            if (!userId) return; // no wizard without auth; nothing to persist
+            lsSet(
+                draftKeyFor(userId),
+                JSON.stringify({
+                    farmName: draft.farmName || "",
+                    parcels: draft.parcels || [],
+                }),
+            );
         },
-        [mirror],
+        [userId],
     );
 
     /** Re-open the wizard later (empty-state CTA / Settings). */
     const resetOnboarding = useCallback(() => {
         setCompleted(false);
         setSkipped(false);
-        lsDel(LS_COMPLETED);
+        lsDel(LS_COMPLETED); // legacy shared copy, if any
         lsDel(LS_SKIPPED);
         if (userId) {
-            // Server flags clear too — the wizard is the single source of truth.
+            // User-scoped flag clears too — the wizard is the single
+            // source of truth. The user's Supabase farm rows are NOT
+            // touched here (only the completion flag flips).
+            lsDel(completedKeyFor(userId));
             saveProfileState(userId, {
                 onboardingCompleted: false,
                 onboardingSkipped: false,
