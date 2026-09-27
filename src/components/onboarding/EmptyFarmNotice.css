@@ -1,0 +1,76 @@
+/*
+ * EmptyFarmNotice.css — quiet, token-based empty state.
+ * Uses the app's semantic variables (page theme aware), not the fixed
+ * dark auth palette — it renders INSIDE the main app shell.
+ */
+
+.emptyfarm {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 10px;
+    padding: 56px 24px;
+    border: 1px dashed var(--border, rgba(148, 163, 184, 0.35));
+    border-radius: var(--radius-lg, 18px);
+    background: var(--surface, transparent);
+}
+
+.emptyfarm--section {
+    padding: 32px 20px;
+}
+
+.emptyfarm__icon {
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    background: var(--accent-soft, rgba(56, 189, 248, 0.12));
+    color: var(--accent, #38bdf8);
+    margin-bottom: 4px;
+}
+
+.emptyfarm__title {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text, inherit);
+}
+
+.emptyfarm__body {
+    margin: 0;
+    max-width: 420px;
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--text-muted, #64748b);
+}
+
+.emptyfarm__cta {
+    margin-top: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 42px;
+    padding: 0 18px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    color: #fff;
+    background: linear-gradient(135deg, #4f46e5 0%, #2563eb 46%, #06b6d4 100%);
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
+    transition: filter 160ms ease, transform 160ms ease;
+}
+
+.emptyfarm__cta:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+
+.emptyfarm__cta:focus-visible {
+    outline: 2px solid rgba(56, 189, 248, 0.6);
+    outline-offset: 2px;
+}

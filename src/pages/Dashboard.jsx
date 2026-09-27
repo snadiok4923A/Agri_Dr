@@ -27,6 +27,8 @@ import MarketCard from "../components/dashboard/MarketCard";
 import { VOICE_OPEN_WEATHER_EVENT } from "../hooks/useVoiceMode";
 import { registerOverlay } from "../voice/overlayBus";
 import { useWeather } from "../hooks/useWeather";
+import { useOnboarding } from "../hooks/useOnboarding";
+import EmptyFarmNotice from "../components/onboarding/EmptyFarmNotice";
 import "./Dashboard.css";
 
 // Large plant logo for the Expected/Potential hero card — public asset,
@@ -56,6 +58,12 @@ const reveal = (i) => ({ style: { "--reveal-delay": `${i * 60}ms` } });
 export default function Dashboard() {
     const { t, formatNumber, language } = useLanguage();
     const navigate = useNavigate();
+    // Real onboarding state — farm-dependent sections (production hero,
+    // action items, insights) render from the user's OWN farm data or
+    // show an empty state; demo numbers never appear for real users.
+    const { isFarmComplete, farm } = useOnboarding();
+    const parcels = farm.parcels || [];
+    const hasFarm = isFarmComplete && parcels.length > 0;
     // Real weather state — location permission → Open-Meteo fetch → this card.
     // The card stays a pure presentation of `weather`; all fetching lives in
     // the services layer (spec §24).
@@ -214,6 +222,13 @@ export default function Dashboard() {
 
     const totalYield = farmData.expectedYield;
     const currentEst = farmData.currentProductionEstimate;
+    /* Greeting identity + land summary come from the user's real profile
+       name (Header's localStorage field) and their onboarding parcels —
+       never from the demo farm. */
+    const ownerName =
+        localStorage.getItem("krisiveda.profileName") ||
+        t("onboarding.displayNameFallback");
+    const totalArea = parcels.reduce((sum, p) => sum + (Number(p.area) || 0), 0);
     const yieldPct = Math.round((currentEst / totalYield) * 100);
 
     // Circular progress calculations (Radius 70, Stroke 10, Box 160)
@@ -323,11 +338,12 @@ export default function Dashboard() {
                 <div className="dashboard-greeting-left">
                     <span className="dashboard-greeting-tag">
                         <Wheat size={14} className="dashboard-greeting-icon" />
-                        {farmData.name} · {formatNumber(farmData.totalLand)}{" "}
-                        {t("dashboard.acres")}
+                        {hasFarm
+                            ? `${formatNumber(parcels.length)} ${t("onboarding.review.summaryParcels")} · ${formatNumber(Math.round(totalArea * 100) / 100)}`
+                            : t("nav.overview")}
                     </span>
                     <h1 className="dashboard-greeting-title">
-                        {greeting}, {farmData.owner}
+                        {greeting}, {ownerName}
                     </h1>
                 </div>
 
@@ -339,7 +355,9 @@ export default function Dashboard() {
             <div className="dashboard-desktop-row">
             {/* ==================== 2. PRODUCTION + WEATHER ROW ==================== */}
             <section className="dashboard-reveal dashboard-top-row" {...reveal(1)}>
-                {/* Compact Production Summary (left) */}
+                {/* Compact Production Summary (left) — needs the user's
+                    real farm data; hidden (not faked) without it */}
+                {hasFarm && (
                 <div className="dashboard-hero-card">
                     {/* Rice visual inside a subtle progress ring */}
                     <div className="dashboard-ring-container">
@@ -398,6 +416,8 @@ export default function Dashboard() {
                         </div>
                     </div>
                 </div>
+
+                )}
 
                 {/* Weather card — icon top-center, prominent temp, condition,
                     humidity/wind bottom. Values come from the real Open-Meteo
@@ -722,6 +742,13 @@ export default function Dashboard() {
             )}
 
             {/* ==================== 4. IMPORTANT ACTIONS ==================== */}
+            {/* Farm-dependent: action items derive from real crop state;
+                without farm data the empty state takes the section's place. */}
+            {!hasFarm ? (
+                <section className="dashboard-reveal dashboard-section" {...reveal(3)}>
+                    <EmptyFarmNotice variant="section" />
+                </section>
+            ) : (
             <section
                 className="dashboard-reveal dashboard-section dashboard-section--actions"
                 {...reveal(3)}
@@ -769,8 +796,10 @@ export default function Dashboard() {
                     ))}
                 </div>
             </section>
+            )}
 
             {/* ==================== 5. SIMPLE PRODUCTION INSIGHTS ==================== */}
+            {hasFarm && (
             <section
                 className="dashboard-reveal dashboard-section dashboard-section--insights"
                 {...reveal(4)}
@@ -872,6 +901,7 @@ export default function Dashboard() {
                     </div>
                 </div>
             </section>
+            )}
         </div>
     );
 }

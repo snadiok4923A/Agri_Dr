@@ -29,6 +29,38 @@ import {
 
 const AuthContext = createContext(null);
 
+/** Guest mode — "Skip for now" on the auth pages. A guest gets the app
+ *  WITHOUT an account: onboarding reduces to the language choice, farm
+ *  pages show empty states, nothing is persisted to Supabase. The flag
+ *  survives refresh (localStorage) and clears the moment a real session
+ *  appears (fresh sign-in or OAuth return). */
+const GUEST_KEY = "krisiveda.guest";
+const GUEST_USER = Object.freeze({
+    id: null,
+    email: "",
+    name: "",
+    avatarUrl: "",
+    provider: "guest",
+    emailConfirmed: true,
+    isGuest: true,
+});
+
+function readGuestFlag() {
+    try {
+        return localStorage.getItem(GUEST_KEY) === "1";
+    } catch {
+        return false;
+    }
+}
+
+function clearGuestFlag() {
+    try {
+        localStorage.removeItem(GUEST_KEY);
+    } catch {
+        /* private mode — flag simply won't persist */
+    }
+}
+
 /** Flatten a Supabase session into the shape the app consumes. */
 function toAuthUser(session) {
     if (!session?.user) return null;
@@ -52,6 +84,8 @@ export function AuthProvider({ children }) {
     /** Per-request busy flag — true while any auth operation runs
      *  (sign-in / sign-up / Google / sign-out). UI disables buttons. */
     const [loading, setLoading] = useState(false);
+    /** "Skip for now" state — kept in sync with the localStorage flag. */
+    const [guestMode, setGuestMode] = useState(readGuestFlag);
 
     // Initial session restore (also handles the Google OAuth return URL)
     useEffect(() => {
@@ -61,6 +95,12 @@ export function AuthProvider({ children }) {
             .then(({ data }) => {
                 if (!mounted) return;
                 setSession(data.session ?? null);
+                // A real session always outranks guest mode (refresh while
+                // flagged as guest after signing in on another tab, etc.).
+                if (data.session) {
+                    setGuestMode(false);
+                    clearGuestFlag();
+                }
             })
             .catch(console.warn)
             .finally(() => {
@@ -71,6 +111,10 @@ export function AuthProvider({ children }) {
         const { data: sub } = supabase.auth.onAuthStateChange((_event, newSession) => {
             if (!mounted) return;
             setSession(newSession ?? null);
+            if (newSession) {
+                setGuestMode(false);
+                clearGuestFlag();
+            }
         });
 
         return () => {
@@ -118,19 +162,49 @@ export function AuthProvider({ children }) {
         }
     }, []);
 
+    /** "Skip for now" on Login/Signup — browse without an account. */
+    const enterGuestMode = useCallback(() => {
+        setGuestMode(true);
+        try {
+            localStorage.setItem(GUEST_KEY, "1");
+        } catch {
+            /* private mode — guest only lasts this page load */
+        }
+    }, []);
+
+    /** Leaving guest mode explicitly (sign-in prompt from an empty state). */
+    const exitGuestMode = useCallback(() => {
+        setGuestMode(false);
+        clearGuestFlag();
+    }, []);
+
     const value = useMemo(
         () => ({
-            user: toAuthUser(session),
+            user: session ? toAuthUser(session) : guestMode ? GUEST_USER : null,
             session,
             loading,
             initializing,
             isAuthenticated: !!session,
+            isGuest: !session && guestMode,
+            enterGuestMode,
+            exitGuestMode,
             signIn,
             signUp,
             signInWithGoogle,
             signOut,
         }),
-        [session, loading, initializing, signIn, signUp, signInWithGoogle, signOut],
+        [
+            session,
+            loading,
+            initializing,
+            guestMode,
+            enterGuestMode,
+            exitGuestMode,
+            signIn,
+            signUp,
+            signInWithGoogle,
+            signOut,
+        ],
     );
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -17,7 +17,14 @@ import AuthField from "./AuthField";
 import PasswordToggle from "./PasswordToggle";
 
 export default function Login() {
-    const { signIn, signInWithGoogle, loading, isAuthenticated, initializing } = useAuth();
+    const {
+        signIn,
+        signInWithGoogle,
+        loading,
+        isAuthenticated,
+        initializing,
+        enterGuestMode,
+    } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -78,10 +85,9 @@ export default function Login() {
     return (
         <AuthLayout
             title="Welcome back"
-            subtitle="Sign in to continue to Krisiveda"
-            footer={
+            subtitle="Sign in to continue to Krisiveda"            footer={
                 <span>
-                    Don&apos;t have an account?{" "}
+                    Don&apos;t have an account? {" "}
                     <Link to="/signup" state={{ from: whereTo }}>
                         Sign up
                     </Link>
@@ -167,6 +173,19 @@ export default function Login() {
                 ) : (
                     "Continue with Google"
                 )}
+            </button>
+
+            {/* "Skip for now" — browse the app without an account. Onboarding
+                reduces to the language choice; farm pages show empty states. */}
+            <button
+                type="button"
+                className="auth-btn auth-btn--skip"
+                onClick={() => {
+                    enterGuestMode();
+                    navigate(whereTo, { replace: true });
+                }}
+            >
+                Skip for now
             </button>
         </AuthLayout>
     );

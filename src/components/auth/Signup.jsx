@@ -7,7 +7,7 @@
  */
 
 import { useState } from "react";
-import { Navigate, useLocation, Link } from "react-router-dom";
+import { Navigate, useLocation, useNavigate, Link } from "react-router-dom";
 import { Mail, Lock, ShieldCheck } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { friendlyAuthError } from "../../lib/authService";
@@ -17,8 +17,16 @@ import AuthField from "./AuthField";
 import PasswordToggle from "./PasswordToggle";
 
 export default function Signup() {
-    const { signUp, signInWithGoogle, loading, isAuthenticated, initializing } = useAuth();
+    const {
+        signUp,
+        signInWithGoogle,
+        loading,
+        isAuthenticated,
+        initializing,
+        enterGuestMode,
+    } = useAuth();
     const location = useLocation();
+    const navigate = useNavigate();
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -181,6 +189,18 @@ export default function Signup() {
                 ) : (
                     "Continue with Google"
                 )}
+            </button>
+
+            {/* "Skip for now" — same guest escape hatch as Login. */}
+            <button
+                type="button"
+                className="auth-btn auth-btn--skip"
+                onClick={() => {
+                    enterGuestMode();
+                    navigate("/", { replace: true });
+                }}
+            >
+                Skip for now
             </button>
         </AuthLayout>
     );

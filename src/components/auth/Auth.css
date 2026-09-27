@@ -505,3 +505,71 @@
         margin-bottom: 18px;
     }
 }
+
+/* ---------- "Skip for now" (guest) ---------- */
+
+/* Quietest action on the page: no surface of its own until hovered —
+   the primary and Google buttons stay the visual hierarchy leaders. */
+.auth-btn--skip {
+    margin-top: 14px;
+    height: 44px;
+    background: transparent;
+    color: #a7b4c8;
+    font-weight: 600;
+}
+
+.auth-btn--skip:not(:disabled):hover {
+    color: #e8eefb;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+/* ---------- onboarding language chips (auth pages) ---------- */
+
+/* Compact row below the card footer — same frosted chip language as the
+   Google button, pill-shaped, active chip picked out in the sky focus
+   color. Reused by the onboarding language step via .auth-langs. */
+.auth-langs {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.auth-lang-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 34px;
+    padding: 0 13px;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #b6c3d6;
+    background: rgba(25, 35, 30, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: color 150ms ease, background 150ms ease, border-color 150ms ease;
+}
+
+.auth-lang-chip:hover {
+    color: #e8eefb;
+    background: rgba(31, 41, 38, 0.28);
+}
+
+.auth-lang-chip--active {
+    color: #ffffff;
+    background: rgba(56, 189, 248, 0.16);
+    border-color: rgba(56, 189, 248, 0.55);
+}
+
+.auth-lang-chip:focus-visible {
+    outline: 2px solid rgba(56, 189, 248, 0.6);
+    outline-offset: 2px;
+}
+
+.auth-lang-chip__flag {
+    font-size: 14px;
+    line-height: 1;
+}

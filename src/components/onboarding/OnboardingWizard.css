@@ -1,0 +1,519 @@
+/*
+ * OnboardingWizard.css — styles for the first-run farm setup wizard.
+ *
+ * Every token mirrors Auth.css (same fixed dark glass theme):
+ * text #eef2f8 / muted #c5cfdd, frosted control surface
+ * rgba(25,35,30,.18–.28), glass border rgba(255,255,255,.2–.24),
+ * radius 13px controls, sky focus rgba(56,189,248,…). No new palette.
+ */
+
+/* ---------- progress ---------- */
+
+.obw-progress {
+    margin-bottom: 18px;
+}
+
+.obw-progress__label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #c5cfdd;
+    margin-bottom: 7px;
+}
+
+.obw-progress__bar {
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.12);
+    overflow: hidden;
+}
+
+.obw-progress__fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #4f46e5, #06b6d4);
+    transition: width 260ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* ---------- language grid ---------- */
+
+.obw-lang-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 4px;
+}
+
+.obw-lang {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 12px 13px;
+    font-family: inherit;
+    text-align: left;
+    color: #eef2f8;
+    background: rgba(25, 35, 30, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 13px;
+    cursor: pointer;
+    transition: border-color 160ms ease, background 160ms ease;
+}
+
+.obw-lang:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.obw-lang--active {
+    border-color: rgba(56, 189, 248, 0.65);
+    background: rgba(56, 189, 248, 0.1);
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.12);
+}
+
+.obw-lang:focus-visible {
+    outline: 2px solid rgba(56, 189, 248, 0.6);
+    outline-offset: 2px;
+}
+
+.obw-lang__flag {
+    font-size: 19px;
+    line-height: 1;
+}
+
+.obw-lang__native {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.obw-lang__name {
+    margin-left: auto;
+    font-size: 11.5px;
+    font-weight: 500;
+    color: #96a3b8;
+}
+
+/* 5 languages → the last tile spans the full row (odd count) */
+.obw-lang-grid .obw-lang:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+}
+
+/* ---------- auth step ---------- */
+
+.obw-auth {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* ---------- parcel count stepper ---------- */
+
+.obw-count {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 8px 0 2px;
+}
+
+.obw-stepper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.obw-stepper__btn {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    color: #eef2f8;
+    background: rgba(25, 35, 30, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 13px;
+    cursor: pointer;
+    transition: border-color 160ms ease, background 160ms ease;
+}
+
+.obw-stepper__btn:not(:disabled):hover {
+    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(31, 41, 38, 0.26);
+}
+
+.obw-stepper__btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.obw-stepper__btn:focus-visible {
+    outline: 2px solid rgba(56, 189, 248, 0.6);
+    outline-offset: 2px;
+}
+
+.obw-stepper__value {
+    width: 92px;
+    height: 50px;
+    text-align: center;
+    font-size: 19px;
+    font-weight: 700;
+    font-family: inherit;
+    color: #eef2f8;
+    background: rgba(25, 35, 30, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    border-radius: 13px;
+    outline: none;
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+.obw-stepper__value::-webkit-outer-spin-button,
+.obw-stepper__value::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.obw-stepper__value:focus {
+    border-color: rgba(56, 189, 248, 0.65);
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.14);
+}
+
+.obw-hint {
+    margin: 0;
+    font-size: 12.5px;
+    color: #96a3b8;
+}
+
+/* ---------- per-parcel rows (area / variety / stage) ---------- */
+
+.obw-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    max-height: 44vh;
+    overflow-y: auto;
+    padding: 2px;
+    margin: 0 -2px;
+}
+
+.obw-row {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.obw-row__label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #dfe6f0;
+}
+
+.obw-row__meta {
+    font-weight: 500;
+    color: #96a3b8;
+}
+
+.obw-row__fields {
+    display: flex;
+    gap: 8px;
+}
+
+.obw-area-input {
+    flex: 1;
+    min-width: 0;
+    height: 46px;
+    padding: 0 13px;
+    font-size: 14.5px;
+    font-family: inherit;
+    color: #eef2f8;
+    background: rgba(25, 35, 30, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    border-radius: 13px;
+    outline: none;
+    transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.obw-area-input::placeholder {
+    color: #96a3b8;
+}
+
+.obw-area-input:focus {
+    border-color: rgba(56, 189, 248, 0.65);
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.14);
+}
+
+.obw-unit-select {
+    flex: 0 0 128px;
+    height: 46px;
+    padding: 0 10px;
+    font-size: 13.5px;
+    font-family: inherit;
+    color: #eef2f8;
+    background: rgba(25, 35, 30, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    border-radius: 13px;
+    outline: none;
+    cursor: pointer;
+}
+
+.obw-unit-select:focus {
+    border-color: rgba(56, 189, 248, 0.65);
+}
+
+.obw-unit-select option {
+    background: #0c121c;
+    color: #eef2f8;
+}
+
+.obw-row__error {
+    font-size: 12.5px;
+    color: #fda4a4;
+}
+
+/* ---------- variety autocomplete ---------- */
+
+.obw-variety {
+    position: relative;
+}
+
+.obw-variety__input {
+    height: 46px;
+    padding: 0 13px;
+    font-size: 14.5px;
+    font-family: inherit;
+    color: #eef2f8;
+    background: rgba(25, 35, 30, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    border-radius: 13px;
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+    transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.obw-variety__input::placeholder {
+    color: #96a3b8;
+}
+
+.obw-variety__input:focus {
+    border-color: rgba(56, 189, 248, 0.65);
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.14);
+}
+
+.obw-variety__list {
+    position: absolute;
+    z-index: 30;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    margin: 0;
+    padding: 6px;
+    list-style: none;
+    background: #101828;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 13px;
+    box-shadow: 0 18px 44px rgba(4, 8, 16, 0.55);
+    max-height: 240px;
+    overflow-y: auto;
+}
+
+.obw-variety__option {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 9px 11px;
+    font-size: 14px;
+    font-family: inherit;
+    color: #eef2f8;
+    background: transparent;
+    border: none;
+    border-radius: 9px;
+    cursor: pointer;
+}
+
+.obw-variety__option:hover,
+.obw-variety__option--active {
+    background: rgba(56, 189, 248, 0.14);
+}
+
+.obw-variety__empty {
+    padding: 9px 11px;
+    font-size: 13px;
+    color: #96a3b8;
+}
+
+/* ---------- stage chips ---------- */
+
+.obw-stages {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+.obw-stage-chip {
+    padding: 8px 12px;
+    font-size: 12.5px;
+    font-weight: 600;
+    font-family: inherit;
+    color: #b6c3d6;
+    background: rgba(25, 35, 30, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: color 150ms ease, background 150ms ease, border-color 150ms ease;
+}
+
+.obw-stage-chip:hover {
+    color: #e8eefb;
+    background: rgba(31, 41, 38, 0.28);
+}
+
+.obw-stage-chip--active {
+    color: #ffffff;
+    background: rgba(56, 189, 248, 0.16);
+    border-color: rgba(56, 189, 248, 0.55);
+}
+
+.obw-stage-chip:focus-visible {
+    outline: 2px solid rgba(56, 189, 248, 0.6);
+    outline-offset: 2px;
+}
+
+.obw-stages--error .obw-stage-chip {
+    border-color: rgba(248, 113, 113, 0.4);
+}
+
+/* ---------- review summary ---------- */
+
+.obw-review__stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 4px;
+}
+
+.obw-review__stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 14px 8px;
+    background: rgba(25, 35, 30, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 13px;
+}
+
+.obw-review__num {
+    font-size: 24px;
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1.1;
+}
+
+.obw-review__num--text {
+    font-size: 13px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.obw-review__cap {
+    font-size: 11.5px;
+    font-weight: 500;
+    color: #96a3b8;
+    text-align: center;
+}
+
+/* ---------- navigation row ---------- */
+
+.obw-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.obw-nav__ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 9px 12px;
+    font-size: 13.5px;
+    font-weight: 600;
+    font-family: inherit;
+    color: #a7b4c8;
+    background: transparent;
+    border: none;
+    border-radius: 9px;
+    cursor: pointer;
+}
+
+.obw-nav__ghost:hover {
+    color: #e8eefb;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.obw-nav__right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.obw-nav__skip {
+    padding: 9px 10px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    color: #96a3b8;
+    background: transparent;
+    border: none;
+    border-radius: 9px;
+    cursor: pointer;
+}
+
+.obw-nav__skip:not(:disabled):hover {
+    color: #e8eefb;
+}
+
+.obw-nav__next {
+    width: auto;
+    min-width: 118px;
+    height: 44px;
+    margin-top: 0;
+    padding: 0 18px;
+    font-size: 14px;
+}
+
+.obw-spin {
+    animation: obwSpin 700ms linear infinite;
+}
+
+@keyframes obwSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ---------- narrow screens ---------- */
+
+@media (max-width: 480px) {
+    .obw-lang-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .obw-lang-grid .obw-lang:last-child:nth-child(odd) {
+        grid-column: auto;
+    }
+
+    .obw-review__stats {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 7px;
+    }
+
+    .obw-review__num {
+        font-size: 19px;
+    }
+
+    .obw-review__num--text {
+        font-size: 11px;
+    }
+}

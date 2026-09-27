@@ -16,7 +16,10 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 
 export default function ProtectedRoute({ children }) {
-    const { isAuthenticated, initializing } = useAuth();
+    // Guests (auth "Skip for now") enter the protected shell too — they
+    // just get onboarding reduced to the language choice and empty farm
+    // states instead of personal data.
+    const { isAuthenticated, isGuest, initializing } = useAuth();
     const location = useLocation();
 
     if (initializing) {
@@ -28,7 +31,7 @@ export default function ProtectedRoute({ children }) {
         );
     }
 
-    if (!isAuthenticated) {
+    if (!isAuthenticated && !isGuest) {
         // Remember where the user wanted to go; Login sends them back here.
         return <Navigate to="/login" replace state={{ from: location.pathname }} />;
     }

@@ -26,7 +26,7 @@ import "./Auth.css";
 const ROTATE_MS = 5000;
 const FADE_MS = 1600;
 
-export default function AuthLayout({ title, subtitle, children, footer }) {
+export default function AuthLayout({ title, subtitle, children, footer, belowCard }) {
     const base = import.meta.env.BASE_URL;
     const asset = (name) => `${base}logpic/${name}`;
     const isMobile = useMediaQuery("(max-width: 768px)");
@@ -123,6 +123,12 @@ export default function AuthLayout({ title, subtitle, children, footer }) {
                     {children}
                     {footer && <div className="auth-card__footer">{footer}</div>}
                 </div>
+
+                {/* Slot BELOW the glass card (outside it): the language
+                    chips row shared by Login/Signup and the onboarding
+                    language step. Rendering outside keeps the card's own
+                    frosted backdrop surface untouched. */}
+                {belowCard}
             </div>
         </div>
     );

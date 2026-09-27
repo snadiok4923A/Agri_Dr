@@ -13,10 +13,30 @@ import {
     ResponsiveContainer,
 } from "recharts";
 import { TrendingUp, Coins, DollarSign, Wheat } from "lucide-react";
+import EmptyFarmNotice from "../components/onboarding/EmptyFarmNotice";
+import { useOnboarding } from "../hooks/useOnboarding";
 import "./Finance.css";
 
 export default function Finance() {
     const { t, formatNumber } = useLanguage();
+    const { isFarmComplete } = useOnboarding();
+
+    /* NO FAKE DATA: cost & profit only make sense with real farm details.
+       Until onboarding completes, show the empty state instead of demo
+       numbers (CTA re-opens the wizard). */
+    if (!isFarmComplete) {
+        return (
+            <div className="page-container finance-page">
+                <section className="finance-page__header section">
+                    <div>
+                        <h1 className="finance-page__title">{t("nav.finance")}</h1>
+                    </div>
+                </section>
+                <EmptyFarmNotice variant="page" finance />
+            </div>
+        );
+    }
+
     const { expenses, revenue, monthlyExpenses, varietyWiseProfit } =
         financeData;
 

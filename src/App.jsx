@@ -6,6 +6,8 @@ import { TextSizeProvider } from './hooks/useTextSize';
 import { VoiceModeProvider } from './hooks/useVoiceMode';
 import { WeatherProvider } from './hooks/useWeather';
 import { AuthProvider } from './hooks/useAuth';
+import { OnboardingProvider } from './hooks/useOnboarding';
+import OnboardingGate from './components/onboarding/OnboardingGate';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import Layout from './components/layout/Layout';
 import Login from './components/auth/Login';
@@ -41,6 +43,9 @@ export default function App() {
         {/* VoiceModeProvider lives INSIDE the Router so voice commands can
             drive react-router navigation directly. */}
         <BrowserRouter basename="/Agri_Dr">
+          {/* OnboardingProvider sits inside AuthProvider (it reads the
+              session) and inside the Router (the wizard navigates). */}
+          <OnboardingProvider>
           <WeatherProvider>
           <VoiceModeProvider>
             <Routes>
@@ -60,7 +65,13 @@ export default function App() {
                 path="/"
                 element={
                   <ProtectedRoute>
-                    <Layout />
+                    {/* First-run gate: renders the onboarding wizard
+                        INSTEAD of the shell until the farm survey is
+                        finished or skipped (guests only answer the
+                        language question). */}
+                    <OnboardingGate>
+                      <Layout />
+                    </OnboardingGate>
                   </ProtectedRoute>
                 }
               >
@@ -82,6 +93,7 @@ export default function App() {
             </Routes>
           </VoiceModeProvider>
           </WeatherProvider>
+          </OnboardingProvider>
         </BrowserRouter>
         </AuthProvider>
       </LanguageProvider>

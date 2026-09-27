@@ -1,6 +1,6 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { useLanguage } from '../../hooks/useLanguage';
-import { demoUser } from '../../data/mockData';
+import { useAuth } from '../../hooks/useAuth';
 import {
   LayoutDashboard, Tractor, Leaf, TrendingUp,
   BarChart3, Stethoscope,
@@ -34,6 +34,14 @@ export default function Sidebar() {
   const { t } = useLanguage();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+  // Real identity (auth user / guest), falling back to the Header's
+  // editable profile name, then a translated generic — never the demo name.
+  const { user } = useAuth();
+  const storedName = localStorage.getItem('krisiveda.profileName') || '';
+  const storedRole = localStorage.getItem('krisiveda.profileRole') || '';
+  const displayName =
+    user?.name || storedName || t('onboarding.displayNameFallback');
+  const displayRole = storedRole || 'Farmer';
 
   return (
     <aside className={`sidebar ${collapsed ? 'sidebar--collapsed' : ''}`}>
@@ -106,8 +114,8 @@ export default function Sidebar() {
           </div>
           {!collapsed && (
             <div className="sidebar__user-info">
-              <span className="sidebar__user-name">{demoUser.name}</span>
-              <span className="sidebar__user-role">{demoUser.role}</span>
+              <span className="sidebar__user-name">{displayName}</span>
+              <span className="sidebar__user-role">{displayRole}</span>
             </div>
           )}
         </div>
