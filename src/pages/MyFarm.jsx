@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../hooks/useLanguage";
 import { MapPin, Layers, Wheat, TrendingUp } from "lucide-react";
 import EmptyFarmNotice from "../components/onboarding/EmptyFarmNotice";
@@ -36,6 +37,7 @@ function furthestStageKey(parcels) {
 
 export default function MyFarm() {
     const { t, formatNumber } = useLanguage();
+    const navigate = useNavigate();
     const { isFarmComplete, farm } = useOnboarding();
 
     /* NO FAKE DATA for users without farm details: until the onboarding
@@ -188,6 +190,18 @@ export default function MyFarm() {
                             <div
                                 key={i}
                                 className="myfarm__map-field myfarm__map-field--healthy"
+                                role="button"
+                                tabIndex={0}
+                                aria-label={`${t("onboarding.area.parcelLabel")} ${i + 1}`}
+                                /* Whole card opens the existing field detail
+                                   view (/crops/:id) with THIS parcel's data. */
+                                onClick={() => navigate(`/crops/parcel-${i}`)}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter" || e.key === " ") {
+                                        e.preventDefault();
+                                        navigate(`/crops/parcel-${i}`);
+                                    }
+                                }}
                             >
                                 <div className="myfarm__map-field-inner">
                                     <div
