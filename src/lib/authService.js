@@ -109,3 +109,33 @@ export async function signOutUser() {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
 }
+
+/**
+ * Permanently delete the signed-in account via the `delete-account`
+ * Edge Function (supabase/functions/delete-account).
+ *
+ * SECURITY (spec §4/§5): the privileged service-role key lives ONLY in
+ * the Edge Function's server env — nothing is added to this bundle. The
+ * request carries just the caller's own session token; the function
+ * derives the target user from that verified JWT, so a client can never
+ * name another account as the deletion target.
+ *
+ * No-ops (returns false) without a live session or a configured client.
+ * Throws on failure — the UI must only show success when THIS resolves.
+ */
+export async function deleteCurrentUserAccount() {
+    if (!supabase) return false;
+    const { data: sessionData } = await supabase.auth.getSession();
+    const session = sessionData?.session;
+    if (!session) return false; // §11/§13: nothing to delete without a user
+
+    const { data, error } = await supabase.functions.invoke("delete-account", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session.access_token}` },
+    });
+    if (error) throw error;
+    if (!data?.success) {
+        throw new Error(data?.error?.message || "Account deletion failed.");
+    }
+    return true;
+}

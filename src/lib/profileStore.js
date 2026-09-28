@@ -90,6 +90,26 @@ export function adoptLegacyProfileKeys(userId) {
   purgeLegacyProfileKeys();
 }
 
+/**
+ * Account deletion (spec §10): wipe EVERY trace of THIS user from the
+ * browser — profile photo/name/role, onboarding mirrors, per-user
+ * session storage — without touching any other account's scoped keys
+ * or the app's device-level preferences (theme, language, notifications).
+ * Used after the server confirms the auth account is really gone.
+ */
+export function purgeAccountData(userId) {
+  if (!userId) return;
+  [
+    profileImageKeyFor(userId),
+    profileNameKeyFor(userId),
+    profileRoleKeyFor(userId),
+    `krisiveda.onboarding.draft.${userId}`,
+    `krisiveda.onboarding.completed.${userId}`,
+    `krisiveda.onboarding.skipped.${userId}`,
+    `krisiveda.sessionStorage.${userId}`,
+  ].forEach(lsDel);
+}
+
 /** Read one user's profile value (null-safe; null userId → null). */
 export function readProfileValue(keyFor, userId) {
   if (!userId) return null;

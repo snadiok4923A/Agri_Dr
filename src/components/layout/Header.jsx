@@ -2,7 +2,7 @@ import { createPortal } from 'react-dom';
 import {
   Bell, Sun, Moon, ChevronDown, Globe, Menu, Mic, Camera, X,
   Bug, TrendingDown, FlaskConical, TrendingUp, Activity, CheckCheck,
-  UserPlus, LogOut, User,
+  UserPlus, LogOut, User, Trash2, AlertTriangle,
 } from 'lucide-react';
 import { useState, useRef, useEffect, useCallback, memo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
@@ -10,7 +10,7 @@ import { useLanguage } from '../../hooks/useLanguage';
 import { useTheme } from '../../hooks/useTheme';
 import { useVoiceMode } from '../../hooks/useVoiceMode';
 import { useAuth } from '../../hooks/useAuth';
-import { friendlyAuthError } from '../../lib/authService';
+import { friendlyAuthError, deleteCurrentUserAccount } from '../../lib/authService';
 import {
   profileImageKeyFor,
   profileNameKeyFor,
@@ -18,6 +18,7 @@ import {
   adoptLegacyProfileKeys,
   readProfileValue,
   writeProfileValue,
+  purgeAccountData,
 } from '../../lib/profileStore';
 import {
   fetchServerAvatarUrl,
@@ -278,6 +279,63 @@ export default memo(function Header({ onMenuToggle }) {
      file input are inert until the operation settles (no double uploads). */
   const [photoBusy, setPhotoBusy] = useState(false);
 
+  /* ------- Account deletion (secure, server-side via Edge Function) -----
+     Flow (spec §1–§3): Delete Account → typed-DELETE confirm modal →
+     Edge Function (identity from the verified JWT — no user id is ever
+     sent) → session cleared → real logged-out state. The modal state
+     lives here so the SAME session-loss guard that closes the profile
+     window also unmounts the confirm dialog the instant the session
+     dies (e.g. the account was deleted from another device mid-flow). */
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+
+  /* Session loss (incl. the deletion itself) closes both the confirm
+     modal and the profile window and resets the flow cleanly. */
+  useEffect(() => {
+    if (deleteOpen && !isAuthenticated) {
+      setDeleteOpen(false);
+      setDeleteBusy(false);
+      setDeleteError('');
+    }
+  }, [deleteOpen, isAuthenticated]);
+
+  const openDeleteConfirm = () => {
+    setDeleteError('');
+    setDeleteConfirmText(''); // require a fresh typed confirmation every time
+    setDeleteOpen(true);
+  };
+  const closeDeleteConfirm = () => {
+    if (deleteBusy) return; // no closing mid-deletion
+    setDeleteOpen(false);
+    setDeleteError('');
+    setDeleteConfirmText('');
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!isAuthenticated || deleteBusy) return;
+    setDeleteBusy(true);
+    setDeleteError('');
+    try {
+      await deleteCurrentUserAccount(); // only resolves when the server CONFIRMED deletion
+      // Server-confirmed: the account is gone. purgeAccountData wipes
+      // every user-scoped localStorage trace BEFORE the SIGNED_OUT
+      // event clears the React state (the provider also drops the
+      // legacy shared keys); signOutUser clears the real session.
+      purgeAccountData(userId);
+      await signOut();
+      setDeleteOpen(false);
+      navigate('/login'); // §11: real logged-out state, public page
+    } catch (err) {
+      // Failure (network / Edge Function down / not deployed yet):
+      // the account is INTACT — no fake success, no session clear.
+      setDeleteError(friendlyAuthError(err, 'delete account'));
+    } finally {
+      setDeleteBusy(false);
+    }
+  };
+
   const handlePhotoPick = (e) => {
     const file = e.target.files?.[0];
     e.target.value = ''; // allow re-picking the same file
@@ -525,6 +583,59 @@ export default memo(function Header({ onMenuToggle }) {
           no logged-out user can ever glimpse the Sign out control. */}
       {panelOpen && isAuthenticated && createPortal(
         <div className="profile-modal__portal">
+          {/* Typed-DELETE confirmation (spec §2/§3/§14) — portaled SIBLING
+              of the profile dialog so it stacks on top; the profile window
+              stays open and untouched underneath. Delete cannot complete
+              while the confirm text is wrong, and busy state keeps the
+              dialog open + disabled through the entire server round-trip
+              (no double submits, no mid-flight close). */}
+          {deleteOpen && createPortal(
+            <div className="profile-modal__portal">
+              <div className="profile-modal__backdrop profile-modal__backdrop--confirm" onClick={closeDeleteConfirm} aria-hidden="true" />
+              <div className="profile-modal__overlay">
+                <div className="profile-modal__confirm" role="alertdialog" aria-modal="true" aria-label={t("common.profile.deleteAccount")}>
+                  <div className="profile-modal__confirm-icon" aria-hidden="true"><AlertTriangle size={22} /></div>
+                  <h4 className="profile-modal__confirm-title">{t("common.profile.deleteConfirmTitle")}</h4>
+                  <p className="profile-modal__confirm-text">{t("common.profile.deleteConfirmText")}</p>
+                  <label className="profile-modal__confirm-label" htmlFor="delete-account-confirmation">
+                    {t("common.profile.deleteTypePrompt")}
+                  </label>
+                  <input
+                    id="delete-account-confirmation"
+                    className="profile-modal__confirm-input"
+                    type="text"
+                    autoComplete="off"
+                    autoCapitalize="characters"
+                    spellCheck={false}
+                    value={deleteConfirmText}
+                    onChange={(e) => setDeleteConfirmText(e.target.value.toUpperCase())}
+                    placeholder="DELETE"
+                    disabled={deleteBusy}
+                  />
+                  {deleteError && <p className="profile-modal__confirm-error">{deleteError}</p>}
+                  <div className="profile-modal__confirm-actions">
+                    <button
+                      className="profile-modal__pill profile-modal__pill--ghost profile-modal__pill--ghost-dark"
+                      onClick={closeDeleteConfirm}
+                      disabled={deleteBusy}
+                    >
+                      {t("common.profile.cancel")}
+                    </button>
+                    <button
+                      className="profile-modal__pill profile-modal__pill--danger-solid"
+                      onClick={handleDeleteAccount}
+                      disabled={deleteBusy || deleteConfirmText !== "DELETE"}
+                    >
+                      <Trash2 size={13} />
+                      <span>{deleteBusy ? t("common.profile.deleting") : t("common.profile.deleteAccount")}</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>,
+            document.body
+          )}
+
           <div
             className="profile-modal__backdrop"
             onClick={closePanel}
@@ -629,6 +740,18 @@ export default memo(function Header({ onMenuToggle }) {
                       >
                         <LogOut size={13} />
                         <span>{authLoading ? 'Signing out…' : 'Sign out'}</span>
+                      </button>
+                    </div>
+                    {/* Destructive zone — kept visually separate from the
+                        everyday actions above (same design language). */}
+                    <div className="profile-modal__danger">
+                      <button
+                        className="profile-modal__pill profile-modal__pill--danger"
+                        onClick={openDeleteConfirm}
+                        disabled={deleteBusy || photoBusy}
+                      >
+                        <Trash2 size={13} />
+                        <span>{t("common.profile.deleteAccount")}</span>
                       </button>
                     </div>
                   </div>
