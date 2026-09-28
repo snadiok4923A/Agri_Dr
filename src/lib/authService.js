@@ -133,18 +133,26 @@ export async function deleteCurrentUserAccount() {
         method: "POST",
         headers: { Authorization: `Bearer ${session.access_token}` },
     });
+    /** Diagnostics: the function answers failures with
+     *  { success:false, error, step, message, detail } (no secrets). Log
+     *  step + code + detail to the console so the failing operation is
+     *  identifiable from the browser; the UI keeps its friendly text. */
+    const logServerFailure = (body) => {
+        if (!body || typeof body !== "object") return;
+        console.warn(
+            `[auth] delete-account failed at "${body.step || "?"}": ${body.error || "unknown"}` +
+                (body.detail ? ` — ${body.detail}` : ""),
+        );
+    };
     if (error) {
-        // Diagnostics: the function returns {error:{code,op,detail}} on
-        // failure (HTTP error bodies arrive via error.context). Logged to
-        // the console ONLY — the UI keeps its friendly message, and no
-        // token/secret is ever included in these fields.
-        const body = data?.error || error?.context?.error || error?.context || null;
-        if (body) console.warn("[auth] delete-account server error:", JSON.stringify(body));
+        // Non-2xx responses surface either in `data` (supabase-js v2) or
+        // on error.context depending on the client version.
+        logServerFailure(data ?? error?.context);
         throw error;
     }
     if (!data?.success) {
-        if (data?.error) console.warn("[auth] delete-account server error:", JSON.stringify(data.error));
-        throw new Error(data?.error?.message || "Account deletion failed.");
+        logServerFailure(data);
+        throw new Error(data?.message || "Account deletion failed.");
     }
     return true;
 }

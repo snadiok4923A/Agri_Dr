@@ -1,34 +1,47 @@
 // ============================================================================
-// Edge Function: delete-account  (v2 — self-diagnosing runtime errors)
+// Edge Function: delete-account  (v3 — instrumented for runtime debugging)
 //
 // Permanently deletes the AUTHENTICATED caller's account. Deploy:
 //   Dashboard → Edge Functions → delete-account → paste this file → Deploy
 //   (or: npx supabase functions deploy delete-account --project-ref <ref>)
 //
-// SECURITY MODEL (unchanged):
-//   • Identity comes EXCLUSIVELY from the verified Authorization bearer
-//     JWT (admin.auth.getUser). No user_id is accepted from the client,
-//     so a caller can only ever delete THEMSELVES.
-//   • The service-role key is read only from server env (auto-injected
-//     by the platform for deployed functions) and NEVER appears in a
-//     response, log, or the frontend bundle.
+// WHY THIS CLIENT (verified, not guessed): "@supabase/server" is NOT a
+// published module — the server-side createServerClient people find in
+// searches belongs to "@supabase/ssr", a cookie-based helper for
+// Next.js/Astro servers that does not run on Supabase Edge Functions.
+// The CURRENT Supabase Edge Functions pattern is jsr:@supabase/
+// supabase-js@2 + the platform-injected SUPABASE_SERVICE_ROLE_KEY,
+// which is exactly what this function uses.
 //
-// v2 CHANGES (runtime-500 debugging, per incident triage):
-//   1. deleteUser now passes { should_soft_delete: false } EXPLICITLY —
-//      GoTrue may otherwise soft-delete (deleted_at) instead of removing
-//      the user, which changed what the confirmation step saw.
-//   2. The confirmation step treats BOTH a missing user AND a user
-//      carrying deleted_at/soft_deleted_at as confirmed deletion; only a
-//      fully intact user is a failure.
-//   3. Every operation logs its own failure via console.error as
-//      structured JSON {op, message} — NO tokens, keys, or user PII.
-//   4. Error RESPONSES now carry op + detail so the exact failing
-//      operation is visible in the browser Network tab (values are
-//      GoTrue/PostgREST error strings only — never secrets).
-//   5. Cascade verification: before deleting, the function reads the
-//      caller's profiles/farms row counts (service role bypasses RLS);
-//      after deletion it re-checks that the profiles row is gone —
-//      proving the auth.users FK cascade actually fired.
+// SECURITY MODEL (unchanged, verified working — OPTIONS 200, JWT
+// gateway-validated, POST reaches this code):
+//   • Identity comes EXCLUSIVELY from the verified Authorization bearer
+//     JWT (admin.auth.getUser re-checks it against GoTrue). No user_id
+//     is accepted from the client — a caller can only delete THEMSELVES.
+//   • The service-role key is read only from server env and NEVER
+//     appears in logs, responses, or the frontend.
+//
+// v3 CHANGES (runtime-500 debugging):
+//   1. Step-by-step "DELETE_ACCOUNT: …" logging so the Function Logs
+//      show exactly which operation fails.
+//   2. Errors are logged safely: step name + error name + message +
+//      status/code. NEVER tokens, refresh tokens, keys, the raw
+//      Authorization header, or user passwords.
+//   3. Error RESPONSES are safe and structured:
+//      { success:false, error:"delete_failed", step:"auth_delete",
+//        message:"…", detail:"…" } — detail carries only the upstream
+//      GoTrue/PostgREST error string (never a secret).
+//   4. CONFIRMATION RETRY: after a successful deleteUser the follow-up
+//      getUserById can still see the user for a short window (GoTrue
+//      read-after-write). The confirmation now retries with a short
+//      delay before concluding failure — this removes the most likely
+//      source of false "delete_not_confirmed" 500s.
+//   5. deleteUser explicitly passes { should_soft_delete:false } and the
+//      confirmation also accepts a user carrying deleted_at (soft
+//      delete) as confirmed.
+//   6. Cascade verification: the caller's profiles row is read before
+//      and after deletion (service role bypasses RLS) and the result is
+//      logged — proving whether the auth.users FK cascade fired.
 // ============================================================================
 
 import { createClient } from "jsr:@supabase/supabase-js@2";
@@ -40,6 +53,35 @@ const CORS_HEADERS = {
     "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+/** Confirmation retry tuning (bounded — total ≤ ~1.5 s of waiting). */
+const CONFIRM_ATTEMPTS = 3;
+const CONFIRM_DELAY_MS = 700;
+
+function logStep(step) {
+    console.log(`DELETE_ACCOUNT: ${step}`);
+}
+
+/** Extract only safe fields from an upstream error. Never a secret. */
+function describeError(err) {
+    if (!err) return "unknown error";
+    const e = err ?? {};
+    const name = e.name ? String(e.name) : "Error";
+    const message = e.message ? String(e.message) : String(err);
+    const code = e.code ?? e.status ?? e.statusCode ?? null;
+    return code != null ? `${name} (${code}): ${message}` : `${name}: ${message}`;
+}
+
+/** Safe structured server log: step + error name/message/code only. */
+function logError(step, err) {
+    console.error(
+        JSON.stringify({
+            event: "DELETE_ACCOUNT_ERROR",
+            step,
+            error: describeError(err),
+        }),
+    );
+}
+
 function json(body, status = 200) {
     return new Response(JSON.stringify(body), {
         status,
@@ -47,24 +89,16 @@ function json(body, status = 200) {
     });
 }
 
-/** Uniform error shape — safe detail only (error strings, never secrets). */
-function fail(status, code, message, op, detail) {
+/** Safe structured error response — no secrets, no tokens, no headers. */
+function fail(status, code, step, message, detail = null) {
     return json(
-        { success: false, error: { code, message, op, detail: detail ?? null } },
+        { success: false, error: code, step, message, detail },
         status,
     );
 }
 
-/** Safe structured server log: op + message only. Never tokens/keys/PII. */
-function logError(op, err) {
-    const message = err?.message ? String(err.message) : String(err ?? "unknown");
-    console.error(JSON.stringify({ event: "delete_account_error", op, message }));
-}
-
 Deno.serve(async (req) => {
-    // Preflight: 200 + CORS headers. Echo the browser's requested header
-    // list back verbatim, so the preflight can never fail on an
-    // incomplete Access-Control-Allow-Headers list.
+    // 1) OPTIONS with 200 (verified working — unchanged).
     if (req.method === "OPTIONS") {
         return new Response("ok", {
             status: 200,
@@ -76,95 +110,83 @@ Deno.serve(async (req) => {
             },
         });
     }
+    // 2) POST only.
     if (req.method !== "POST") {
-        return fail(405, "method_not_allowed", "Use POST.", "method_check");
+        return fail(405, "method_not_allowed", "method_check", "Use POST.");
     }
 
+    logStep("request_received");
+
+    // Environment — availability is logged as a boolean, never a value.
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-    if (!serviceKey) {
-        // Mis-configured deployment — refuse loudly, delete nothing.
-        console.error(
-            JSON.stringify({ event: "delete_account_error", op: "env_check", message: "SUPABASE_SERVICE_ROLE_KEY not set" }),
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+    if (!serviceKey || !supabaseUrl) {
+        logError("env_check", "SUPABASE_SERVICE_ROLE_KEY or SUPABASE_URL not set");
+        return fail(
+            500,
+            "server_misconfigured",
+            "env_check",
+            "Service is not configured. (Edge Functions → Secrets)",
         );
-        return fail(500, "server_misconfigured", "Service is not configured.", "env_check");
     }
-    // Availability logged as a boolean only — never the value.
-    console.log(JSON.stringify({ event: "delete_account_start", has_service_key: true }));
 
-    const admin = createClient(
-        Deno.env.get("SUPABASE_URL") ?? "",
-        serviceKey,
-        { auth: { autoRefreshToken: false, persistSession: false } },
-    );
+    // Admin (service-role) client — the current documented Edge pattern.
+    const admin = createClient(supabaseUrl, serviceKey, {
+        auth: { autoRefreshToken: false, persistSession: false },
+        global: { headers: { Authorization: `Bearer ${serviceKey}` } },
+    });
+    logStep("admin_client_created");
 
-    // ------------------------------------------------------------------
-    // 1) IDENTITY — verified from the bearer JWT only.
-    // ------------------------------------------------------------------
+    // 3) Verify the authenticated caller from the bearer JWT ONLY.
     const authHeader = req.headers.get("Authorization") ?? "";
     if (!authHeader.toLowerCase().startsWith("bearer ")) {
-        return fail(401, "no_credentials", "Missing bearer token.", "auth_header");
+        return fail(401, "no_credentials", "auth_header", "Missing bearer token.");
     }
+    logStep("auth_token_found");
     const token = authHeader.slice(7).trim();
     let callerId = "";
     try {
         const { data, error } = await admin.auth.getUser(token);
         if (error || !data?.user?.id) {
             logError("jwt_verify", error ?? "no user in token");
-            return fail(401, "invalid_token", "Invalid or expired session.", "jwt_verify");
+            return fail(401, "invalid_token", "jwt_verify", "Invalid or expired session.");
         }
         callerId = data.user.id;
     } catch (err) {
         logError("jwt_verify", err);
-        return fail(401, "invalid_token", "Invalid or expired session.", "jwt_verify");
+        return fail(401, "invalid_token", "jwt_verify", "Invalid or expired session.");
     }
+    logStep("user_verified");
 
     try {
-        // --------------------------------------------------------------
-        // 2) PRE-DELETE STATE — read-only diagnostics (RLS bypassed via
-        //    service role). Proves which migrations are applied and how
-        //    much user-owned data the cascade must remove.
-        // --------------------------------------------------------------
-        let profilesRow = "unknown";
-        let farmsRow = "unknown";
+        // Pre-delete state read (RLS bypassed via service role): proves
+        // which migrations are applied and what the cascade must remove.
+        // Non-fatal — absence of the tables is a valid degraded state.
         try {
             const { data: p, error: pe } = await admin
                 .from("profiles")
                 .select("id")
                 .eq("id", callerId)
                 .maybeSingle();
-            profilesRow = pe
-                ? `unavailable: ${pe.message}`
-                : p
-                  ? "present"
-                  : "absent";
-        } catch (err) {
-            logError("precheck_profiles", err);
-        }
-        try {
             const { data: f, error: fe } = await admin
                 .from("farms")
                 .select("id")
                 .eq("user_id", callerId)
                 .maybeSingle();
-            farmsRow = fe ? `unavailable: ${fe.message}` : f ? "present" : "absent";
+            console.log(
+                JSON.stringify({
+                    event: "DELETE_ACCOUNT_PRECHECK",
+                    user_id: callerId,
+                    profiles_row: pe ? `unavailable: ${pe.message}` : p ? "present" : "absent",
+                    farms_row: fe ? `unavailable: ${fe.message}` : f ? "present" : "absent",
+                }),
+            );
         } catch (err) {
-            logError("precheck_farms", err);
+            logError("precheck", err);
         }
-        console.log(
-            JSON.stringify({
-                event: "delete_account_precheck",
-                user_id: callerId,
-                profiles_row: profilesRow,
-                farms_row: farmsRow,
-            }),
-        );
 
-        // --------------------------------------------------------------
-        // 3) AVATAR FILES — delete EVERY object in the caller's own
-        //    folder (versioned names → possibly several). Storage API
-        //    only; the prefix is built from the verified id, so no other
-        //    user's folder is addressable.
-        // --------------------------------------------------------------
+        // 5) Delete ALL objects belonging ONLY to this user's folder.
+        logStep("avatar_cleanup_started");
         let avatarsDeleted = 0;
         try {
             const objects: string[] = [];
@@ -195,45 +217,51 @@ Deno.serve(async (req) => {
                 else avatarsDeleted = objects.length;
             }
         } catch (err) {
+            // Storage hiccup must not block the account deletion itself;
+            // orphaned objects are unreachable once the auth user is gone.
             logError("avatar_cleanup", err);
-            /* Storage hiccup: continue — the account itself is the point. */
         }
+        logStep("avatar_cleanup_completed");
 
-        // --------------------------------------------------------------
-        // 4) AUTH USER — EXPLICIT permanent deletion. FK CASCADE
-        //    (auth.users.id → profiles/farms/land_parcels) removes every
-        //    user-owned row; auth schema cascades remove sessions.
-        // --------------------------------------------------------------
+        // 7) Delete the Auth user (explicit permanent delete). FK CASCADE
+        //    (auth.users.id → profiles/farms/land_parcels) removes all
+        //    user-owned rows; auth-schema cascades remove sessions.
+        logStep("auth_delete_started");
         const { error: delErr } = await admin.auth.deleteUser(callerId, {
             should_soft_delete: false,
         });
         if (delErr) {
-            // PostgREST FK violations / GoTrue failures surface here —
-            // the message is the actual database/auth error (no secrets).
+            // e.g. FK violations, GoTrue rejections — message is the real
+            // upstream error string (no secrets in it).
             logError("auth_delete", delErr);
             return fail(
                 500,
                 "delete_failed",
-                "The account could not be deleted. Nothing has been removed — please try again.",
                 "auth_delete",
-                String(delErr.message ?? delErr),
+                "The account could not be deleted. Nothing has been removed — please try again.",
+                describeError(delErr),
             );
         }
+        logStep("auth_delete_completed");
 
-        // --------------------------------------------------------------
-        // 5) HARD CONFIRMATION — never report success on trust:
-        //    • user gone (error)               → confirmed (hard delete)
-        //    • user present WITH deleted_at    → confirmed (soft delete)
-        //    • user fully intact               → NOT confirmed → 500
-        // --------------------------------------------------------------
+        // 8) Verify the auth user no longer exists — with retry, because
+        //    a read immediately after delete can still see the user
+        //    (GoTrue read-after-write lag). A user carrying deleted_at
+        //    counts as confirmed (soft-delete accepted).
+        logStep("delete_confirmation_started");
         let confirmed = false;
         let confirmMode = "unknown";
-        try {
-            const { data: check, error: checkErr } = await admin.auth.getUserById(callerId);
-            if (checkErr) {
-                confirmed = true; // any lookup error ⇒ the user is gone
-                confirmMode = "user_gone";
-            } else {
+        for (let attempt = 1; attempt <= CONFIRM_ATTEMPTS && !confirmed; attempt++) {
+            if (attempt > 1) {
+                await new Promise((r) => setTimeout(r, CONFIRM_DELAY_MS));
+            }
+            try {
+                const { data: check, error: checkErr } = await admin.auth.getUserById(callerId);
+                if (checkErr) {
+                    confirmed = true; // lookup error ⇒ the user is gone
+                    confirmMode = `user_gone_attempt_${attempt}`;
+                    break;
+                }
                 const u: Record<string, unknown> | undefined = check?.user as
                     | Record<string, unknown>
                     | undefined;
@@ -246,30 +274,27 @@ Deno.serve(async (req) => {
                     confirmed = true;
                     confirmMode = `soft_deleted_at=${softDeletedAt}`;
                 } else {
-                    confirmed = false;
-                    confirmMode = "user_still_intact";
+                    confirmMode = `user_still_intact_attempt_${attempt}`;
                 }
+            } catch (err) {
+                logError("delete_confirm", err);
+                confirmMode = "confirm_lookup_threw";
             }
-        } catch (err) {
-            logError("delete_confirm", err);
-            confirmed = false;
-            confirmMode = "confirm_lookup_threw";
         }
         if (!confirmed) {
             return fail(
                 500,
                 "delete_not_confirmed",
-                "Deletion could not be confirmed. If you were logged out, the account is already gone; otherwise please try again.",
                 "delete_confirm",
+                "Deletion could not be confirmed. If you were logged out, the account is already gone; otherwise please try again.",
                 confirmMode,
             );
         }
+        logStep("delete_confirmation_completed");
 
-        // --------------------------------------------------------------
-        // 6) CASCADE VERIFICATION — the profiles row must be gone after
-        //    the auth user was deleted (or the table must not exist yet).
-        //    Read-only; result logged for the Function Logs.
-        // --------------------------------------------------------------
+        // Cascade verification (read-only, non-fatal): the profiles row
+        // must be gone after the auth user was deleted — or the table
+        // doesn't exist yet (migration not applied).
         let cascade = "unknown";
         try {
             const { data: p2, error: pe2 } = await admin
@@ -283,6 +308,7 @@ Deno.serve(async (req) => {
             logError("cascade_check", err);
         }
 
+        // 9) Success — minimal audit trail, no PII beyond the caller id.
         console.log(
             JSON.stringify({
                 event: "account_deleted",
@@ -293,7 +319,6 @@ Deno.serve(async (req) => {
                 at: new Date().toISOString(),
             }),
         );
-
         return json({
             success: true,
             data: { userId: callerId, avatarsDeleted, cascade },
@@ -303,8 +328,8 @@ Deno.serve(async (req) => {
         return fail(
             500,
             "unexpected",
-            "Something went wrong while deleting the account. Please try again.",
             "unexpected",
+            "Something went wrong while deleting the account. Please try again.",
             err?.message ? String(err.message) : null,
         );
     }
