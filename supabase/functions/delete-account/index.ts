@@ -45,8 +45,20 @@ function fail(status, code, message) {
 }
 
 Deno.serve(async (req) => {
+    // Preflight: 200 + CORS headers. Echo the browser's requested header
+    // list back verbatim, so the preflight can never fail on an
+    // incomplete Access-Control-Allow-Headers list (supabase-js may add
+    // headers like content-type/apikey/authorization on its own).
     if (req.method === "OPTIONS") {
-        return new Response("ok", { headers: CORS_HEADERS });
+        return new Response("ok", {
+            status: 200,
+            headers: {
+                ...CORS_HEADERS,
+                "Access-Control-Allow-Headers":
+                    req.headers.get("Access-Control-Request-Headers") ??
+                    CORS_HEADERS["Access-Control-Allow-Headers"],
+            },
+        });
     }
     if (req.method !== "POST") {
         return fail(405, "method_not_allowed", "Use POST.");
