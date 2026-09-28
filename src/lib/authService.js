@@ -133,8 +133,17 @@ export async function deleteCurrentUserAccount() {
         method: "POST",
         headers: { Authorization: `Bearer ${session.access_token}` },
     });
-    if (error) throw error;
+    if (error) {
+        // Diagnostics: the function returns {error:{code,op,detail}} on
+        // failure (HTTP error bodies arrive via error.context). Logged to
+        // the console ONLY — the UI keeps its friendly message, and no
+        // token/secret is ever included in these fields.
+        const body = data?.error || error?.context?.error || error?.context || null;
+        if (body) console.warn("[auth] delete-account server error:", JSON.stringify(body));
+        throw error;
+    }
     if (!data?.success) {
+        if (data?.error) console.warn("[auth] delete-account server error:", JSON.stringify(data.error));
         throw new Error(data?.error?.message || "Account deletion failed.");
     }
     return true;
