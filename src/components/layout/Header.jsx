@@ -592,7 +592,7 @@ export default memo(function Header({ onMenuToggle }) {
           {deleteOpen && createPortal(
             <div className="profile-modal__portal">
               <div className="profile-modal__backdrop profile-modal__backdrop--confirm" onClick={closeDeleteConfirm} aria-hidden="true" />
-              <div className="profile-modal__overlay">
+              <div className="profile-modal__overlay profile-modal__overlay--confirm">
                 <div className="profile-modal__confirm" role="alertdialog" aria-modal="true" aria-label={t("common.profile.deleteAccount")}>
                   <div className="profile-modal__confirm-icon" aria-hidden="true"><AlertTriangle size={22} /></div>
                   <h4 className="profile-modal__confirm-title">{t("common.profile.deleteConfirmTitle")}</h4>
