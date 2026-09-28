@@ -320,11 +320,13 @@
     border: 1px solid rgba(255, 255, 255, 0.16);
     border-radius: 13px;
     box-shadow: 0 18px 44px rgba(4, 8, 16, 0.55);
-    /* Internal scroll only — and capped to the viewport on short
-       screens (9:16 phones) so the open list never extends past the
-       screen edge; more options simply scroll inside the list. */
-    max-height: min(240px, 34vh);
+    /* Height = content, up to a live maximum measured by VarietyInput
+       (space between the input and the visible-viewport bottom — mobile
+       keyboard included). This CSS value is only the pre-measure
+       fallback; the inline style overrides it on every open/resize. */
+    max-height: 480px;
     overflow-y: auto;
+    overscroll-behavior: contain;
 }
 
 .obw-variety__option {

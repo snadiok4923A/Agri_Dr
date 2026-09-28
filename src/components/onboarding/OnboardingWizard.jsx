@@ -20,7 +20,7 @@
  * draft (it stays in localStorage and pre-fills a future visit).
  */
 
-import { useMemo, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import AuthLayout from "../auth/AuthLayout";
@@ -488,9 +488,38 @@ export default function OnboardingWizard() {
 function VarietyInput({ id, value, error, onChange, placeholder, noMatchText }) {
     const [open, setOpen] = useState(false);
     const [active, setActive] = useState(-1);
+    const inputRef = useRef(null);
 
+    /* Dropdown height = CONTENT, capped by the space between the input
+       and the bottom of the VISIBLE viewport (visualViewport so an open
+       mobile keyboard counts). Few matches → short list; many matches →
+       the list grows until the screen edge and then scrolls INTERNALLY —
+       the onboarding card itself never scrolls for recommendations.
+       Recomputed on open, viewport resize, and keyboard show/hide. */
+    const [maxListHeight, setMaxListHeight] = useState(280);
+    useLayoutEffect(() => {
+        if (!open) return undefined;
+        const measure = () => {
+            const input = inputRef.current;
+            if (!input) return;
+            const vv = window.visualViewport;
+            const visibleH = vv ? vv.height : window.innerHeight;
+            const space = visibleH - input.getBoundingClientRect().bottom - 10;
+            setMaxListHeight(Math.max(Math.min(space, 480), 120));
+        };
+        measure();
+        window.addEventListener("resize", measure);
+        window.visualViewport?.addEventListener("resize", measure);
+        return () => {
+            window.removeEventListener("resize", measure);
+            window.visualViewport?.removeEventListener("resize", measure);
+        };
+    }, [open]);
+
+    /* NO artificial result cap: every match ranks and displays, so the
+       list truly "grows with the results" (fuzzyRank order untouched). */
     const results = useMemo(
-        () => (open ? fuzzyRank(VARIETY_ENTRIES, value, 8) : []),
+        () => (open ? fuzzyRank(VARIETY_ENTRIES, value, VARIETY_ENTRIES.length) : []),
         [open, value],
     );
 
@@ -504,6 +533,7 @@ function VarietyInput({ id, value, error, onChange, placeholder, noMatchText }) 
         <div className="obw-variety">
             <input
                 id={id}
+                ref={inputRef}
                 className={`auth-field__input obw-variety__input ${error ? "auth-field__input--error" : ""}`}
                 type="text"
                 autoComplete="off"
@@ -537,7 +567,14 @@ function VarietyInput({ id, value, error, onChange, placeholder, noMatchText }) 
                 }}
             />
             {open && (
-                <ul className="obw-variety__list" id={`${id}-list`} role="listbox">
+                <ul
+                    className="obw-variety__list"
+                    id={`${id}-list`}
+                    role="listbox"
+                    /* Dynamic viewport-aware cap measured above (CSS
+                       alone cannot know the distance to the screen edge). */
+                    style={{ maxHeight: maxListHeight }}
+                >
                     {results.map((name, idx) => (
                         // onMouseDown beats the input's blur so the click lands
                         <li key={name}>
