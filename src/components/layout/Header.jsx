@@ -23,7 +23,9 @@ import {
   fetchServerAvatarUrl,
   getAvatarPublicUrl,
   uploadAvatar,
-  downscaleToDataUrl,
+  compressImage,
+  cleanupOldAvatars,
+  MAX_ORIGINAL_BYTES,
 } from '../../lib/profileService';
 import { recommendations } from '../../data/mockData';
 import './Header.css';
@@ -272,15 +274,22 @@ export default memo(function Header({ onMenuToggle }) {
     persistRead(readMap.map(() => true));
   };
 
+  /* Busy flag while compressing/uploading: the camera button and the
+     file input are inert until the operation settles (no double uploads). */
+  const [photoBusy, setPhotoBusy] = useState(false);
+
   const handlePhotoPick = (e) => {
     const file = e.target.files?.[0];
     e.target.value = ''; // allow re-picking the same file
     if (!file) return;
+    if (photoBusy) return; // duplicate-upload guard
     if (!['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(file.type)) {
       setPhotoError(t('common.profile.invalidImage'));
       return;
     }
-    if (file.size > 4 * 1024 * 1024) {
+    /* 20 MB cap on the ORIGINAL file (spec): rejected BEFORE any read or
+       compression work. The avatar is left completely unchanged. */
+    if (file.size > MAX_ORIGINAL_BYTES) {
       setPhotoError(t('common.profile.photoTooLarge'));
       return;
     }
@@ -290,32 +299,43 @@ export default memo(function Header({ onMenuToggle }) {
       return;
     }
     setPhotoError('');
-    const reader = new FileReader();
-    reader.onload = () => {
-      // 1) Instant paint from the original (memory only — the full-size
-      //    base64 never goes into localStorage; it can exceed the quota).
-      setProfileImage(reader.result);
-      // 2) SERVER upload — the cross-device copy (spec §3/§5): Storage
-      //    "avatars/<uid>/avatar-<ts>.<ext>" + profiles.avatar_url.
-      //    Small re-encoded cache, full original to Storage.
-      downscaleToDataUrl(file)
-        .catch(() => '')
-        .then((small) => {
-          if (small) {
-            setProfileImage(small);
-            writeProfileValue(profileImageKeyFor, userId, small);
-          }
-          return uploadAvatar(userId, file);
-        })
-        .then((path) => {
-          if (!path) return; // server unavailable → local copy keeps UI alive
-          const url = getAvatarPublicUrl(path);
-          if (!url) return;
-          setProfileImage(url);
-          writeProfileValue(profileImageKeyFor, userId, url);
-        });
-    };
-    reader.readAsDataURL(file);
+    setPhotoBusy(true);
+    /* Pipeline (spec): compress in the browser FIRST — original never
+       uploaded — then Storage + profiles.avatar_url, then repaint from
+       the SERVER URL. Previous avatar shows throughout on any failure. */
+    compressImage(file)
+      .catch(() => null)
+      .then((out) => {
+        if (!out?.blob) throw Object.assign(new Error('compress-failed'), { compressFailed: true });
+        // Instant local paint (memory) + small per-user cache (offline).
+        setProfileImage(out.cacheDataUrl || URL.createObjectURL(out.blob));
+        if (out.cacheDataUrl) writeProfileValue(profileImageKeyFor, userId, out.cacheDataUrl);
+        return uploadAvatar(userId, out);
+      })
+      .then((res) => {
+        if (!res?.ok) {
+          if (res?.degraded) return; // server mode absent → local copy keeps UI alive
+          throw new Error('upload-failed');
+        }
+        const url = getAvatarPublicUrl(res.path);
+        if (!url) return;
+        setProfileImage(url); // server URL = cross-device truth
+        writeProfileValue(profileImageKeyFor, userId, url);
+        // Housekeeping (non-blocking): prune THIS user's old avatar
+        // objects so Storage doesn't grow forever. Never touches
+        // another user's folder (service enforces ownership).
+        cleanupOldAvatars(userId, res.path);
+      })
+      .catch((err) => {
+        // Revert: reload this user's cached avatar (previous picture).
+        setProfileImage(readProfileValue(profileImageKeyFor, userId) || '');
+        setPhotoError(
+          err?.compressFailed
+            ? t('common.profile.photoInvalid')
+            : t('common.profile.uploadFailed'),
+        );
+      })
+      .finally(() => setPhotoBusy(false));
   };
 
   const startEditing = () => {
@@ -541,6 +561,8 @@ export default memo(function Header({ onMenuToggle }) {
                 <button
                   className="profile-modal__photo-edit"
                   onClick={() => fileRef.current?.click()}
+                  disabled={photoBusy}
+                  aria-busy={photoBusy}
                   aria-label={t("common.profile.changePhoto")}
                   title={t("common.profile.changePhoto")}
                 >

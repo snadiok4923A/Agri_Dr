@@ -412,6 +412,15 @@
   background: rgba(0, 0, 0, 0.55);
 }
 
+/* Busy state while compressing/uploading (existing-style, minimal): the
+   circular camera button dims and stops pointer events — same place, same
+   size, same look otherwise. */
+.profile-modal__photo-edit:disabled {
+  opacity: 0.55;
+  cursor: progress;
+  pointer-events: none;
+}
+
 .profile-modal__photo-edit {
   position: absolute;
   right: 16px;
