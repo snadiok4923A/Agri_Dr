@@ -21,8 +21,9 @@ export default function MobileDrawer({ open, onClose }) {
     const drawerNavItems = navItems.filter((item) => !bottomNavPaths.has(item.path));
 
     /* Same route-derived section logic as the bottom bar (activeSection.js):
-       on a tool page (/crops, /disease …) the PARENT SECTION stays active
-       in the drawer too — NavLink alone never matched those routes. */
+       each drawer link lights up from its OWN route match; the resolver
+       adds nothing extra for sidebar-only features (they map to null in
+       the bottom bar). */
     const activeSection = resolveSectionForPath(location.pathname);
 
     /** NavLink-style class fn for one item: green when the link's own

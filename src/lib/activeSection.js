@@ -6,12 +6,12 @@
  *   CURRENT ROUTE → CURRENT MAIN SECTION → BOTTOM-NAV ITEM → green active
  *
  * Why this exists: React Router's NavLink isActive is per-link and can
- * never match nested/detail/tool routes that have no nav entry of their
- * own (/crops, /crops/:id, /disease, /fertilizer, /finance, /market).
- * On those pages NavLink highlights NOTHING (or, for /crops and /farm,
- * BOTH Overview and My Farm at once, since neither is `end`) — the
- * reported "no item / wrong item highlighted" bug. The page transition
- * animation never changes the URL, so it cannot affect this logic.
+ * never match nested/detail routes that have no nav entry of their own
+ * (/crops/parcel-1). On those pages NavLink highlights NOTHING (or, for
+ * /crops and /farm, BOTH Overview and My Farm at once, since neither is
+ * `end`) — the reported "no item / wrong item highlighted" bug. The page
+ * transition animation never changes the URL, so it cannot affect this
+ * logic.
  *
  * One resolver, consumed by BOTH mobile navs (bottom bar + drawer +
  * desktop Sidebar's mapped tools): the same route always produces the
@@ -37,28 +37,21 @@ export function resolveActiveSection(pathname) {
 }
 
 /**
- * Tool routes with no nav entry of their own → their parent SECTION.
- * Derived from real in-app flows: My Farm → Crops → CropDetails offers
- * Disease/Fertilizer/Market, and the Dashboard MarketCard opens Market.
- * "/finance" is listed for future-proofing; on mobile today it is only
- * reachable from the drawer (its drawer link stays active there).
- */
-const TOOL_TO_SECTION = {
-  '/crops': '/farm',
-  '/disease': '/farm',
-  '/fertilizer': '/farm',
-  '/finance': '/farm',
-  '/market': '/farm',
-};
-
-/**
- * Resolve the path's own section, or its parent section for mapped tool
- * routes. Unknown paths (settings, login, …) → null = NO bottom-nav item
- * is active, which is the honest state for a page outside every section.
+ * Resolve the path's own section, or null for pages outside every
+ * bottom-nav section. Sidebar-only features (Rice Varieties /crops,
+ * Disease /disease, Fertilizer /fertilizer, Cost & Profit /finance,
+ * Market Intelligence /market, Settings /settings) are STANDALONE —
+ * they activate NOTHING (spec: "activeItem = null" is a valid state;
+ * no fallback may keep My Farm green just because the shell contains
+ * them). The single exception is a GENUINE child of a bottom-nav
+ * section: a My Farm parcel detail (/crops/parcel-*) — My Farm stays
+ * active there because that page IS part of the My Farm flow.
  */
 export function resolveSectionForPath(pathname) {
+  if (!pathname) return null;
   const own = resolveActiveSection(pathname);
   if (own) return own;
-  const tool = Object.keys(TOOL_TO_SECTION).find((t) => pathname?.startsWith(t));
-  return tool ? TOOL_TO_SECTION[tool] : null;
+  // Genuine child of My Farm: the parcel detail opened from the farm map.
+  if (pathname.startsWith('/crops/parcel-')) return '/farm';
+  return null;
 }

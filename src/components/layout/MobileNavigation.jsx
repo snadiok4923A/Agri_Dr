@@ -17,12 +17,13 @@ export const mobileNavItems = [
 export default function MobileNavigation() {
   const { t } = useLanguage();
   /* Active state is DERIVED from the current route (single source of
-     truth, spec §1): the URL decides the green item, never click order
-     or stored state. NavLink's per-link isActive is deliberately NOT
-     used for the highlight — it can't match nested/detail pages
-     (/crops/parcel-1, /disease, /market …), which is exactly why the
-     active state used to disappear or land on the wrong tab. On such
-     pages the parent SECTION stays active (spec §7). */
+     truth): the URL decides the green item, never click order or stored
+     state. NavLink's per-link isActive is deliberately NOT used for the
+     highlight — it can't express "no active item" on sidebar-feature
+     pages (/crops, /disease, /market, /settings …) and double-matches on
+     /farm-prefixed paths. Sidebar-only features resolve to null → NO
+     bottom-nav item is active; only a genuine My Farm child (a parcel
+     detail, /crops/parcel-*) keeps My Farm green. */
   const location = useLocation();
   const activeSection = resolveSectionForPath(location.pathname);
 
