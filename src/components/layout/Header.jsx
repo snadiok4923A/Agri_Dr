@@ -19,6 +19,12 @@ import {
   readProfileValue,
   writeProfileValue,
 } from '../../lib/profileStore';
+import {
+  fetchServerAvatarUrl,
+  getAvatarPublicUrl,
+  uploadAvatar,
+  downscaleToDataUrl,
+} from '../../lib/profileService';
 import { recommendations } from '../../data/mockData';
 import './Header.css';
 
@@ -131,6 +137,24 @@ export default memo(function Header({ onMenuToggle }) {
     setProfileImage(readProfileValue(profileImageKeyFor, userId) || '');
     setProfileName(readProfileValue(profileNameKeyFor, userId) || '');
     setProfileRole(readProfileValue(profileRoleKeyFor, userId) || '');
+
+    /* SERVER truth (profile spec §6): the avatar's authoritative copy
+       lives in Supabase (Storage + profiles.avatar_url), so the SAME
+       account shows the SAME picture on every device. The local cache
+       paints instantly; the server response then overrides it when that
+       user has an uploaded picture (e.g. uploaded from another device).
+       Absent migration/bucket → soft no-op, local copy keeps working. */
+    let cancelled = false;
+    (async () => {
+      const serverUrl = await fetchServerAvatarUrl(userId);
+      if (cancelled || !serverUrl) return;
+      setProfileImage(serverUrl);
+      // Cache the URL (not pixels) so refreshes don't flash empty.
+      writeProfileValue(profileImageKeyFor, userId, serverUrl);
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [userId]);
 
   const handleSignOut = async () => {
@@ -268,9 +292,28 @@ export default memo(function Header({ onMenuToggle }) {
     setPhotoError('');
     const reader = new FileReader();
     reader.onload = () => {
-      const dataUrl = reader.result;
-      setProfileImage(dataUrl);
-      writeProfileValue(profileImageKeyFor, userId, dataUrl);
+      // 1) Instant paint from the original (memory only — the full-size
+      //    base64 never goes into localStorage; it can exceed the quota).
+      setProfileImage(reader.result);
+      // 2) SERVER upload — the cross-device copy (spec §3/§5): Storage
+      //    "avatars/<uid>/avatar-<ts>.<ext>" + profiles.avatar_url.
+      //    Small re-encoded cache, full original to Storage.
+      downscaleToDataUrl(file)
+        .catch(() => '')
+        .then((small) => {
+          if (small) {
+            setProfileImage(small);
+            writeProfileValue(profileImageKeyFor, userId, small);
+          }
+          return uploadAvatar(userId, file);
+        })
+        .then((path) => {
+          if (!path) return; // server unavailable → local copy keeps UI alive
+          const url = getAvatarPublicUrl(path);
+          if (!url) return;
+          setProfileImage(url);
+          writeProfileValue(profileImageKeyFor, userId, url);
+        });
     };
     reader.readAsDataURL(file);
   };
