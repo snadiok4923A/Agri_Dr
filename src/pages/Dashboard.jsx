@@ -29,6 +29,7 @@ import { registerOverlay } from "../voice/overlayBus";
 import { useWeather } from "../hooks/useWeather";
 import { useOnboarding } from "../hooks/useOnboarding";
 import { useAuth } from "../hooks/useAuth";
+import { profileNameKeyFor, lsGet } from "../lib/profileStore";
 import EmptyFarmNotice from "../components/onboarding/EmptyFarmNotice";
 import "./Dashboard.css";
 
@@ -232,7 +233,7 @@ export default function Dashboard() {
        email prefix — never a demo/fake user or placeholder. */
     const ownerName =
         user?.name ||
-        localStorage.getItem("krisiveda.profileName") ||
+        (user?.id ? lsGet(profileNameKeyFor(user.id)) : null) ||
         (user?.email ? user.email.split("@")[0] : "");
     const totalArea = parcels.reduce((sum, p) => sum + (Number(p.area) || 0), 0);
     const yieldPct = Math.round((currentEst / totalYield) * 100);

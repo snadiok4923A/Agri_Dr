@@ -2,6 +2,7 @@ import { useLanguage } from '../hooks/useLanguage';
 import { useTheme } from '../hooks/useTheme';
 import { useTextSize } from '../hooks/useTextSize';
 import { useAuth } from '../hooks/useAuth';
+import { profileNameKeyFor, lsGet } from '../lib/profileStore';
 import { Settings as SettingsIcon, Globe, Palette, Type } from 'lucide-react';
 import './Settings.css';
 
@@ -21,7 +22,8 @@ export default function Settings() {
   // Real account identity only (two-state model): no demo-user fallback.
   // Logged-out visitors see the section without a fabricated name.
   const { user } = useAuth();
-  const storedName = localStorage.getItem('krisiveda.profileName') || '';
+  // USER-SCOPED read (profileStore.js): the signed-in user's own name only.
+  const storedName = (user?.id && lsGet(profileNameKeyFor(user.id))) || '';
   const accountName = user?.name || storedName || '';
   const { textSize, setTextSize, textSizes } = useTextSize();
 

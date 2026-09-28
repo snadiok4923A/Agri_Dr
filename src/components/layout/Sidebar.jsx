@@ -1,6 +1,7 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useAuth } from '../../hooks/useAuth';
+import { profileNameKeyFor, profileRoleKeyFor, lsGet } from '../../lib/profileStore';
 import {
   LayoutDashboard, Tractor, Leaf, TrendingUp,
   BarChart3, Stethoscope,
@@ -38,8 +39,11 @@ export default function Sidebar() {
   // block appears ONLY when authenticated. Skipped/logged-out visitors
   // get a plain sign-in link — never a fabricated profile (spec §4/§6).
   const { user } = useAuth();
-  const storedName = localStorage.getItem('krisiveda.profileName') || '';
-  const storedRole = localStorage.getItem('krisiveda.profileRole') || '';
+  // USER-SCOPED reads (profileStore.js): only the signed-in user's OWN
+  // name/role keys are consulted — never a shared key another account
+  // could have written.
+  const storedName = (user?.id && lsGet(profileNameKeyFor(user.id))) || '';
+  const storedRole = (user?.id && lsGet(profileRoleKeyFor(user.id))) || '';
   // Only a real account's information is shown: profile name, else the
   // real account's email prefix. Role only if the user actually picked one.
   const displayName =

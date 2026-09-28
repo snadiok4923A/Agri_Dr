@@ -40,6 +40,10 @@ import {
     signInWithGoogle as googleSignIn,
     signOutUser,
 } from "../lib/authService";
+import {
+    adoptLegacyProfileKeys,
+    purgeLegacyProfileKeys,
+} from "../lib/profileStore";
 
 const AuthContext = createContext(null);
 
@@ -99,6 +103,11 @@ export function AuthProvider({ children }) {
             .getSession()
             .then(({ data }) => {
                 if (!mounted) return;
+                if (data.session?.user) {
+                    // One-time legacy-profile migration runs BEFORE any
+                    // consumer renders with this identity (profileStore.js).
+                    adoptLegacyProfileKeys(data.session.user.id);
+                }
                 setSession(data.session ?? null);
                 // A real session outranks the skip preference.
                 if (data.session) {
@@ -116,6 +125,12 @@ export function AuthProvider({ children }) {
         // consumer re-renders from this one state change.
         const { data: sub } = supabase.auth.onAuthStateChange((event, newSession) => {
             if (!mounted) return;
+            // Identity change (SIGNED_IN / INITIAL_SESSION / TOKEN_REFRESHED):
+            // migrate legacy keys first, then publish the session. On
+            // SIGNED_OUT drop the shared pre-fix keys — the app clears all
+            // other user state in response to session becoming null.
+            if (newSession?.user) adoptLegacyProfileKeys(newSession.user.id);
+            else if (event === "SIGNED_OUT") purgeLegacyProfileKeys();
             setSession(newSession ?? null);
             if (newSession) {
                 setSkipped(false);

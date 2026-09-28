@@ -11,14 +11,21 @@ import { useTheme } from '../../hooks/useTheme';
 import { useVoiceMode } from '../../hooks/useVoiceMode';
 import { useAuth } from '../../hooks/useAuth';
 import { friendlyAuthError } from '../../lib/authService';
+import {
+  profileImageKeyFor,
+  profileNameKeyFor,
+  profileRoleKeyFor,
+  adoptLegacyProfileKeys,
+  readProfileValue,
+  writeProfileValue,
+} from '../../lib/profileStore';
 import { recommendations } from '../../data/mockData';
 import './Header.css';
 
-/* localStorage keys — one shared profile state drives the header avatar,
-   the large panel photo, the name and the role (spec §15). */
-const PROFILE_IMAGE_KEY = 'krisiveda.profileImage';
-const PROFILE_NAME_KEY = 'krisiveda.profileName';
-const PROFILE_ROLE_KEY = 'krisiveda.profileRole';
+/* Profile state (photo / name / role) is USER-SCOPED: every key carries
+   the signed-in user's Supabase id, so account A's picture can never be
+   read or overwritten by account B (profile-isolation spec §2/§3/§7).
+   The key builders + legacy-key migration live in profileStore.js. */
 const ROLES = ['Farmer', 'Business Man'];
 
 /* Notification read-state key + seed. The notifications themselves come
@@ -53,13 +60,15 @@ export default memo(function Header({ onMenuToggle }) {
   const [roleDraft, setRoleDraft] = useState('');
   const [photoError, setPhotoError] = useState('');
   const [accountError, setAccountError] = useState('');
-  const [profileImage, setProfileImage] = useState(() => localStorage.getItem(PROFILE_IMAGE_KEY) || '');
+  /* Profile state starts EMPTY and is loaded per-identity by the effect
+     below — never synchronously from a shared key at mount time. */
+  const [profileImage, setProfileImage] = useState('');
   // Real identity ONLY: no demo-user fallback. A skipped/logged-out
   // visitor has no profile — authenticated controls stay hidden entirely.
-  const [profileName, setProfileName] = useState(() => localStorage.getItem(PROFILE_NAME_KEY) || '');
+  const [profileName, setProfileName] = useState('');
   // Role is ONLY what the user actually picked (stored). Empty default —
   // the app never assigns or displays a role the user didn't choose.
-  const [profileRole, setProfileRole] = useState(() => localStorage.getItem(PROFILE_ROLE_KEY) || '');
+  const [profileRole, setProfileRole] = useState('');
   const [readMap, setReadMap] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem(NOTIF_READ_KEY));
@@ -96,6 +105,33 @@ export default memo(function Header({ onMenuToggle }) {
      The local profile name/role editing stays exactly as it was. */
   const authEmail = user?.email || '';
   const displayName = (isAuthenticated && user?.name) || profileName;
+
+  /* ---------------- per-identity profile load (isolation core) ----------
+     Spec §10: on identity change the state transitions
+       User A → CLEAR → User B → LOAD B's OWN data.
+     The in-memory photo/name/role ALWAYS starts empty here; only the
+     current user's OWN scoped keys can repopulate it. Signed out, the
+     state stays empty (neutral icon) and stray profile copies are
+     purged. Signing in as A also migrates the pre-fix global keys into
+     A's scope once, then deletes the shared copies. */
+  const userId = user?.id || null;
+  useEffect(() => {
+    if (!userId) {
+      // Signed out (or session lost): wipe memory so no photo/name/role
+      // survives into the next identity (spec §9). Each account's OWN
+      // scoped keys stay — they restore on that account's next login.
+      setProfileImage('');
+      setProfileName('');
+      setProfileRole('');
+      return;
+    }
+    // Signed in: state was (re)rendered empty; load ONLY this user's own
+    // scoped values. The previous user's keys are never read.
+    adoptLegacyProfileKeys(userId);
+    setProfileImage(readProfileValue(profileImageKeyFor, userId) || '');
+    setProfileName(readProfileValue(profileNameKeyFor, userId) || '');
+    setProfileRole(readProfileValue(profileRoleKeyFor, userId) || '');
+  }, [userId]);
 
   const handleSignOut = async () => {
     if (authLoading) return;
@@ -224,11 +260,17 @@ export default memo(function Header({ onMenuToggle }) {
       setPhotoError(t('common.profile.photoTooLarge'));
       return;
     }
+    if (!userId) {
+      // No authenticated user → no profile upload (spec §14).
+      setPhotoError(t('common.profile.nameUnavailable'));
+      return;
+    }
     setPhotoError('');
     const reader = new FileReader();
     reader.onload = () => {
-      setProfileImage(reader.result);
-      localStorage.setItem(PROFILE_IMAGE_KEY, reader.result);
+      const dataUrl = reader.result;
+      setProfileImage(dataUrl);
+      writeProfileValue(profileImageKeyFor, userId, dataUrl);
     };
     reader.readAsDataURL(file);
   };
@@ -243,10 +285,10 @@ export default memo(function Header({ onMenuToggle }) {
     const trimmed = nameDraft.trim();
     if (trimmed) {
       setProfileName(trimmed);
-      localStorage.setItem(PROFILE_NAME_KEY, trimmed);
+      writeProfileValue(profileNameKeyFor, userId, trimmed);
     }
     setProfileRole(roleDraft);
-    localStorage.setItem(PROFILE_ROLE_KEY, roleDraft);
+    writeProfileValue(profileRoleKeyFor, userId, roleDraft);
     setEditing(false);
   };
 
