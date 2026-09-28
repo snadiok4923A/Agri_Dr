@@ -185,12 +185,17 @@
 
 /* ---------- per-parcel rows (area / variety / stage) ---------- */
 
+/* NO max-height/overflow here: the variety dropdown opens below its
+   input, and a scrollable/hidden overflow on this container would CLIP
+   it (forcing a scroll inside the form just to see recommendations).
+   Very large parcel counts simply grow the card — .auth-panel scrolls
+   the page instead of clipping (Auth.css). The dropdown itself keeps
+   its own internal scroll (max-height on .obw-variety__list). */
 .obw-rows {
     display: flex;
     flex-direction: column;
     gap: 14px;
-    max-height: 44vh;
-    overflow-y: auto;
+    overflow: visible;
     padding: 2px;
     margin: 0 -2px;
 }
@@ -301,7 +306,10 @@
 
 .obw-variety__list {
     position: absolute;
-    z-index: 30;
+    /* Above every sibling layer inside the glass card; the card itself
+       (backdrop-filter stacking context) already paints over the page
+       background, so this only needs to win WITHIN the card. */
+    z-index: 60;
     top: calc(100% + 6px);
     left: 0;
     right: 0;
@@ -312,7 +320,10 @@
     border: 1px solid rgba(255, 255, 255, 0.16);
     border-radius: 13px;
     box-shadow: 0 18px 44px rgba(4, 8, 16, 0.55);
-    max-height: 240px;
+    /* Internal scroll only — and capped to the viewport on short
+       screens (9:16 phones) so the open list never extends past the
+       screen edge; more options simply scroll inside the list. */
+    max-height: min(240px, 34vh);
     overflow-y: auto;
 }
 
