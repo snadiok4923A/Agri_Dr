@@ -1,0 +1,7 @@
+# Supabase CLI project config (functions deploy etc.)
+project_id = "krisiveda"
+
+[functions.delete-account]
+# Platform validates the caller's bearer JWT at the gateway BEFORE the
+# function runs; the function re-verifies the identity via admin.auth.getUser.
+verify_jwt = true
