@@ -2,6 +2,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useAuth } from '../../hooks/useAuth';
 import { profileNameKeyFor, profileRoleKeyFor, lsGet } from '../../lib/profileStore';
+import { resolveActiveSection } from '../../lib/activeSection';
 import {
   LayoutDashboard, Tractor, Leaf, TrendingUp,
   BarChart3, Stethoscope,
@@ -34,6 +35,9 @@ export const bottomItems = [
 export default function Sidebar() {
   const { t } = useLanguage();
   const location = useLocation();
+  /* Route-derived section (activeSection.js): /crops + /crops/:id keep
+     MY FARM highlighted — NavLink alone can't match those routes. */
+  const activeSection = resolveActiveSection(location.pathname);
   const [collapsed, setCollapsed] = useState(false);
   // Identity block is driven by the REAL Supabase session only: a user
   // block appears ONLY when authenticated. Skipped/logged-out visitors
@@ -71,10 +75,14 @@ export default function Sidebar() {
             <NavLink
               key={item.path}
               to={item.path}
-              className={({ isActive }) =>
-                `sidebar__link ${isActive ? 'sidebar__link--active' : ''}`
-              }
-              end={item.path === '/'}
+            className={({ isActive }) =>
+              `sidebar__link ${
+                isActive || activeSection === item.path
+                  ? 'sidebar__link--active'
+                  : ''
+              }`
+            }
+            end={item.path === '/'}
               title={collapsed ? t(item.labelKey) : undefined}
             >
               <item.icon size={20} />

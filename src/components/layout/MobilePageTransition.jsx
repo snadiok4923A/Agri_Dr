@@ -35,7 +35,7 @@
 
 import { useEffect, useRef } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import useMediaQuery from "../../hooks/useMediaQuery";
 import { mobileNavItems } from "./MobileNavigation";
 import "./MobilePageTransition.css";
@@ -48,13 +48,31 @@ const ENTER_MS = 240;
 const EASE = [0.22, 0.61, 0.36, 1]; // smooth accelerate → decelerate
 
 /** Shared lock read by MobileNavigation (spec §12): while true, new tab
-    taps are held until the current transition completes. */
-export const pageTransitionState = { active: false };
+    taps are held until the current transition completes. The LAST tap
+    made during the lock is remembered in `pending` and navigated to on
+    release — so a rapid Overview→…→Insights sequence still ends on the
+    tab the user actually aimed for (last-tap-wins), with exactly one
+    active item at every moment. */
+export const pageTransitionState = { active: false, pending: null };
 
 export default function MobilePageTransition({ children }) {
     const location = useLocation();
+    const navigate = useNavigate();
     const isMobileNav = useMediaQuery("(max-width: 1024px)");
     const reduceMotion = useReducedMotion();
+
+    /* Lock release: unlock + flush the queued last tap (if any). Used by
+       both the enter-completion callback and the failsafe timeout. The
+       equality guard drops a stale queue if the location already changed
+       by other means (e.g. a back press) while the lock was held. */
+    const releaseLock = () => {
+        pageTransitionState.active = false;
+        if (pageTransitionState.pending) {
+            const target = pageTransitionState.pending;
+            pageTransitionState.pending = null;
+            if (target !== location.pathname) navigate(target);
+        }
+    };
 
     const tabIndex = (path) =>
         mobileNavItems.findIndex((item) =>
@@ -107,9 +125,7 @@ export default function MobilePageTransition({ children }) {
             return undefined;
         }
         pageTransitionState.active = true;
-        const failsafe = setTimeout(() => {
-            pageTransitionState.active = false;
-        }, EXIT_MS + ENTER_MS + 150);
+        const failsafe = setTimeout(releaseLock, EXIT_MS + ENTER_MS + 150);
         return () => clearTimeout(failsafe);
     }, [location.pathname, isMobileNav, reduceMotion]);
 
@@ -128,7 +144,7 @@ export default function MobilePageTransition({ children }) {
                     animate="enter"
                     exit="exit"
                     onAnimationComplete={(definition) => {
-                        if (definition === "enter") pageTransitionState.active = false;
+                        if (definition === "enter") releaseLock();
                     }}
                 >
                     {children}

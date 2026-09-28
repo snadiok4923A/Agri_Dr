@@ -1,8 +1,9 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { useLanguage } from '../../hooks/useLanguage';
 import { X } from 'lucide-react';
 import { navItems, subItems, bottomItems } from './Sidebar';
 import { mobileNavItems } from './MobileNavigation';
+import { resolveSectionForPath } from '../../lib/activeSection';
 import './MobileDrawer.css';
 
 /**
@@ -15,14 +16,32 @@ const bottomNavPaths = new Set(mobileNavItems.map((item) => item.path));
 
 export default function MobileDrawer({ open, onClose }) {
     const { t } = useLanguage();
+    const location = useLocation();
 
     const drawerNavItems = navItems.filter((item) => !bottomNavPaths.has(item.path));
 
-    const linkClass = ({ isActive }) =>
-        `mobile-drawer__link ${isActive ? 'mobile-drawer__link--active' : ''}`;
+    /* Same route-derived section logic as the bottom bar (activeSection.js):
+       on a tool page (/crops, /disease …) the PARENT SECTION stays active
+       in the drawer too — NavLink alone never matched those routes. */
+    const activeSection = resolveSectionForPath(location.pathname);
 
-    const subLinkClass = ({ isActive }) =>
-        `mobile-drawer__link mobile-drawer__link--sub ${isActive ? 'mobile-drawer__link--active' : ''}`;
+    /** NavLink-style class fn for one item: green when the link's own
+        route is active OR when the current route resolves to its section. */
+    const linkClassFor = (itemPath) =>
+        ({ isActive }) =>
+            `mobile-drawer__link ${
+                isActive || activeSection === itemPath
+                    ? 'mobile-drawer__link--active'
+                    : ''
+            }`;
+
+    const subLinkClassFor = (itemPath) =>
+        ({ isActive }) =>
+            `mobile-drawer__link mobile-drawer__link--sub ${
+                isActive || activeSection === itemPath
+                    ? 'mobile-drawer__link--active'
+                    : ''
+            }`;
 
     return (
         <>
@@ -59,7 +78,7 @@ export default function MobileDrawer({ open, onClose }) {
                             <NavLink
                                 key={item.path}
                                 to={item.path}
-                                className={linkClass}
+                                className={linkClassFor(item.path)}
                                 end={item.path === '/'}
                                 onClick={onClose}
                             >
@@ -74,7 +93,7 @@ export default function MobileDrawer({ open, onClose }) {
                             <NavLink
                                 key={item.path}
                                 to={item.path}
-                                className={subLinkClass}
+                                className={subLinkClassFor(item.path)}
                                 onClick={onClose}
                             >
                                 <item.icon size={18} />
