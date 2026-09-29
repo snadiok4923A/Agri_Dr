@@ -19,21 +19,25 @@ import { supabase } from "./supabaseClient";
 
 const BUCKET = "avatars";
 /** Longest edge of the re-encoded copy kept in localStorage. The FULL
- *  original always goes to Supabase; the small copy is only an offline/
- *  instant-paint cache. */
-export const AVATAR_CACHE_EDGE = 512;
+ *  original always goes to Supabase; the smaller copy is only an offline/
+ *  instant-paint cache — sized generously so the profile popup stays
+ *  sharp even when the server layer is unavailable (degraded mode shows
+ *  THIS copy, so it must not look soft). */
+export const AVATAR_CACHE_EDGE = 768;
 
-/* ------- upload compression (spec: original ≤ 20 MB, out ≈ 2–5 MB) ---- */
+/* ------- upload compression (quality-first: spec band ≈ 1–5 MB) ------- */
 /** Hard cap on the ORIGINAL file the user picks (bytes). Larger files are
  *  rejected before any read/compression work. */
 export const MAX_ORIGINAL_BYTES = 20 * 1024 * 1024;
 /** Profile pictures never need more than this on the longest edge; larger
  *  images are downscaled proportionally (never upscaled, never cropped). */
 export const MAX_OUTPUT_EDGE = 1600;
-/** Adaptive-quality target: encode from high quality downwards until the
- *  output fits. 2–5 MB band ≈ visually excellent for 1600px avatars. */
-const TARGET_BYTES = 3 * 1024 * 1024;
-const MIN_QUALITY = 0.55;
+/** Quality-first target: encode from high quality downwards while the
+ *  output is above target. Visually excellent avatars land in the 1–5 MB
+ *  band at 0.85–0.9; the floor exists only as a last resort and never
+ *  dips into visibly-degraded territory. */
+const TARGET_BYTES = 5 * 1024 * 1024;
+const MIN_QUALITY = 0.8;
 const START_QUALITY = 0.9;
 
 function warn(context, error) {
@@ -171,12 +175,21 @@ function detectAlpha(source) {
     return false;
 }
 
+/** Storage extension for a mime type ("image/jpeg"→"jpg" etc.). */
+function extForMime(mime) {
+    const m = String(mime || "").toLowerCase();
+    return m.includes("png") ? "png" : m.includes("webp") ? "webp" : "jpg";
+}
+
 /**
- * Browser-side compression for the avatar upload (spec §COMPRESSION):
- *   decode (EXIF-correct) → proportional resize to ≤1600px longest edge
- *   → adaptive-quality re-encode (JPEG for photos, WebP when the image
+ * Browser-side compression for the avatar upload (quality-first):
+ *   decode (EXIF-correct) → if the file ALREADY fits the size band and
+ *   the 1600px edge budget, pass it through untouched (re-encoding could
+ *   only lose quality) → otherwise proportional resize to ≤1600px longest
+ *   edge → high-quality re-encode (JPEG for photos, WebP when the image
  *   actually uses transparency — never flattening a transparent PNG)
- *   → Blob output. The ORIGINAL file is never uploaded.
+ *   → Blob output. The ORIGINAL file is never uploaded when compression
+ *   is required; an already-small image is never recompressed.
  * Throws when the browser cannot decode the image; callers keep the
  * previous avatar in that case.
  */
@@ -187,6 +200,31 @@ export async function compressImage(file) {
     if (!sw || !sh) {
         source.close?.();
         throw new Error("decode failed");
+    }
+
+    // Quality-first pass-through: an image that already fits the output
+    // band AND the edge budget needs no compression — forwarding the
+    // original bytes preserves 100% of the quality (spec: never recompress
+    // a reasonably-sized image just to shave bytes).
+    if (file.size <= TARGET_BYTES && Math.max(sw, sh) <= MAX_OUTPUT_EDGE) {
+        const transparent = detectAlpha(source);
+        const mime = file.type || (transparent ? "image/webp" : "image/jpeg");
+        const cacheDataUrl = makeCacheDataUrl(source, sw, sh, transparent);
+        source.close?.();
+        if (import.meta.env.DEV) {
+            // eslint-disable-next-line no-console
+            console.info(
+                `[profile] avatar pass-through (no recompression): ${sw}×${sh}, ${(file.size / 1024 / 1024).toFixed(2)} MB`,
+            );
+        }
+        return {
+            blob: file,
+            mime,
+            ext: extForMime(mime),
+            width: sw,
+            height: sh,
+            cacheDataUrl,
+        };
     }
 
     // Resize only when necessary; never upscale, never distort, never crop.
@@ -208,9 +246,13 @@ export async function compressImage(file) {
     const mime = transparent ? "image/webp" : "image/jpeg";
 
     // Adaptive quality: start high, step down only while the output is
-    // above target — never below a quality floor that looks degraded.
+    // above target — and never below the quality floor. If even the floor
+    // exceeds the target we KEEP the floor-quality blob: visual quality
+    // outranks file size (spec).
     let blob = null;
+    let usedQuality = START_QUALITY;
     for (let q = START_QUALITY; q >= MIN_QUALITY; q -= 0.05) {
+        usedQuality = q;
         blob = await canvasToBlob(canvas, mime, q);
         if (blob.size <= TARGET_BYTES) break;
     }
@@ -218,24 +260,17 @@ export async function compressImage(file) {
     // the ACTUAL blob type so the storage extension/contentType always
     // match the compressed output.
     const actualMime = blob.type || mime;
-    const actualExt = actualMime.includes("png")
-        ? "png"
-        : actualMime.includes("webp")
-          ? "webp"
-          : "jpg";
+    const actualExt = extForMime(actualMime);
 
-    // Small ≤512px copy for the instant local paint + offline cache
+    // Small ≤768px copy for the instant local paint + offline cache
     // (browser-local ONLY — never uploaded, never stored server-side).
-    let cacheDataUrl = "";
-    try {
-        const cs = Math.min(1, AVATAR_CACHE_EDGE / Math.max(w, h));
-        const c2 = document.createElement("canvas");
-        c2.width = Math.max(1, Math.round(w * cs));
-        c2.height = Math.max(1, Math.round(h * cs));
-        c2.getContext("2d").drawImage(canvas, 0, 0, c2.width, c2.height);
-        cacheDataUrl = c2.toDataURL(transparent ? "image/webp" : "image/jpeg", 0.85);
-    } catch {
-        /* cache is optional */
+    const cacheDataUrl = makeCacheDataUrl(canvas, w, h, transparent);
+
+    if (import.meta.env.DEV) {
+        // eslint-disable-next-line no-console
+        console.info(
+            `[profile] avatar compressed: ${sw}×${sh} → ${w}×${h}, q=${usedQuality}, ${(file.size / 1024 / 1024).toFixed(2)} MB → ${(blob.size / 1024 / 1024).toFixed(2)} MB`,
+        );
     }
 
     canvas.width = 0; // release the bitmap memory
@@ -248,6 +283,25 @@ export async function compressImage(file) {
         height: h,
         cacheDataUrl,
     };
+}
+
+/** Re-encoded ≤AVATAR_CACHE_EDGE copy for the local instant-paint cache.
+ *  Quality 0.9 so the profile popup stays crisp in degraded (local-only)
+ *  mode — this copy is what the user SEES until the server layer exists. */
+function makeCacheDataUrl(drawSource, w, h, transparent) {
+    try {
+        const cs = Math.min(1, AVATAR_CACHE_EDGE / Math.max(w, h));
+        const c2 = document.createElement("canvas");
+        c2.width = Math.max(1, Math.round(w * cs));
+        c2.height = Math.max(1, Math.round(h * cs));
+        const cctx = c2.getContext("2d");
+        cctx.imageSmoothingEnabled = true;
+        cctx.imageSmoothingQuality = "high";
+        cctx.drawImage(drawSource, 0, 0, c2.width, c2.height);
+        return c2.toDataURL(transparent ? "image/webp" : "image/jpeg", 0.9);
+    } catch {
+        return ""; // cache is optional
+    }
 }
 
 /**
