@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useLanguage } from "../hooks/useLanguage";
 import { marketPrices, marketFilters, buildPriceHistory } from "../data/marketPrices";
-import { Search, X } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { registerOverlay } from "../voice/overlayBus";
 import {
     VOICE_OPEN_MARKET_EVENT,
@@ -128,6 +128,20 @@ export default function Market() {
     }, [selected, range, formatLabel]);
 
     const close = () => setSelected(null);
+
+    /* Bottom-nav browsing: prev/next move `selected` within the filtered
+     * results — the dialog stays open and re-renders with the new item. */
+    const selectedIndex = selected
+        ? results.findIndex((r) => r.id === selected.id)
+        : -1;
+    const goPrev = () => {
+        if (selectedIndex > 0) setSelected(results[selectedIndex - 1]);
+    };
+    const goNext = () => {
+        if (selectedIndex >= 0 && selectedIndex < results.length - 1) {
+            setSelected(results[selectedIndex + 1]);
+        }
+    };
 
     /* §17 close behaviors: Escape on desktop; overlay click handled in JSX.
      * Closing plays a subtle fade/scale-out (§16) before unmount. */
@@ -347,14 +361,8 @@ export default function Market() {
                             aria-label={selected.name}
                             onClick={(e) => e.stopPropagation()}
                         >
-                        <button
-                            type="button"
-                            className="market-page__dialog-close"
-                            aria-label={t("common.close")}
-                            onClick={closeWithAnim}
-                        >
-                            <X size={18} />
-                        </button>
+                        {/* Scrollable content area — the nav row below stays visible */}
+                        <div className="market-page__dialog-body">
 
                         <div className="market-page__dialog-head">
                             <div className="market-page__dialog-imgwrap">
@@ -502,6 +510,36 @@ export default function Market() {
                                     </AreaChart>
                                 </ResponsiveContainer>
                             </div>
+                        </div>
+                        </div>
+
+                        {/* Bottom navigation: prev / close / next */}
+                        <div className="market-page__dialog-nav">
+                            <button
+                                type="button"
+                                className="market-page__nav-btn"
+                                onClick={goPrev}
+                                disabled={selectedIndex <= 0}
+                                aria-label={t("common.previous")}
+                            >
+                                <ChevronLeft size={16} />
+                            </button>
+                            <button
+                                type="button"
+                                className="market-page__nav-close"
+                                onClick={closeWithAnim}
+                            >
+                                {t("common.close")}
+                            </button>
+                            <button
+                                type="button"
+                                className="market-page__nav-btn"
+                                onClick={goNext}
+                                disabled={selectedIndex < 0 || selectedIndex >= results.length - 1}
+                                aria-label={t("common.next")}
+                            >
+                                <ChevronRight size={16} />
+                            </button>
                         </div>
                     </div>
                 </div>
