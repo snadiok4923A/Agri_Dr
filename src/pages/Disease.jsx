@@ -5,7 +5,7 @@ import {
     searchDiseases,
     diseaseLibrary,
 } from "../data/diseaseLibrary";
-import { X, Sparkles, ArrowRight, Search } from "lucide-react";
+import { X, Sparkles, ArrowRight, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { registerOverlay } from "../voice/overlayBus";
 import { VOICE_OPEN_DISEASE_EVENT } from "../voice/executeVoiceCommand";
 import "./Disease.css";
@@ -41,6 +41,20 @@ export default function Disease() {
      * no API per keystroke. */
     const visible = useMemo(() => searchDiseases(query), [query]);
     const searching = query.trim().length > 0;
+
+    /* Bottom-nav browsing: prev/next move `selected` within the current
+     * search results — the window stays open and re-renders in place. */
+    const selectedIndex = selected
+        ? visible.findIndex((d) => d.id === selected.id)
+        : -1;
+    const goPrev = () => {
+        if (selectedIndex > 0) setSelected(visible[selectedIndex - 1]);
+    };
+    const goNext = () => {
+        if (selectedIndex >= 0 && selectedIndex < visible.length - 1) {
+            setSelected(visible[selectedIndex + 1]);
+        }
+    };
 
     // Lock body scroll while the modal is open
     useEffect(() => {
@@ -217,14 +231,8 @@ export default function Disease() {
                         aria-label={selected.name}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <button
-                            type="button"
-                            className="disease-page__modal-close"
-                            onClick={() => setSelected(null)}
-                        aria-label={t("common.close")}
-                    >
-                        <X size={18} />
-                        </button>
+                        {/* Scrollable content area — the nav row below stays visible */}
+                        <div className="disease-page__modal-body">
 
                         {/* Disease image */}
                         <div className="disease-page__modal-art">                                {/* Real photo of the clicked disease — the same
@@ -317,6 +325,36 @@ export default function Disease() {
                             </span>
                             <Sparkles size={16} />
                         </button>
+                        </div>
+
+                        {/* Bottom navigation: prev / close / next */}
+                        <div className="disease-page__modal-nav">
+                            <button
+                                type="button"
+                                className="disease-page__nav-btn"
+                                onClick={goPrev}
+                                disabled={selectedIndex <= 0}
+                                aria-label={t("common.previous")}
+                            >
+                                <ChevronLeft size={16} />
+                            </button>
+                            <button
+                                type="button"
+                                className="disease-page__nav-close"
+                                onClick={() => setSelected(null)}
+                            >
+                                {t("common.close")}
+                            </button>
+                            <button
+                                type="button"
+                                className="disease-page__nav-btn"
+                                onClick={goNext}
+                                disabled={selectedIndex < 0 || selectedIndex >= visible.length - 1}
+                                aria-label={t("common.next")}
+                            >
+                                <ChevronRight size={16} />
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
