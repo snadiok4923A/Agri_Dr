@@ -681,13 +681,13 @@
 
   .crops-page__overlay {
     padding: 12px;
-    align-items: flex-end;
+    align-items: center;
   }
 
   .crops-page__modal {
     max-height: 92vh;
     padding: 20px 16px;
-    border-radius: 18px 18px 0 0;
+    border-radius: 18px;
   }
 
   .crops-page__modal-stats {
