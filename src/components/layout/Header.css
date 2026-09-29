@@ -304,14 +304,18 @@
 
 .profile-modal__dialog {
   position: relative;
-  width: min(400px, 100%);
-  /* Substantially larger floating card (spec §1): explicit height so the
-     hero photo dominates — ~58% of the viewport, never full-screen. */
-  height: min(560px, calc(100vh - 40px));
-  overflow: hidden;
-  border-radius: 22px;
+  /* Minimal modern card: slightly larger than before (spec §1), height
+     follows content instead of a fixed hero box. Centered column layout:
+     avatar → name → email → type → prefs → bottom corner actions. */
+  width: min(432px, 100%);
+  max-height: min(680px, calc(100vh - 32px));
+  overflow-y: auto;
+  padding: 44px 28px 24px;
+  border-radius: 24px;
   border: 1px solid rgba(255, 255, 255, 0.14);
   background: rgba(12, 18, 15, 0.55);
+  -webkit-backdrop-filter: blur(20px) saturate(130%);
+  backdrop-filter: blur(20px) saturate(130%);
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
   animation: profileModalIn 260ms cubic-bezier(0.22, 0.8, 0.36, 1) both;
   filter: none;
@@ -330,72 +334,53 @@
 
 @media (max-width: 480px) {
   .profile-modal__dialog {
-    width: 92vw;
-    height: 60vh;
-    max-height: calc(100vh - 24px);
+    width: 94vw;
+    padding: 42px 20px 20px;
+    border-radius: 20px;
+    max-height: calc(100dvh - 24px);
   }
 }
 
-/* Light theme: same hero design, light-mode chrome. */
+/* Light theme: same minimal card, light-mode chrome. */
 [data-theme="light"] .profile-modal__dialog {
-  background: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.66);
   border-color: rgba(41, 38, 31, 0.12);
   box-shadow: 0 24px 60px rgba(41, 38, 31, 0.22);
 }
 
-.profile-modal__hero {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  min-height: 300px;
+/* ------- Avatar (focal point) + identity ------- */
+
+.profile-modal__avatar {
+  width: 116px;
+  height: 116px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  overflow: hidden;
   display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-secondary);
+  flex-shrink: 0;
 }
 
-.profile-modal__hero > img {
-  position: absolute;
-  inset: 0;
+.profile-modal__avatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
+[data-theme="light"] .profile-modal__avatar {
+  border-color: rgba(41, 38, 31, 0.16);
+  background: rgba(41, 38, 31, 0.05);
+}
+
 .profile-modal__initials {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 72px;
+  font-size: 34px;
   font-weight: 700;
   color: var(--accent);
   letter-spacing: 0.02em;
-}
-
-/* Subtle bottom gradient so name/role read over the photo —
-   the photo stays clearly visible behind it (no opaque card). */
-.profile-modal__scrim {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(0, 0, 0, 0) 0%,
-    rgba(0, 0, 0, 0) 45%,
-    rgba(0, 0, 0, 0.34) 72%,
-    rgba(0, 0, 0, 0.62) 100%
-  );
-  pointer-events: none;
-}
-
-[data-theme="light"] .profile-modal__scrim {
-  background: linear-gradient(
-    180deg,
-    rgba(0, 0, 0, 0) 0%,
-    rgba(0, 0, 0, 0) 50%,
-    rgba(0, 0, 0, 0.3) 76%,
-    rgba(0, 0, 0, 0.56) 100%
-  );
 }
 
 .profile-modal__close {
@@ -420,61 +405,148 @@
   background: rgba(0, 0, 0, 0.55);
 }
 
-/* Busy state while compressing/uploading (existing-style, minimal): the
-   circular camera button dims and stops pointer events — same place, same
-   size, same look otherwise. */
-.profile-modal__photo-edit:disabled {
-  opacity: 0.55;
-  cursor: progress;
-  pointer-events: none;
-}
-
-.profile-modal__photo-edit {
-  position: absolute;
-  right: 16px;
-  bottom: 108px;
-  width: 34px;
-  height: 34px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.24);
-  background: rgba(0, 0, 0, 0.4);
-  color: #fff;
-  cursor: pointer;
-  transition: background var(--transition-fast);
-  z-index: 3;
-}
-
-.profile-modal__photo-edit:hover {
-  background: rgba(0, 0, 0, 0.6);
-}
-
+/* Clean hierarchy: name (strong) → email (subtle) → type badge */
 .profile-modal__identity {
-  position: relative;
-  z-index: 2;
-  padding: 0 20px 22px;
-  text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
+  text-align: center;
 }
 
 .profile-modal__name {
   margin: 0;
-  font-size: 24px;
-  font-weight: 800;
-  color: #fff;
-  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.45);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
 }
 
-.profile-modal__role-line {
-  margin: 4px 0 14px;
-  font-size: 14px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.82);
-  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4);
+.profile-modal__type-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 8px;
+  padding: 4px 12px;
+  border-radius: var(--radius-full, 999px);
+  border: 1px solid rgba(111, 207, 142, 0.35);
+  background: rgba(111, 207, 142, 0.12);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* ------- Preference row: language menu + theme toggle ------- */
+
+.profile-modal__prefs {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.profile-modal__pref-wrap {
+  position: relative;
+}
+
+.profile-modal__pref {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 13px;
+  border-radius: var(--radius-full, 999px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.profile-modal__pref:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="light"] .profile-modal__pref {
+  background: rgba(41, 38, 31, 0.05);
+  border-color: rgba(41, 38, 31, 0.16);
+}
+
+[data-theme="light"] .profile-modal__pref:hover {
+  background: rgba(41, 38, 31, 0.1);
+}
+
+.profile-modal__pref-menu {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  min-width: 150px;
+  padding: 6px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(12, 18, 15, 0.92);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+}
+
+[data-theme="light"] .profile-modal__pref-menu {
+  background: rgba(255, 253, 250, 0.95);
+  border-color: rgba(41, 38, 31, 0.14);
+  box-shadow: 0 12px 32px rgba(41, 38, 31, 0.22);
+}
+
+.profile-modal__pref-option {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  font-weight: 600;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.profile-modal__pref-option:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+}
+
+.profile-modal__pref-option--active {
+  color: var(--accent);
+}
+
+[data-theme="light"] .profile-modal__pref-option:hover {
+  background: rgba(41, 38, 31, 0.07);
+}
+
+/* ------- Bottom corners: Sign out (left) · Edit Profile (right) ------- */
+
+.profile-modal__cornerbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="light"] .profile-modal__cornerbar {
+  border-top-color: rgba(41, 38, 31, 0.12);
 }
 
 .profile-modal__pill {
@@ -962,222 +1034,115 @@
   }
 }
 
-/* Account email line inside the profile window */
+/* Account email line — subtle secondary under the name */
 .profile-modal__email {
-  margin: 2px 0 0;
+  margin: 4px 0 0;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.82);
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
 }
 
-/* Sign out pill — same family as the existing Edit Profile pill */
+/* Sign out — quiet ghost pill, bottom-left (clear, not overpowering) */
 .profile-modal__pill--signout {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(255, 255, 255, 0.14);
-  color: #fff;
+  background: transparent;
 }
 
 .profile-modal__pill--signout:hover {
-  background: rgba(239, 68, 68, 0.55);
+  border-color: rgba(239, 68, 68, 0.6);
+  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.08);
 }
 
-.profile-modal__actions {
+[data-theme="light"] .profile-modal__pill--signout:hover {
+  color: #b91c1c;
+}
+
+/* ------- Edit Profile panel (the only place profile data changes) ------- */
+
+.profile-modal__editpane {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.profile-modal__editpane-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.profile-modal__avatarpick {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  margin: 0 auto;
+  border-radius: 50%;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.profile-modal__avatarpick img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-modal__avatarpick span {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.profile-modal__avatarpick:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+[data-theme="light"] .profile-modal__avatarpick {
+  border-color: rgba(41, 38, 31, 0.16);
+  background: rgba(41, 38, 31, 0.05);
+}
+
+/* Small camera chip over the avatar picker */
+.profile-modal__avatarpick-cam {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(8, 14, 11, 0.85);
+  color: #fff;
+}
+
+.profile-modal__editpane-actions {
+  display: flex;
   gap: 8px;
-  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.profile-modal__editpane-actions .profile-modal__pill {
+  flex: 1;
+  justify-content: center;
 }
 
 /* =====================================================================
-   Account deletion — destructive zone + typed-DELETE confirmation.
-   Same visual language as the profile window (glass pills, radii,
-   theme vars); no existing element is redesigned.
+   Delete Account: the UI control was REMOVED from the profile popup
+   (redesign). The backend Edge Function and deleteCurrentUserAccount
+   remain intact server-side; nothing here renders it anymore.
    ===================================================================== */
-
-/* Danger zone under the action pills, inside the profile window */
-.profile-modal__danger {
-  display: flex;
-  justify-content: center;
-  margin-top: 12px;
-}
-
-.profile-modal__pill--danger {
-  background: rgba(0, 0, 0, 0.28);
-  border-color: rgba(239, 68, 68, 0.55);
-  color: #fecaca;
-}
-
-.profile-modal__pill--danger:hover {
-  background: rgba(239, 68, 68, 0.32);
-  border-color: rgba(239, 68, 68, 0.8);
-  color: #fff;
-}
-
-.profile-modal__pill--danger:disabled {
-  opacity: 0.55;
-  cursor: default;
-}
-
-/* Typed-DELETE confirmation card — stacks above the profile dialog */
-.profile-modal__backdrop--confirm {
-  z-index: 2;
-  background: rgba(2, 8, 5, 0.66);
-}
-
-.profile-modal__confirm {
-  position: relative;
-  z-index: 3;
-  width: min(360px, 100%);
-  padding: 26px 24px 22px;
-  border-radius: 20px;
-  border: 1px solid rgba(239, 68, 68, 0.35);
-  /* NO backdrop-filter here: any blur on the card's own layer would
-     smear its text/input (the original bug). Glass look comes from the
-     translucent background over the dimmed backdrop beneath. */
-  background: rgba(12, 18, 15, 0.78);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
-  text-align: center;
-  color: #fff;
-  animation: profileModalIn 220ms cubic-bezier(0.22, 0.8, 0.36, 1) both;
-}
-
-[data-theme="light"] .profile-modal__confirm {
-  background: rgba(255, 252, 250, 0.92);
-  border-color: rgba(185, 28, 28, 0.3);
-  color: #29261f;
-  box-shadow: 0 24px 60px rgba(41, 38, 31, 0.3);
-}
-
-.profile-modal__confirm-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  margin-bottom: 12px;
-  border-radius: 50%;
-  color: #fecaca;
-  background: rgba(239, 68, 68, 0.18);
-  border: 1px solid rgba(239, 68, 68, 0.4);
-}
-
-[data-theme="light"] .profile-modal__confirm-icon {
-  color: #b91c1c;
-  background: rgba(239, 68, 68, 0.12);
-}
-
-.profile-modal__confirm-title {
-  margin: 0 0 8px;
-  font-size: 17px;
-  font-weight: 700;
-}
-
-.profile-modal__confirm-text {
-  margin: 0 0 16px;
-  font-size: 13px;
-  line-height: 1.5;
-  color: rgba(255, 255, 255, 0.82);
-}
-
-[data-theme="light"] .profile-modal__confirm-text {
-  color: rgba(41, 38, 31, 0.78);
-}
-
-.profile-modal__confirm-label {
-  display: block;
-  margin-bottom: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  text-align: left;
-  color: rgba(255, 255, 255, 0.85);
-}
-
-[data-theme="light"] .profile-modal__confirm-label {
-  color: rgba(41, 38, 31, 0.8);
-}
-
-.profile-modal__confirm-input {
-  width: 100%;
-  padding: 10px 14px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  background: rgba(0, 0, 0, 0.35);
-  color: #fff;
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 0.25em;
-  text-align: center;
-  font-family: inherit;
-  outline: none;
-  transition: border-color var(--transition-fast);
-}
-
-.profile-modal__confirm-input:focus {
-  border-color: rgba(239, 68, 68, 0.75);
-}
-
-.profile-modal__confirm-input:disabled {
-  opacity: 0.6;
-}
-
-[data-theme="light"] .profile-modal__confirm-input {
-  background: rgba(255, 255, 255, 0.75);
-  border-color: rgba(41, 38, 31, 0.22);
-  color: #29261f;
-}
-
-.profile-modal__confirm-error {
-  margin: 10px 0 0;
-  font-size: 12px;
-  color: #fecaca;
-}
-
-[data-theme="light"] .profile-modal__confirm-error {
-  color: #b91c1c;
-}
-
-.profile-modal__confirm-actions {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 18px;
-  flex-wrap: wrap;
-}
-
-.profile-modal__pill--ghost-dark {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.25);
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.profile-modal__pill--ghost-dark:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-[data-theme="light"] .profile-modal__pill--ghost-dark {
-  background: rgba(41, 38, 31, 0.06);
-  border-color: rgba(41, 38, 31, 0.2);
-  color: rgba(41, 38, 31, 0.85);
-}
-
-/* Solid destructive CTA — enabled only after DELETE is typed (§3) */
-.profile-modal__pill--danger-solid {
-  background: #ef4444;
-  border-color: #ef4444;
-  color: #fff;
-}
-
-.profile-modal__pill--danger-solid:hover {
-  background: #dc2626;
-  border-color: #dc2626;
-}
-
-.profile-modal__pill--danger-solid:disabled {
-  opacity: 0.45;
-  cursor: default;
-  filter: none;
-}

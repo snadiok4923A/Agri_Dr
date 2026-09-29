@@ -2,7 +2,7 @@ import { createPortal } from 'react-dom';
 import {
   Bell, Sun, Moon, ChevronDown, Globe, Menu, Mic, Camera, X,
   Bug, TrendingDown, FlaskConical, TrendingUp, Activity, CheckCheck,
-  UserPlus, LogOut, User, Trash2, AlertTriangle,
+  UserPlus, LogOut, User,
 } from 'lucide-react';
 import { useState, useRef, useEffect, useCallback, memo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
@@ -10,7 +10,7 @@ import { useLanguage } from '../../hooks/useLanguage';
 import { useTheme } from '../../hooks/useTheme';
 import { useVoiceMode } from '../../hooks/useVoiceMode';
 import { useAuth } from '../../hooks/useAuth';
-import { friendlyAuthError, deleteCurrentUserAccount } from '../../lib/authService';
+import { friendlyAuthError } from '../../lib/authService';
 import {
   profileImageKeyFor,
   profileNameKeyFor,
@@ -18,8 +18,8 @@ import {
   adoptLegacyProfileKeys,
   readProfileValue,
   writeProfileValue,
-  purgeAccountData,
 } from '../../lib/profileStore';
+import { blobToDataUrl } from '../../lib/profileService';
 import {
   fetchServerAvatarUrl,
   getAvatarPublicUrl,
@@ -280,66 +280,33 @@ export default memo(function Header({ onMenuToggle }) {
     persistRead(readMap.map(() => true));
   };
 
-  /* Busy flag while compressing/uploading: the camera button and the
-     file input are inert until the operation settles (no double uploads). */
+  /* Busy flag while compressing/uploading: the change-photo control and
+     the file input are inert until the operation settles. */
   const [photoBusy, setPhotoBusy] = useState(false);
+  /* PENDING photo inside the Edit panel: the crop-approved File plus its
+     data-URL preview. NOT saved until "Save Changes" — cancel (or
+     re-edit) discards it harmlessly. */
+  const [photoDraft, setPhotoDraft] = useState(null);
+  const [pendingPhotoFile, setPendingPhotoFile] = useState(null);
 
-  /* ------- Account deletion (secure, server-side via Edge Function) -----
-     Flow (spec §1–§3): Delete Account → typed-DELETE confirm modal →
-     Edge Function (identity from the verified JWT — no user id is ever
-     sent) → session cleared → real logged-out state. The modal state
-     lives here so the SAME session-loss guard that closes the profile
-     window also unmounts the confirm dialog the instant the session
-     dies (e.g. the account was deleted from another device mid-flow). */
-  const [deleteOpen, setDeleteOpen] = useState(false);
-  const [deleteBusy, setDeleteBusy] = useState(false);
-  const [deleteError, setDeleteError] = useState('');
-  const [deleteConfirmText, setDeleteConfirmText] = useState('');
-
-  /* Session loss (incl. the deletion itself) closes both the confirm
-     modal and the profile window and resets the flow cleanly. */
+  /* In-popup preference row (language menu / theme toggle). One open menu
+     at a time; closes on outside mousedown (same pattern as the header
+     language dropdown — no second state system, the SAME changeLanguage /
+     toggleTheme drive the whole app). */
+  const [prefMenu, setPrefMenu] = useState(null); // null | 'lang'
+  const prefsRef = useRef(null);
   useEffect(() => {
-    if (deleteOpen && !isAuthenticated) {
-      setDeleteOpen(false);
-      setDeleteBusy(false);
-      setDeleteError('');
-    }
-  }, [deleteOpen, isAuthenticated]);
+    if (!prefMenu) return undefined;
+    const handleClick = (e) => {
+      if (prefsRef.current && !prefsRef.current.contains(e.target)) setPrefMenu(null);
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [prefMenu]);
 
-  const openDeleteConfirm = () => {
-    setDeleteError('');
-    setDeleteConfirmText(''); // require a fresh typed confirmation every time
-    setDeleteOpen(true);
-  };
-  const closeDeleteConfirm = () => {
-    if (deleteBusy) return; // no closing mid-deletion
-    setDeleteOpen(false);
-    setDeleteError('');
-    setDeleteConfirmText('');
-  };
-
-  const handleDeleteAccount = async () => {
-    if (!isAuthenticated || deleteBusy) return;
-    setDeleteBusy(true);
-    setDeleteError('');
-    try {
-      await deleteCurrentUserAccount(); // only resolves when the server CONFIRMED deletion
-      // Server-confirmed: the account is gone. purgeAccountData wipes
-      // every user-scoped localStorage trace BEFORE the SIGNED_OUT
-      // event clears the React state (the provider also drops the
-      // legacy shared keys); signOutUser clears the real session.
-      purgeAccountData(userId);
-      await signOut();
-      setDeleteOpen(false);
-      navigate('/login'); // §11: real logged-out state, public page
-    } catch (err) {
-      // Failure (network / Edge Function down / not deployed yet):
-      // the account is INTACT — no fake success, no session clear.
-      setDeleteError(friendlyAuthError(err, 'delete account'));
-    } finally {
-      setDeleteBusy(false);
-    }
-  };
+  /* NOTE: the Delete Account control was REMOVED from the profile popup
+     (UI redesign). The backend Edge Function + deleteCurrentUserAccount
+     remain untouched server-side; only this UI entry point is gone. */
 
   const handlePhotoPick = (e) => {
     const file = e.target.files?.[0];
@@ -363,17 +330,30 @@ export default memo(function Header({ onMenuToggle }) {
     }
     setPhotoError('');
     /* NEW FLOW (spec): picking a photo opens the circular editor FIRST.
-       Nothing is uploaded here — handleEditorConfirm runs the pipeline. */
+       Nothing is uploaded here — handleEditorConfirm decides: preview
+       (Edit panel) or direct pipeline (fallback when not editing). */
     setEditorFile(file);
   };
 
   /* Step 3: "Use Photo" — the editor hands over the CROPPED square file.
-     The existing pipeline, unchanged: compress ONCE in the browser (the
-     original AND the un-cropped image never upload) → Storage +
-     profiles.avatar_url → repaint from the SERVER URL. Previous avatar
-     shows throughout on any failure. */
+     From the Edit panel this only STAGES a local preview; the real
+     compress→upload pipeline (runAvatarUpload, unchanged) runs on
+     "Save Changes". The original AND the un-cropped image never upload. */
   const handleEditorConfirm = (croppedFile) => {
     setEditorFile(null); // close the editor
+    if (editing) {
+      // Edit-panel flow: preview only — compression happens once, on Save.
+      setPendingPhotoFile(croppedFile);
+      blobToDataUrl(croppedFile)
+        .then((url) => setPhotoDraft(url))
+        .catch(() => setPhotoError(t('common.profile.photoInvalid')));
+      return;
+    }
+    runAvatarUpload(croppedFile);
+  };
+
+  /* The REAL pipeline (unchanged): compress ONCE → upload → server URL. */
+  const runAvatarUpload = (croppedFile) => {
     setPhotoBusy(true);
     compressImage(croppedFile)
       .catch(() => null)
@@ -417,6 +397,7 @@ export default memo(function Header({ onMenuToggle }) {
   const startEditing = () => {
     setNameDraft(profileName);
     setRoleDraft(profileRole);
+    setPrefMenu(null);
     setEditing(true);
   };
 
@@ -429,6 +410,13 @@ export default memo(function Header({ onMenuToggle }) {
     setProfileRole(roleDraft);
     writeProfileValue(profileRoleKeyFor, userId, roleDraft);
     setEditing(false);
+    /* Pending photo (if any): run the EXISTING compress → upload →
+       server-URL pipeline exactly once, at save time. */
+    if (pendingPhotoFile) {
+      runAvatarUpload(pendingPhotoFile);
+      setPendingPhotoFile(null);
+      setPhotoDraft(null);
+    }
   };
 
   const closePanel = () => { setPanelOpen(false); setEditing(false); };
@@ -592,68 +580,16 @@ export default memo(function Header({ onMenuToggle }) {
         )}
       </div>
 
-      {/* LARGE floating profile window — portal + backdrop + overlay +
-          dialog, the same battle-tested architecture as the Market
-          Intelligence modal (production-safe backdrop blur). The photo
-          fills the window; name/role sit OVER it on a subtle gradient. */}
+      {/* Floating profile window — portal + backdrop + overlay + dialog,
+          the same battle-tested architecture as the Market Intelligence
+          modal (production-safe backdrop blur). Minimal profile layout:
+          avatar → name → email → type badge → (Sign out | Edit) row →
+          preference row. The ONLY photo control lives inside Edit Profile. */}
       {/* Gated on isAuthenticated too (not just the state flag): the
           moment the Supabase session becomes null the portal unmounts —
           no logged-out user can ever glimpse the Sign out control. */}
       {panelOpen && isAuthenticated && createPortal(
         <div className="profile-modal__portal">
-          {/* Typed-DELETE confirmation (spec §2/§3/§14) — portaled SIBLING
-              of the profile dialog so it stacks on top; the profile window
-              stays open and untouched underneath. Delete cannot complete
-              while the confirm text is wrong, and busy state keeps the
-              dialog open + disabled through the entire server round-trip
-              (no double submits, no mid-flight close). */}
-          {deleteOpen && createPortal(
-            <div className="profile-modal__portal">
-              <div className="profile-modal__backdrop profile-modal__backdrop--confirm" onClick={closeDeleteConfirm} aria-hidden="true" />
-              <div className="profile-modal__overlay profile-modal__overlay--confirm">
-                <div className="profile-modal__confirm" role="alertdialog" aria-modal="true" aria-label={t("common.profile.deleteAccount")}>
-                  <div className="profile-modal__confirm-icon" aria-hidden="true"><AlertTriangle size={22} /></div>
-                  <h4 className="profile-modal__confirm-title">{t("common.profile.deleteConfirmTitle")}</h4>
-                  <p className="profile-modal__confirm-text">{t("common.profile.deleteConfirmText")}</p>
-                  <label className="profile-modal__confirm-label" htmlFor="delete-account-confirmation">
-                    {t("common.profile.deleteTypePrompt")}
-                  </label>
-                  <input
-                    id="delete-account-confirmation"
-                    className="profile-modal__confirm-input"
-                    type="text"
-                    autoComplete="off"
-                    autoCapitalize="characters"
-                    spellCheck={false}
-                    value={deleteConfirmText}
-                    onChange={(e) => setDeleteConfirmText(e.target.value.toUpperCase())}
-                    placeholder="DELETE"
-                    disabled={deleteBusy}
-                  />
-                  {deleteError && <p className="profile-modal__confirm-error">{deleteError}</p>}
-                  <div className="profile-modal__confirm-actions">
-                    <button
-                      className="profile-modal__pill profile-modal__pill--ghost profile-modal__pill--ghost-dark"
-                      onClick={closeDeleteConfirm}
-                      disabled={deleteBusy}
-                    >
-                      {t("common.profile.cancel")}
-                    </button>
-                    <button
-                      className="profile-modal__pill profile-modal__pill--danger-solid"
-                      onClick={handleDeleteAccount}
-                      disabled={deleteBusy || deleteConfirmText !== "DELETE"}
-                    >
-                      <Trash2 size={13} />
-                      <span>{deleteBusy ? t("common.profile.deleting") : t("common.profile.deleteAccount")}</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>,
-            document.body
-          )}
-
           <div
             className="profile-modal__backdrop"
             onClick={closePanel}
@@ -666,119 +602,180 @@ export default memo(function Header({ onMenuToggle }) {
               aria-modal="true"
               aria-label={t("settings.profile")}
             >
-              {/* Hero photo — covers the whole window (spec §2). */}
-              <div className="profile-modal__hero">
-                {profileImage
-                  ? <img src={profileImage} alt={displayName} />
-                  : user?.avatarUrl
-                    ? <img src={user.avatarUrl} alt={displayName} referrerPolicy="no-referrer" />
-                    : initials
-                      ? <span className="profile-modal__initials">{initials}</span>
-                      : <User size={22} aria-hidden="true" />}
-                <div className="profile-modal__scrim" aria-hidden="true" />
+              {/* Circular close button, top-right (spec §7). */}
+              <button
+                className="profile-modal__close"
+                onClick={closePanel}
+                aria-label="Close profile"
+              >
+                <X size={16} />
+              </button>
 
-                {/* Circular close button, top-right (spec §7). */}
-                <button
-                  className="profile-modal__close"
-                  onClick={closePanel}
-                  aria-label="Close profile"
-                >
-                  <X size={16} />
-                </button>
+              {editing ? (
+                /* ---------------- Edit Profile panel ----------------
+                   The ONLY place profile data can be changed: photo
+                   (via the circular crop editor → existing compress +
+                   upload), name, account type. */
+                <div className="profile-modal__editpane">
+                  <h3 className="profile-modal__editpane-title">
+                    {t("common.profile.editProfile")}
+                  </h3>
 
-                {/* Circular camera button over the photo (spec §5). */}
-                <button
-                  className="profile-modal__photo-edit"
-                  onClick={() => fileRef.current?.click()}
-                  disabled={photoBusy}
-                  aria-busy={photoBusy}
-                  aria-label={t("common.profile.changePhoto")}
-                  title={t("common.profile.changePhoto")}
-                >
-                  <Camera size={15} />
-                </button>
-                <input
-                  ref={fileRef}
-                  type="file"
-                  accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
-                  hidden
-                  onChange={handlePhotoPick}
-                />
+                  {/* Avatar picker — current picture or initials; tapping
+                      opens the SAME file input → crop editor pipeline. */}
+                  <button
+                    type="button"
+                    className="profile-modal__avatarpick"
+                    onClick={() => fileRef.current?.click()}
+                    disabled={photoBusy}
+                    aria-busy={photoBusy}
+                    aria-label={t("common.profile.changePhoto")}
+                  >
+                    {photoDraft
+                      ? <img src={photoDraft} alt="" />
+                      : profileImage
+                        ? <img src={profileImage} alt="" />
+                        : user?.avatarUrl
+                          ? <img src={user.avatarUrl} alt="" referrerPolicy="no-referrer" />
+                          : initials
+                            ? <span>{initials}</span>
+                            : <User size={26} aria-hidden="true" />}
+                    <span className="profile-modal__avatarpick-cam" aria-hidden="true">
+                      <Camera size={13} />
+                    </span>
+                  </button>
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                    hidden
+                    onChange={handlePhotoPick}
+                  />
 
-                {editing ? (
-                  <div className="profile-modal__editor">
-                    <label className="profile-modal__field">
-                      <span>{t("common.profile.editName")}</span>
-                      <input
-                        value={nameDraft}
-                        onChange={(e) => setNameDraft(e.target.value)}
-                        maxLength={40}
-                      />
-                    </label>
-                    <span className="profile-modal__field-label">{t("common.profile.changeRole")}</span>
-                    <div className="profile-modal__roles">
-                      {ROLES.map(role => (
-                        <button
-                          key={role}
-                          className={`profile-modal__role ${roleDraft === role ? 'profile-modal__role--active' : ''}`}
-                          onClick={() => setRoleDraft(role)}
-                        >
-                          {role === 'Farmer' ? t("common.profile.farmer") : t("common.profile.businessMan")}
-                        </button>
-                      ))}
-                    </div>
-                    <div className="profile-modal__editor-actions">
-                      <button className="profile-modal__pill profile-modal__pill--ghost" onClick={() => setEditing(false)}>
-                        {t("common.profile.cancel")}
-                      </button>
-                      <button className="profile-modal__pill profile-modal__pill--primary" onClick={saveProfile}>
-                        {t("common.profile.save")}
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="profile-modal__identity">
-                    <h3 className="profile-modal__name">{displayName || t("common.profile.nameUnavailable")}</h3>
-                    {/* Signed-in account identity — real auth email only. */}
-                    {authEmail && <p className="profile-modal__email">{authEmail}</p>}
-                    {/* Role line ONLY when the user actually chose one. */}
-                    {profileRole && (
-                      <p className="profile-modal__role-line">
-                        {profileRole === 'Business Man' ? t("common.profile.businessMan") : t("common.profile.farmer")}
-                      </p>
-                    )}
-                    <div className="profile-modal__actions">
-                      <button className="profile-modal__pill" onClick={startEditing}>
-                        {t("common.profile.editProfile")}
-                      </button>
+                  <label className="profile-modal__field">
+                    <span>{t("common.profile.editName")}</span>
+                    <input
+                      value={nameDraft}
+                      onChange={(e) => setNameDraft(e.target.value)}
+                      maxLength={40}
+                    />
+                  </label>
+
+                  <span className="profile-modal__field-label">{t("common.profile.changeRole")}</span>
+                  <div className="profile-modal__roles">
+                    {ROLES.map(role => (
                       <button
-                        className="profile-modal__pill profile-modal__pill--signout"
-                        onClick={handleSignOut}
-                        disabled={authLoading}
+                        key={role}
+                        className={`profile-modal__role ${roleDraft === role ? 'profile-modal__role--active' : ''}`}
+                        onClick={() => setRoleDraft(role)}
                       >
-                        <LogOut size={13} />
-                        <span>{authLoading ? 'Signing out…' : 'Sign out'}</span>
+                        {role === 'Farmer' ? t("common.profile.farmer") : t("common.profile.businessMan")}
                       </button>
-                    </div>
-                    {/* Destructive zone — kept visually separate from the
-                        everyday actions above (same design language). */}
-                    <div className="profile-modal__danger">
-                      <button
-                        className="profile-modal__pill profile-modal__pill--danger"
-                        onClick={openDeleteConfirm}
-                        disabled={deleteBusy || photoBusy}
-                      >
-                        <Trash2 size={13} />
-                        <span>{t("common.profile.deleteAccount")}</span>
-                      </button>
-                    </div>
+                    ))}
                   </div>
-                )}
 
-                {(photoError || accountError) && (
-                  <p className="profile-modal__error">{photoError || accountError}</p>
-                )}
-              </div>
+                  {(photoError || accountError) && (
+                    <p className="profile-modal__error">{photoError || accountError}</p>
+                  )}
+
+                  <div className="profile-modal__editpane-actions">
+                    <button className="profile-modal__pill profile-modal__pill--ghost" onClick={() => { setEditing(false); setPhotoDraft(null); }}>
+                      {t("common.profile.cancel")}
+                    </button>
+                    <button
+                      className="profile-modal__pill profile-modal__pill--primary"
+                      onClick={saveProfile}
+                      disabled={photoBusy}
+                    >
+                      {photoBusy ? "…" : t("common.profile.save")}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* ---------------- Main (view) profile layout ---------------- */
+                <div className="profile-modal__identity">
+                  {/* Avatar — the visual focal point. NO photo button here:
+                      photos change ONLY via Edit Profile (spec §7). */}
+                  <div className="profile-modal__avatar">
+                    {profileImage
+                      ? <img src={profileImage} alt={displayName} />
+                      : user?.avatarUrl
+                        ? <img src={user.avatarUrl} alt={displayName} referrerPolicy="no-referrer" />
+                        : initials
+                          ? <span className="profile-modal__initials">{initials}</span>
+                          : <User size={30} aria-hidden="true" />}
+                  </div>
+
+                  {/* Name → email → type: clean hierarchy, real data only. */}
+                  <h3 className="profile-modal__name">
+                    {displayName || t("common.profile.nameUnavailable")}
+                  </h3>
+                  {authEmail && <p className="profile-modal__email">{authEmail}</p>}
+                  {profileRole && (
+                    <span className="profile-modal__type-badge">
+                      {profileRole === 'Business Man' ? t("common.profile.businessMan") : t("common.profile.farmer")}
+                    </span>
+                  )}
+
+                  {/* Preferences: language menu + theme toggle — SAME
+                      changeLanguage / toggleTheme systems as the header. */}
+                  <div className="profile-modal__prefs" ref={prefsRef}>
+                    <div className="profile-modal__pref-wrap">
+                      <button
+                        className="profile-modal__pref"
+                        onClick={() => setPrefMenu(prefMenu === 'lang' ? null : 'lang')}
+                        aria-expanded={prefMenu === 'lang'}
+                      >
+                        <Globe size={14} />
+                        <span>{currentLang?.native || t("settings.language")}</span>
+                      </button>
+                      {prefMenu === 'lang' && (
+                        <div className="profile-modal__pref-menu">
+                          {languages.map((lang) => (
+                            <button
+                              key={lang.code}
+                              className={`profile-modal__pref-option ${lang.code === language ? 'profile-modal__pref-option--active' : ''}`}
+                              onClick={() => { changeLanguage(lang.code); setPrefMenu(null); }}
+                            >
+                              {lang.native}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      className="profile-modal__pref"
+                      onClick={toggleTheme}
+                      aria-label={t("common.toggleTheme")}
+                    >
+                      {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+                      <span>{theme === 'dark' ? t("settings.dark") : t("settings.light")}</span>
+                    </button>
+                  </div>
+
+                  {(photoError || accountError) && (
+                    <p className="profile-modal__error">{photoError || accountError}</p>
+                  )}
+
+                  {/* Bottom corners: Sign out (left) · Edit Profile (right). */}
+                  <div className="profile-modal__cornerbar">
+                    <button
+                      className="profile-modal__pill profile-modal__pill--ghost profile-modal__pill--signout"
+                      onClick={handleSignOut}
+                      disabled={authLoading}
+                    >
+                      <LogOut size={13} />
+                      <span>{authLoading ? '…' : t("common.profile.signOutLabel")}</span>
+                    </button>
+                    <button
+                      className="profile-modal__pill profile-modal__pill--primary"
+                      onClick={startEditing}
+                    >
+                      {t("common.profile.editProfile")}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
