@@ -29,6 +29,7 @@ import {
   MAX_ORIGINAL_BYTES,
 } from '../../lib/profileService';
 import { recommendations } from '../../data/mockData';
+import ProfilePhotoEditor from '../profile/ProfilePhotoEditor';
 import './Header.css';
 
 /* Profile state (photo / name / role) is USER-SCOPED: every key carries
@@ -68,6 +69,10 @@ export default memo(function Header({ onMenuToggle }) {
   const [nameDraft, setNameDraft] = useState('');
   const [roleDraft, setRoleDraft] = useState('');
   const [photoError, setPhotoError] = useState('');
+  /* Step 2 of the avatar flow: the RAW picked file awaiting the circular
+     editor. Non-null → editor overlay is open; nothing uploads until the
+     user presses "Use Photo" (crop → compress once → existing upload). */
+  const [editorFile, setEditorFile] = useState(null);
   const [accountError, setAccountError] = useState('');
   /* Profile state starts EMPTY and is loaded per-identity by the effect
      below — never synchronously from a shared key at mount time. */
@@ -357,11 +362,20 @@ export default memo(function Header({ onMenuToggle }) {
       return;
     }
     setPhotoError('');
+    /* NEW FLOW (spec): picking a photo opens the circular editor FIRST.
+       Nothing is uploaded here — handleEditorConfirm runs the pipeline. */
+    setEditorFile(file);
+  };
+
+  /* Step 3: "Use Photo" — the editor hands over the CROPPED square file.
+     The existing pipeline, unchanged: compress ONCE in the browser (the
+     original AND the un-cropped image never upload) → Storage +
+     profiles.avatar_url → repaint from the SERVER URL. Previous avatar
+     shows throughout on any failure. */
+  const handleEditorConfirm = (croppedFile) => {
+    setEditorFile(null); // close the editor
     setPhotoBusy(true);
-    /* Pipeline (spec): compress in the browser FIRST — original never
-       uploaded — then Storage + profiles.avatar_url, then repaint from
-       the SERVER URL. Previous avatar shows throughout on any failure. */
-    compressImage(file)
+    compressImage(croppedFile)
       .catch(() => null)
       .then((out) => {
         if (!out?.blob) throw Object.assign(new Error('compress-failed'), { compressFailed: true });
@@ -395,6 +409,10 @@ export default memo(function Header({ onMenuToggle }) {
       })
       .finally(() => setPhotoBusy(false));
   };
+
+  /* Cancel / editor dismissed → discard the picked file entirely; the
+     avatar and everything else stay exactly as they were. */
+  const handleEditorCancel = () => setEditorFile(null);
 
   const startEditing = () => {
     setNameDraft(profileName);
@@ -763,6 +781,17 @@ export default memo(function Header({ onMenuToggle }) {
               </div>
             </div>
           </div>
+
+          {/* Circular photo editor — opens over the profile window after a
+              photo is picked; uploads ONLY on "Use Photo". Unmounts (and
+              discards the pick) when the profile window itself closes. */}
+          {editorFile && (
+            <ProfilePhotoEditor
+              file={editorFile}
+              onConfirm={handleEditorConfirm}
+              onCancel={handleEditorCancel}
+            />
+          )}
         </div>,
         document.body
       )}

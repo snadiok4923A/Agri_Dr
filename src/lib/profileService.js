@@ -131,8 +131,10 @@ export function blobToDataUrl(blob) {
  * createImageBitmap({imageOrientation:'from-image'}) handles it in all
  * modern browsers; an <img> decode is the fallback (browsers apply EXIF
  * for <img> rendering too).
+ * Exported for the profile-photo editor, which needs the same EXIF-safe
+ * decode as the source of the circular crop (single decode, reused).
  */
-async function decodeOriented(file) {
+export async function decodeOriented(file) {
     try {
         if (window.createImageBitmap) {
             return await createImageBitmap(file, {

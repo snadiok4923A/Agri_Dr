@@ -1,0 +1,241 @@
+/* ============================================================
+   ProfilePhotoEditor.css — WhatsApp-style circular avatar editor.
+   Dark/glass language consistent with the app's floating windows:
+   blurred backdrop, rounded card, thin glass borders. Mobile-first;
+   centered on desktop. PRESENTATION ONLY — no logic here.
+   ============================================================ */
+
+.ppe__portal {
+    position: fixed;
+    inset: 0;
+    z-index: 12000; /* above the profile modal (9000-family portals) */
+}
+
+.ppe__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(4, 8, 6, 0.62);
+    -webkit-backdrop-filter: blur(10px) saturate(120%);
+    backdrop-filter: blur(10px) saturate(120%);
+}
+
+.ppe__overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+.ppe__card {
+    width: min(380px, 100%);
+    max-height: calc(100dvh - 32px);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 22px 20px 18px;
+    background: rgba(10, 18, 15, 0.6);
+    -webkit-backdrop-filter: blur(20px) saturate(130%);
+    backdrop-filter: blur(20px) saturate(130%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-top-color: rgba(255, 255, 255, 0.18);
+    border-radius: 20px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+}
+
+.ppe__card--error {
+    gap: 14px;
+    text-align: center;
+}
+
+.ppe__title {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: var(--text-primary);
+    text-align: center;
+}
+
+/* ------------- crop stage ------------- */
+
+.ppe__stage {
+    position: relative;
+    width: min(280px, 72vw);
+    aspect-ratio: 1;
+    margin: 0 auto;
+    border-radius: 50%;
+    overflow: hidden;
+    cursor: grab;
+    touch-action: none; /* pointer pan + pinch only — no scroll hijack */
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.ppe__stage--drag {
+    cursor: grabbing;
+}
+
+.ppe__canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+/* Circular frame + dim wash OUTSIDE the circle: the ring is a crisp
+   white edge, the wash is a soft dark shadow spreading outward — the
+   surrounding photo clearly reads as "not part of the avatar". */
+.ppe__stage::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.85);
+    box-shadow:
+        0 0 0 9999px rgba(5, 9, 7, 0.55);
+    pointer-events: none;
+}
+
+/* ------------- zoom controls ------------- */
+
+.ppe__zoom {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: min(300px, 100%);
+    margin: 0 auto;
+}
+
+.ppe__zoom-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.ppe__zoom-btn:hover:not(:disabled) {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.ppe__zoom-btn:disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+
+.ppe__zoom-slider {
+    flex: 1;
+    height: 4px;
+    accent-color: var(--accent, #34d399);
+    cursor: pointer;
+}
+
+/* ------------- actions ------------- */
+
+.ppe__actions {
+    display: flex;
+    gap: 10px;
+}
+
+.ppe__btn {
+    flex: 1;
+    height: 40px;
+    border-radius: var(--radius-full, 999px);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.ppe__btn--ghost {
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-secondary);
+}
+
+.ppe__btn--ghost:hover:not(:disabled) {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.ppe__btn--primary {
+    border: 1px solid transparent;
+    background: var(--accent, #34d399);
+    color: #04120b;
+}
+
+.ppe__btn--primary:hover:not(:disabled) {
+    filter: brightness(1.08);
+}
+
+.ppe__btn:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+/* Card-level error state */
+.ppe__card--error p {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+/* ------------- light theme ------------- */
+
+[data-theme="light"] .ppe__backdrop {
+    background: rgba(41, 38, 31, 0.45);
+}
+
+[data-theme="light"] .ppe__card {
+    background: rgba(255, 255, 255, 0.74);
+    border-color: rgba(41, 38, 31, 0.1);
+    border-top-color: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 24px 60px rgba(41, 38, 31, 0.18);
+}
+
+[data-theme="light"] .ppe__stage {
+    background: rgba(41, 38, 31, 0.05);
+}
+
+[data-theme="light"] .ppe__stage::after {
+    box-shadow: 0 0 0 9999px rgba(30, 27, 22, 0.45);
+}
+
+[data-theme="light"] .ppe__zoom-btn,
+[data-theme="light"] .ppe__btn--ghost {
+    background: rgba(41, 38, 31, 0.07);
+    border-color: rgba(41, 38, 31, 0.14);
+    color: var(--text-secondary);
+}
+
+[data-theme="light"] .ppe__zoom-btn:hover:not(:disabled),
+[data-theme="light"] .ppe__btn--ghost:hover:not(:disabled) {
+    background: rgba(41, 38, 31, 0.13);
+    color: var(--text-primary);
+}
+
+/* ------------- mobile ------------- */
+
+@media (max-width: 480px) {
+    .ppe__card {
+        padding: 18px 16px 16px;
+        border-radius: 18px;
+    }
+
+    .ppe__stage {
+        width: min(240px, 68vw);
+    }
+}
