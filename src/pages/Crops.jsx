@@ -10,8 +10,6 @@ import {
     TrendingUp,
     IndianRupee,
     Sparkles,
-    MapPin,
-    Sprout,
 } from "lucide-react";
 import "./Crops.css";
 
@@ -293,17 +291,6 @@ export default function Crops() {
                                 <span className="crops-page__mstat-val">{selected.profit?.label || "—"}</span>
                                 <span className="crops-page__mstat-note">{selected.profit?.per || ""}</span>
                             </div>
-                        </div>
-
-                        {/* Growing */}
-                        <div className="crops-page__msection">
-                            <h4 className="crops-page__msection-title">
-                                <Sprout size={15} /> {t("crops.growing")}
-                            </h4>
-                            <FactRow icon={MapPin} label={t("crops.region")} value={selected.region} />
-                            <FactRow label={t("crops.soil")} value={selected.soil || "—"} />
-                            <FactRow label={t("crops.duration")} value={selected.duration ? `${selected.duration.label}${selected.duration.note ? ` · ${selected.duration.note}` : ""}` : "—"} />
-                            <FactRow label={t("crops.method")} value={selected.method} />
                         </div>
 
                         {/* Inputs */}
