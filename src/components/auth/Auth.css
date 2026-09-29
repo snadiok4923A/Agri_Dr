@@ -64,11 +64,13 @@
    (panel z-index 1). One flat color top-to-bottom: no gradient,
    no vignette, no bottom fade — the rice-field photo keeps the
    same brightness across the entire viewport. Static — never
-   animated. */
+   animated. Slightly deeper tint than before so text inside the
+   transparent glass card keeps readable contrast over the bright
+   field photos (the photo itself stays clearly visible). */
 .auth-bg {
     position: absolute;
     inset: 0;
-    background-color: rgba(6, 9, 16, 0.15);
+    background-color: rgba(6, 9, 16, 0.35);
     pointer-events: none;
     z-index: 0;
 }
