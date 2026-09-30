@@ -586,11 +586,17 @@
 
 .profile-modal__confirm-actions {
   display: flex;
+  align-items: center;
+  justify-content: center;
   gap: 10px;
 }
 
 .profile-modal__confirm-actions .profile-modal__pill {
   flex: 1 1 0;
+  /* Labels center horizontally inside the stretched pills — without
+     this, the shorter Cancel text hugs the left edge while Sign Out
+     (icon + text) nearly fills its pill, looking off-center. */
+  justify-content: center;
 }
 
 .profile-modal__confirm-actions .profile-modal__pill--primary {
