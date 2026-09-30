@@ -73,6 +73,12 @@ export default memo(function Header({ onMenuToggle }) {
      user presses "Use Photo" (crop → compress once → existing upload). */
   const [editorFile, setEditorFile] = useState(null);
   const [accountError, setAccountError] = useState('');
+  /* Sign-out confirmation: clicking Sign Out OPENS a small dialog instead
+     of logging out; the dialog's own button runs the EXISTING signOut()
+     flow. signingOut = busy flag → disables both confirm buttons so the
+     request can never be double-fired. */
+  const [confirmSignOut, setConfirmSignOut] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
   /* Profile state starts EMPTY and is loaded per-identity by the effect
      below — never synchronously from a shared key at mount time. */
   const [profileImage, setProfileImage] = useState('');
@@ -164,14 +170,18 @@ export default memo(function Header({ onMenuToggle }) {
   }, [userId]);
 
   const handleSignOut = async () => {
-    if (authLoading) return;
+    if (authLoading || signingOut) return; // double-submit guard
+    setSigningOut(true);
     setAccountError('');
     try {
-      await signOut();
+      await signOut(); // EXISTING Supabase logout — unchanged
+      setConfirmSignOut(false);
       setPanelOpen(false);
       navigate('/login'); // spec §11: land on the public page after logout
     } catch (err) {
       setAccountError(friendlyAuthError(err, 'sign out'));
+    } finally {
+      setSigningOut(false);
     }
   };
 
@@ -225,15 +235,19 @@ export default memo(function Header({ onMenuToggle }) {
     return () => window.removeEventListener('resize', onResize);
   }, [notifOpen]);
 
-  /* Escape closes the profile modal (and any open editor) — standard modal UX. */
+  /* Escape closes the topmost layer first (confirm dialog → profile
+      modal) — standard nested-modal UX. */
   useEffect(() => {
     if (!panelOpen) return;
     const onKey = (e) => {
-      if (e.key === 'Escape') { setPanelOpen(false); setEditing(false); }
+      if (e.key === 'Escape') {
+        if (confirmSignOut) { setConfirmSignOut(false); return; }
+        setPanelOpen(false); setEditing(false);
+      }
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [panelOpen]);
+  }, [panelOpen, confirmSignOut]);
 
   /* Lock page scroll while the modal is open (market-modal philosophy). */
   useEffect(() => {
@@ -716,7 +730,7 @@ export default memo(function Header({ onMenuToggle }) {
                   <div className="profile-modal__cornerbar">
                     <button
                       className="profile-modal__pill profile-modal__pill--ghost profile-modal__pill--signout"
-                      onClick={handleSignOut}
+                      onClick={() => setConfirmSignOut(true)}
                       disabled={authLoading}
                     >
                       <LogOut size={13} />
@@ -743,6 +757,57 @@ export default memo(function Header({ onMenuToggle }) {
               onConfirm={handleEditorConfirm}
               onCancel={handleEditorCancel}
             />
+          )}
+
+          {/* Sign-out confirmation — small glass dialog over the profile
+              window. Opens on the Sign Out tap (no immediate logout);
+              its Sign Out runs the EXISTING Supabase signOut flow, while
+              Cancel (or the backdrop) returns to the profile window. */}
+          {confirmSignOut && (
+            <div className="profile-modal__confirm" role="presentation">
+              <div
+                className="profile-modal__confirm-backdrop"
+                onClick={() => !signingOut && setConfirmSignOut(false)}
+                aria-hidden="true"
+              />
+              <div
+                className="profile-modal__confirm-dialog"
+                role="alertdialog"
+                aria-modal="true"
+                aria-label={t("common.profile.signOutLabel")}
+              >
+                <p className="profile-modal__confirm-text">
+                  {t("common.profile.signOutConfirmText")}
+                </p>
+                <div className="profile-modal__confirm-actions">
+                  <button
+                    className="profile-modal__pill profile-modal__pill--ghost"
+                    onClick={() => setConfirmSignOut(false)}
+                    disabled={signingOut}
+                  >
+                    {t("common.profile.cancel")}
+                  </button>
+                  <button
+                    className="profile-modal__pill profile-modal__pill--primary"
+                    onClick={handleSignOut}
+                    disabled={signingOut}
+                    aria-busy={signingOut}
+                  >
+                    {signingOut ? (
+                      <>
+                        <span className="profile-modal__confirm-spinner" aria-hidden="true" />
+                        <span>{t("common.profile.signOutConfirmBusy")}</span>
+                      </>
+                    ) : (
+                      <>
+                        <LogOut size={13} />
+                        <span>{t("common.profile.signOutLabel")}</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
           )}
         </div>,
         document.body
