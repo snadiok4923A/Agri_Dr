@@ -401,3 +401,67 @@ export async function saveAvatarPath(userId, path) {
         return false;
     }
 }
+
+/* ---------------- display name (server truth) ----------------
+   The display name is persisted in TWO existing places (no new table/
+   column): the `profiles` row (data layer, cross-device) and the auth
+   user's user_metadata (read on EVERY future session by toAuthUser →
+   useAuth, so refresh/login shows the saved name without extra fetches).
+   Degrades softly exactly like the avatar pipeline: while the
+   migration_avatar.sql schema is absent, the profiles write fails
+   softly but the auth-metadata write still persists the name. */
+
+/** Persist the user's display name: user_metadata.full_name (session
+ *  truth — what toAuthUser reads on every future session) + profiles.name
+ *  (data truth, same table the avatar flow uses). Returns { ok } on
+ *  success, { ok:false, degraded } when only the schema layer is absent
+ *  (metadata copy still applied), { ok:false } on real failure.
+ *  Never throws — the caller renders its own error state. */
+export async function saveDisplayName(userId, name) {
+    const trimmed = String(name || "").trim();
+    if (!userId || !supabase || !trimmed) return { ok: false };
+
+    // 1) Session truth: user_metadata.full_name feeds toAuthUser on every
+    //    future session (refresh / next login). Auth is already live, so
+    //    this alone makes the name persist across reloads.
+    try {
+        const { error } = await supabase.auth.updateUser({
+            data: { full_name: trimmed },
+        });
+        if (error) {
+            if (!isSchemaError(error)) {
+                warn("name update failed", error);
+                return { ok: false };
+            }
+            warn("name update — degraded auth layer", error);
+            return { ok: false, degraded: true };
+        }
+    } catch (err) {
+        warn("name update threw", err);
+        return { ok: false };
+    }
+
+    // 2) Data truth: the profiles row for THIS authenticated user id
+    //    (upsert onConflict id — never a second record).
+    try {
+        const { error } = await supabase
+            .from("profiles")
+            .upsert(
+                { id: userId, name: trimmed, updated_at: new Date().toISOString() },
+                { onConflict: "id" },
+            );
+        if (error) {
+            if (isSchemaError(error)) {
+                warn("profiles.name save — migration not applied", error);
+            } else {
+                warn("profiles.name save failed", error);
+            }
+            // Metadata write already succeeded → the name persists; the
+            // row copy catches up once the schema exists.
+            return { ok: true, degraded: true };
+        }
+    } catch (err) {
+        warn("profiles.name save threw", err);
+    }
+    return { ok: true };
+}

@@ -19,7 +19,7 @@ import {
   readProfileValue,
   writeProfileValue,
 } from '../../lib/profileStore';
-import { blobToDataUrl } from '../../lib/profileService';
+import { blobToDataUrl, saveDisplayName } from '../../lib/profileService';
 import {
   fetchServerAvatarUrl,
   getAvatarPublicUrl,
@@ -60,10 +60,16 @@ export default memo(function Header({ onMenuToggle }) {
   const { language, changeLanguage, languages, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
   const { active: voiceActive, stop: stopVoiceMode } = useVoiceMode();
-  const { user, isAuthenticated, signOut, loading: authLoading } = useAuth();
+  const { user, isAuthenticated, signOut, loading: authLoading, updateUserName } = useAuth();
   const navigate = useNavigate();
   const [notifOpen, setNotifOpen] = useState(false);
   const [panelOpen, setPanelOpen] = useState(false);
+  /* Drawer close: the profile window is a right-side drawer, so closing
+     plays the slide-out/fade BEFORE the portal unmounts. `closing`
+     switches the CSS to the exit keyframes; the timeout then unmounts
+     for real. A closed-over timer (panelOpen false while closing) makes
+     the unmount harmless. */
+  const [closing, setClosing] = useState(false);
   const [editing, setEditing] = useState(false);
   const [nameDraft, setNameDraft] = useState('');
   const [roleDraft, setRoleDraft] = useState('');
@@ -239,10 +245,9 @@ export default memo(function Header({ onMenuToggle }) {
       modal) — standard nested-modal UX. */
   useEffect(() => {
     if (!panelOpen) return;
-    const onKey = (e) => {
-      if (e.key === 'Escape') {
+    const onKey = (e) => {        if (e.key === 'Escape') {
         if (confirmSignOut) { setConfirmSignOut(false); return; }
-        setPanelOpen(false); setEditing(false);
+        closePanel(); // animated drawer exit, not an instant unmount
       }
     };
     document.addEventListener('keydown', onKey);
@@ -277,6 +282,9 @@ export default memo(function Header({ onMenuToggle }) {
     persistRead(readMap.map(() => true));
   };
 
+  /* Busy flag while the name save request runs: Save is disabled (no
+     double submits) and the button shows a processing state. */
+  const [savingProfile, setSavingProfile] = useState(false);
   /* Busy flag while compressing/uploading: the change-photo control and
      the file input are inert until the operation settles. */
   const [photoBusy, setPhotoBusy] = useState(false);
@@ -392,23 +400,58 @@ export default memo(function Header({ onMenuToggle }) {
   const handleEditorCancel = () => setEditorFile(null);
 
   const startEditing = () => {
-    setNameDraft(profileName);
+    /* Seed the field with the CURRENT effective name — auth name wins
+       over the local copy when signed in (the same precedence the view
+       uses), so the edit form never shows a stale value. */
+    setNameDraft(displayName || '');
     setRoleDraft(profileRole);
     setPrefMenu(null);
     setEditing(true);
   };
 
-  const saveProfile = () => {
+  /* Save: persist the name to the SERVER for the authenticated user
+     (profiles row + auth metadata via profileService.saveDisplayName)
+     and update the shared session state; the local user-scoped copy
+     stays as the offline cache. The Edit panel stays open on failure
+     with a clear error — never a fake success. */
+  const saveProfile = async () => {
     const trimmed = nameDraft.trim();
-    if (trimmed) {
+    if (!trimmed) return; // empty name → keep the current one
+    if (savingProfile) return; // double-submit guard
+    setSavingProfile(true);
+    setPhotoError('');
+    const previousName = profileName; // rollback target if the save fails
+    /* Only hit the server when the name ACTUALLY changed — a role-only
+       (or avatar-only) save must never be blocked by the name request,
+       and unchanged names never re-write the same value. */
+    const nameChanged = trimmed !== (displayName || profileName);
+    try {
+      // Server truth first (no-ops safely when signed out or unchanged).
+      if (userId && nameChanged) {
+        const res = await saveDisplayName(userId, trimmed);
+        if (!res?.ok) throw new Error('name-save-failed');
+      }
+
+      // Optimistic local cache (per-user scoped key, same as before).
       setProfileName(trimmed);
       writeProfileValue(profileNameKeyFor, userId, trimmed);
+
+      // Shared state: patch the session so user.name — the view's
+      // first-choice source — updates everywhere immediately.
+      if (nameChanged) await updateUserName(trimmed);
+
+      setEditing(false);
+    } catch {
+      // Roll back the optimistic local copy to the PREVIOUS value and
+      // keep the editor open — never fake a successful save.
+      setProfileName(previousName);
+      writeProfileValue(profileNameKeyFor, userId, previousName);
+      setPhotoError(t('common.profile.nameSaveFailed'));
+    } finally {
+      setSavingProfile(false);
     }
-    setProfileRole(roleDraft);
-    writeProfileValue(profileRoleKeyFor, userId, roleDraft);
-    setEditing(false);
     /* Pending photo (if any): run the EXISTING compress → upload →
-       server-URL pipeline exactly once, at save time. */
+       server-URL pipeline exactly once, after a successful save. */
     if (pendingPhotoFile) {
       runAvatarUpload(pendingPhotoFile);
       setPendingPhotoFile(null);
@@ -416,7 +459,17 @@ export default memo(function Header({ onMenuToggle }) {
     }
   };
 
-  const closePanel = () => { setPanelOpen(false); setEditing(false); };
+  /* Close = play the drawer exit (300ms), then unmount the portal.
+     Every close path (X, backdrop, Escape) goes through here. */
+  const closePanel = () => {
+    setEditing(false);
+    setConfirmSignOut(false);
+    setClosing(true);
+    setTimeout(() => {
+      setClosing(false);
+      setPanelOpen(false);
+    }, 300);
+  };
 
   return (
     <header className="header">
@@ -533,7 +586,7 @@ export default memo(function Header({ onMenuToggle }) {
         {isAuthenticated && (
           <button
             className="header__avatar"
-            onClick={() => { setPanelOpen(true); setPhotoError(''); setAccountError(''); }}
+            onClick={() => { if (closing) return; setPanelOpen(true); setPhotoError(''); setAccountError(''); }}
             title={displayName}
             aria-haspopup="dialog"
             aria-expanded={panelOpen}
@@ -558,7 +611,7 @@ export default memo(function Header({ onMenuToggle }) {
           moment the Supabase session becomes null the portal unmounts —
           no logged-out user can ever glimpse the Sign out control. */}
       {panelOpen && isAuthenticated && createPortal(
-        <div className="profile-modal__portal">
+        <div className={`profile-modal__portal${closing ? ' profile-modal__portal--closing' : ''}`}>
           <div
             className="profile-modal__backdrop"
             onClick={closePanel}
@@ -654,9 +707,10 @@ export default memo(function Header({ onMenuToggle }) {
                     <button
                       className="profile-modal__pill profile-modal__pill--primary"
                       onClick={saveProfile}
-                      disabled={photoBusy}
+                      disabled={photoBusy || savingProfile}
+                      aria-busy={savingProfile}
                     >
-                      {photoBusy ? "…" : t("common.profile.save")}
+                      {savingProfile ? "…" : photoBusy ? "…" : t("common.profile.save")}
                     </button>
                   </div>
                 </div>

@@ -194,6 +194,31 @@ export function AuthProvider({ children }) {
         }
     }, []);
 
+    /** Patch the signed-in user's profile metadata (e.g. display name
+     *  saved from the profile popup). The session is the app's SINGLE
+     *  source of truth: this refreshes it in place so every consumer
+     *  (Header, popup, greeting) re-renders from the same state change —
+     *  no page reload, no stale metadata overwrite. The live
+     *  onAuthStateChange listener receives the same USER_UPDATED event. */
+    const updateUserName = useCallback(async (newName) => {
+        const trimmed = String(newName || "").trim();
+        if (!trimmed) return;
+        setSession((prev) =>
+            prev
+                ? {
+                      ...prev,
+                      user: {
+                          ...prev.user,
+                          user_metadata: {
+                              ...prev.user?.user_metadata,
+                              full_name: trimmed,
+                          },
+                      },
+                  }
+                : prev,
+        );
+    }, []);
+
     /** "Skip for now" on Login/Signup — remember the PUBLIC-browsing
      *  preference so refreshes don't bounce the visitor back to /login.
      *  This grants NOTHING else: no user object, no authenticated UI. */
@@ -229,6 +254,7 @@ export function AuthProvider({ children }) {
             signUp,
             signInWithGoogle,
             signOut,
+            updateUserName,
         }),
         [
             session,
@@ -241,6 +267,7 @@ export function AuthProvider({ children }) {
             signUp,
             signInWithGoogle,
             signOut,
+            updateUserName,
         ],
     );
 

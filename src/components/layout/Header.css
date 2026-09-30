@@ -215,9 +215,15 @@
   -webkit-backdrop-filter: blur(10px) saturate(120%);
   backdrop-filter: blur(10px) saturate(120%);
   pointer-events: auto;
-  /* No entrance animation on the blur layer — visibility must never
-     depend on an animation starting (Market modal lesson). */
-  animation: none;
+  /* Drawer entrance: the overlay fades in with the panel's slide (and
+     out on close). Pure opacity — the panel's transform never depends
+     on this layer's animation having started. */
+  animation: profileFadeIn 340ms ease-out both;
+}
+
+/* Closing state: portal gets --closing while the exit plays. */
+.profile-modal__portal--closing .profile-modal__backdrop {
+  animation: profileFadeOut 280ms ease-in both;
 }
 
 .profile-modal__overlay {
@@ -256,19 +262,48 @@
   -webkit-backdrop-filter: blur(20px) saturate(130%);
   backdrop-filter: blur(20px) saturate(130%);
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
-  animation: profileModalIn 260ms cubic-bezier(0.22, 0.8, 0.36, 1) both;
+  animation: profileDrawerIn 380ms cubic-bezier(0.22, 0.8, 0.36, 1) both;
   filter: none;
 }
 
-@keyframes profileModalIn {
+/* Drawer motion: the panel slides in from the right edge while fading
+   up; on close it slides back out right and fades. The final frame is
+   the exact previous resting position (translateX(0)) — only the
+   journey changed, not the destination. */
+@keyframes profileDrawerIn {
   from {
     opacity: 0;
-    transform: translateY(14px) scale(0.97);
+    transform: translateX(calc(100% + 24px));
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateX(0);
   }
+}
+
+.profile-modal__portal--closing .profile-modal__dialog {
+  animation: profileDrawerOut 300ms cubic-bezier(0.5, 0, 0.75, 0.4) both;
+}
+
+@keyframes profileDrawerOut {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(calc(100% + 24px));
+  }
+}
+
+@keyframes profileFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes profileFadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
 }
 
 @media (max-width: 480px) {
@@ -759,6 +794,12 @@
 
 @media (prefers-reduced-motion: reduce) {
   .profile-modal__dialog {
+    animation: none;
+  }
+
+  .profile-modal__portal--closing .profile-modal__dialog,
+  .profile-modal__portal--closing .profile-modal__backdrop,
+  .profile-modal__backdrop {
     animation: none;
   }
 }
