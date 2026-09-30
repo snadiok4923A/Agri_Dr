@@ -488,6 +488,14 @@
   border-top-color: rgba(41, 38, 31, 0.12);
 }
 
+/* Ghost pills (Sign out · Cancel) — dark ink on the light glass dialog.
+   The dark-mode base is translucent white (invisible here); this override
+   uses the same warm ink family as every other light override above. */
+[data-theme="light"] .profile-modal__pill--ghost {
+  color: rgba(41, 38, 31, 0.85);
+  border-color: rgba(41, 38, 31, 0.22);
+}
+
 .profile-modal__pill {
   display: inline-flex;
   align-items: center;
