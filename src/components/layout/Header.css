@@ -48,62 +48,6 @@
   gap: 6px;
 }
 
-.header__lang {
-  position: relative;
-}
-
-.header__lang-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  border-radius: var(--radius-md);
-  font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
-  font-weight: 500;
-  color: var(--text-secondary);
-  transition: all var(--transition-fast);
-}
-
-.header__lang-btn:hover {
-  background: var(--bg-hover);
-  color: var(--text-primary);
-}
-
-.header__lang-dropdown {
-  position: absolute;
-  top: calc(100% + 6px);
-  right: 0;
-  min-width: 180px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
-  padding: 4px;
-  animation: scaleIn 0.15s ease;
-}
-
-.header__lang-option {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  padding: 8px 12px;
-  border-radius: var(--radius-sm);
-  font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
-  color: var(--text-secondary);
-  transition: all var(--transition-fast);
-}
-
-.header__lang-option:hover {
-  background: var(--bg-hover);
-  color: var(--text-primary);
-}
-
-.header__lang-option--active {
-  background: var(--leaf-soft);
-  color: var(--leaf);
-}
-
 .header__icon-btn {
   display: flex;
   align-items: center;
@@ -241,12 +185,7 @@
 @media (max-width: 768px) {
   .header {
     padding: 0 16px;
-  }
-
-  .header__lang-btn span {
-    display: none;
-  }
-}
+  }}
 
 /* ==================== LARGE floating profile window ====================
    Portal + backdrop + overlay + dialog — the same architecture as the

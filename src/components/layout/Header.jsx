@@ -1,6 +1,6 @@
 import { createPortal } from 'react-dom';
 import {
-  Bell, Sun, Moon, ChevronDown, Globe, Menu, Mic, Camera, X,
+  Bell, Sun, Moon, Globe, Menu, Mic, Camera, X,
   Bug, TrendingDown, FlaskConical, TrendingUp, Activity, CheckCheck,
   UserPlus, LogOut, User,
 } from 'lucide-react';
@@ -62,7 +62,6 @@ export default memo(function Header({ onMenuToggle }) {
   const { active: voiceActive, stop: stopVoiceMode } = useVoiceMode();
   const { user, isAuthenticated, signOut, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const [langOpen, setLangOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [panelOpen, setPanelOpen] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -96,7 +95,6 @@ export default memo(function Header({ onMenuToggle }) {
      read-after-write thrash. Now the DOM is measured only when the panel
      actually opens, and the render just formats numbers. */
   const [notifAnchor, setNotifAnchor] = useState(null);
-  const langRef = useRef(null);
   const notifRef = useRef(null);
   const notifPanelRef = useRef(null);
   const notifBtnRef = useRef(null);
@@ -181,21 +179,6 @@ export default memo(function Header({ onMenuToggle }) {
     setReadMap(next);
     localStorage.setItem(NOTIF_READ_KEY, JSON.stringify(next));
   };
-
-  /* Language dropdown: outside-click close (existing behaviour).
-     PERF: the document listener only exists while the dropdown is open —
-     no permanently-attached global mousedown handler for a menu that is
-     closed 99% of the time. */
-  useEffect(() => {
-    if (!langOpen) return undefined;
-    const handleClick = (e) => {
-      if (langRef.current && !langRef.current.contains(e.target)) {
-        setLangOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, [langOpen]);
 
   /* Bell toggle — measures the anchor at click time (before the panel
      renders), so the open render stays free of layout reads. */
@@ -441,34 +424,6 @@ export default memo(function Header({ onMenuToggle }) {
             <span className="header__voice-dot" />
           </button>
         )}
-        <div className="header__lang" ref={langRef}>
-          <button
-            className="header__lang-btn"
-            onClick={() => setLangOpen(!langOpen)}
-          >
-            <Globe size={16} />
-            <span>{currentLang?.native}</span>
-            <ChevronDown size={12} />
-          </button>
-          {langOpen && (
-            <div className="header__lang-dropdown">
-              {languages.map((lang) => (
-                <button
-                  key={lang.code}
-                  className={`header__lang-option ${lang.code === language ? 'header__lang-option--active' : ''}`}
-                  onClick={() => { changeLanguage(lang.code); setLangOpen(false); }}
-                >
-                  <span>{lang.native}</span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <button className="header__icon-btn" onClick={toggleTheme} aria-label={t("common.toggleTheme")}>
-          {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-        </button>
-
         {/* Notification bell — toggles the translucent notification panel.
             The red dot shows only while notifications are unread (spec §10). */}
         <div className="header__notif" ref={notifRef}>
