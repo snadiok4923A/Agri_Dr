@@ -715,30 +715,37 @@ export default memo(function Header({ onMenuToggle }) {
                   </div>
                 </div>
               ) : (
-                /* ---------------- Main (view) profile layout ---------------- */
+                /* ---------------- Main (view) profile layout ----------------
+                   Modern profile card: large rounded-square photo LEFT,
+                   identity block beside it, prefs + actions under. */
                 <div className="profile-modal__identity">
-                  {/* Avatar — the visual focal point. NO photo button here:
-                      photos change ONLY via Edit Profile (spec §7). */}
-                  <div className="profile-modal__avatar">
-                    {profileImage
-                      ? <img src={profileImage} alt={displayName} />
-                      : user?.avatarUrl
-                        ? <img src={user.avatarUrl} alt={displayName} referrerPolicy="no-referrer" />
-                        : initials
-                          ? <span className="profile-modal__initials">{initials}</span>
-                          : <User size={30} aria-hidden="true" />}
-                  </div>
+                  {/* Hero row — photo (visual focal point) + name/email.
+                      NO photo button here: photos change ONLY via Edit
+                      Profile (spec §7). */}
+                  <div className="profile-modal__hero">
+                    <div className="profile-modal__avatar">
+                      {profileImage
+                        ? <img src={profileImage} alt={displayName} />
+                        : user?.avatarUrl
+                          ? <img src={user.avatarUrl} alt={displayName} referrerPolicy="no-referrer" />
+                          : initials
+                            ? <span className="profile-modal__initials">{initials}</span>
+                            : <User size={34} aria-hidden="true" />}
+                    </div>
 
-                  {/* Name → email → type: clean hierarchy, real data only. */}
-                  <h3 className="profile-modal__name">
-                    {displayName || t("common.profile.nameUnavailable")}
-                  </h3>
-                  {authEmail && <p className="profile-modal__email">{authEmail}</p>}
-                  {profileRole && (
-                    <span className="profile-modal__type-badge">
-                      {profileRole === 'Business Man' ? t("common.profile.businessMan") : t("common.profile.farmer")}
-                    </span>
-                  )}
+                    {/* Name → email → type: clean hierarchy, real data only. */}
+                    <div className="profile-modal__idinfo">
+                      <h3 className="profile-modal__name">
+                        {displayName || t("common.profile.nameUnavailable")}
+                      </h3>
+                      {authEmail && <p className="profile-modal__email">{authEmail}</p>}
+                      {profileRole && (
+                        <span className="profile-modal__type-badge">
+                          {profileRole === 'Business Man' ? t("common.profile.businessMan") : t("common.profile.farmer")}
+                        </span>
+                      )}
+                    </div>
+                  </div>
 
                   {/* Preferences: language menu + theme toggle — SAME
                       changeLanguage / toggleTheme systems as the header. */}

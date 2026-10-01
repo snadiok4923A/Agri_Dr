@@ -252,8 +252,8 @@
   /* Minimal modern card: slightly larger than before (spec §1), height
      follows content instead of a fixed hero box. Centered column layout:
      avatar → name → email → type → prefs → bottom corner actions. */
-  width: min(432px, 100%);
-  max-height: min(680px, calc(100vh - 32px));
+  width: min(480px, 100%);
+  max-height: min(720px, calc(100vh - 32px));
   overflow-y: auto;
   padding: 44px 28px 24px;
   border-radius: 24px;
@@ -313,6 +313,7 @@
     border-radius: 20px;
     max-height: calc(100dvh - 24px);
   }
+
 }
 
 /* Light theme: same minimal card, light-mode chrome. */
@@ -322,18 +323,26 @@
   box-shadow: 0 24px 60px rgba(41, 38, 31, 0.22);
 }
 
-/* ------- Avatar (focal point) + identity ------- */
+/* ------- Avatar (focal point) + identity -------
+   Modern profile card: large rounded-square photo LEFT, identity block
+   (name → email → type) beside it. */
+
+.profile-modal__hero {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  width: 100%;
+}
 
 .profile-modal__avatar {
-  width: 116px;
-  height: 116px;
-  margin: 0 auto 16px;
-  border-radius: 50%;
+  width: 112px;
+  height: 112px;
+  border-radius: 20px; /* rounded-square — not sharp, not a circle */
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid rgba(255, 255, 255, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   background: rgba(255, 255, 255, 0.06);
   color: var(--text-secondary);
   flex-shrink: 0;
@@ -342,19 +351,28 @@
 .profile-modal__avatar img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: cover; /* fills the square, never distorts */
 }
 
 [data-theme="light"] .profile-modal__avatar {
-  border-color: rgba(41, 38, 31, 0.16);
+  border-color: rgba(41, 38, 31, 0.14);
   background: rgba(41, 38, 31, 0.05);
 }
 
 .profile-modal__initials {
-  font-size: 34px;
+  font-size: 36px;
   font-weight: 700;
   color: var(--accent);
   letter-spacing: 0.02em;
+}
+
+/* Identity block beside the photo: name → email → type badge */
+.profile-modal__idinfo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  min-width: 0; /* shrink gracefully instead of overflowing */
 }
 
 .profile-modal__close {
@@ -379,12 +397,11 @@
   background: rgba(0, 0, 0, 0.55);
 }
 
-/* Clean hierarchy: name (strong) → email (subtle) → type badge */
+/* View pane wrapper — simple column: hero → prefs → actions */
 .profile-modal__identity {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
+  align-items: stretch;
 }
 
 .profile-modal__name {
@@ -416,7 +433,7 @@
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 10px;
   margin-top: 20px;
   flex-wrap: wrap;
@@ -1236,3 +1253,31 @@
    (redesign). The backend Edge Function and deleteCurrentUserAccount
    remain intact server-side; nothing here renders it anymore.
    ===================================================================== */
+
+/* --- Profile-card compact layout (narrow screens) ---
+   Placed AFTER every base profile rule so the overrides win. The photo
+   shrinks but stays LEFT-aligned; identity, prefs and actions remain
+   fully readable/reachable without horizontal scrolling. */
+@media (max-width: 480px) {
+  .profile-modal__hero {
+    gap: 14px;
+  }
+
+  .profile-modal__avatar {
+    width: 84px;
+    height: 84px;
+    border-radius: 16px;
+  }
+
+  .profile-modal__initials {
+    font-size: 26px;
+  }
+
+  .profile-modal__name {
+    font-size: 18px;
+  }
+
+  .profile-modal__email {
+    font-size: 12px;
+  }
+}
