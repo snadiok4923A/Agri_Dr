@@ -335,9 +335,9 @@
 }
 
 .profile-modal__avatar {
-  width: 112px;
-  height: 112px;
-  border-radius: 20px; /* rounded-square — not sharp, not a circle */
+  width: 160px;
+  height: 160px;
+  border-radius: 24px; /* rounded-square — not sharp, not a circle */
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -360,7 +360,7 @@
 }
 
 .profile-modal__initials {
-  font-size: 36px;
+  font-size: 48px;
   font-weight: 700;
   color: var(--accent);
   letter-spacing: 0.02em;
@@ -1264,13 +1264,13 @@
   }
 
   .profile-modal__avatar {
-    width: 84px;
-    height: 84px;
-    border-radius: 16px;
+    width: 124px;
+    height: 124px;
+    border-radius: 20px;
   }
 
   .profile-modal__initials {
-    font-size: 26px;
+    font-size: 34px;
   }
 
   .profile-modal__name {
