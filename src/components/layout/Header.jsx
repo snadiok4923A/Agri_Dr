@@ -1,10 +1,11 @@
 import { createPortal } from 'react-dom';
+import LanguageMenu from './LanguageMenu.jsx';
 import {
   Bell, Sun, Moon, Globe, Menu, Mic, Camera, X,
   Bug, TrendingDown, FlaskConical, TrendingUp, Activity, CheckCheck,
   UserPlus, LogOut, User,
 } from 'lucide-react';
-import { useState, useRef, useEffect, useLayoutEffect, useCallback, memo } from 'react';
+import { useState, useRef, useEffect, useCallback, memo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useTheme } from '../../hooks/useTheme';
@@ -245,7 +246,11 @@ export default memo(function Header({ onMenuToggle }) {
       modal) — standard nested-modal UX. */
   useEffect(() => {
     if (!panelOpen) return;
-    const onKey = (e) => {        if (e.key === 'Escape') {
+    const onKey = (e) => {
+      if (e.key === 'Escape') {
+        // The floating language menu is the topmost layer: its own
+        // capture-phase handler closes it and stops propagation, so this
+        // handler only ever sees Escape when the menu is NOT open.
         if (confirmSignOut) { setConfirmSignOut(false); return; }
         closePanel(); // animated drawer exit, not an instant unmount
       }
@@ -300,49 +305,14 @@ export default memo(function Header({ onMenuToggle }) {
      toggleTheme drive the whole app). */
   const [prefMenu, setPrefMenu] = useState(null); // null | 'lang'
   const prefsRef = useRef(null);
-  const langMenuRef = useRef(null);
-  useEffect(() => {
-    if (!prefMenu) return undefined;
-    const handleClick = (e) => {
-      // The menu renders through a portal (outside prefsRef), so clicks
-      // inside it must count as "inside" — otherwise option taps would
-      // close the menu before the click registered.
-      const inPrefs = prefsRef.current && prefsRef.current.contains(e.target);
-      const inMenu = langMenuRef.current && langMenuRef.current.contains(e.target);
-      if (!inPrefs && !inMenu) setPrefMenu(null);
-    };
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, [prefMenu]);
+  const langBtnRef = useRef(null); // live anchor for the portaled menu
 
-  /* Language menu anchor — measured from the Language button's live
-     rect and kept in state: fixed position (portal-rendered under
-     <body>), left-aligned with the button and clamped to the viewport,
-     opening DOWNWARD below the button unless there is no room (then it
-     flips above, bottom-anchored so it stays fully visible). Tracked
-     on scroll/resize so the menu never detaches from its button. */
-  const [langMenuStyle, setLangMenuStyle] = useState(null);
-  const measureLangMenu = useCallback(() => {
-    const btn = prefsRef.current?.querySelector('.profile-modal__pref');
-    if (!btn) return;
-    const r = btn.getBoundingClientRect();
-    const MENU_H = 190; // 5 options + padding — decision estimate only
-    const openUp = r.bottom + 8 + MENU_H > window.innerHeight && r.top - 8 - MENU_H >= 0;
-    const left = Math.max(8, Math.min(r.left, window.innerWidth - 160));
-    setLangMenuStyle(openUp
-      ? { position: 'fixed', left, bottom: window.innerHeight - r.top + 8 }
-      : { position: 'fixed', left, top: r.bottom + 8 });
-  }, []);
-  useLayoutEffect(() => {
-    if (prefMenu !== 'lang') { setLangMenuStyle(null); return undefined; }
-    measureLangMenu();
-    window.addEventListener('resize', measureLangMenu);
-    document.addEventListener('scroll', measureLangMenu, true);
-    return () => {
-      window.removeEventListener('resize', measureLangMenu);
-      document.removeEventListener('scroll', measureLangMenu, true);
-    };
-  }, [prefMenu, measureLangMenu]);
+  /* Menu lifecycle: whatever closes the popup (Close button, backdrop,
+     Escape, logout) unmounts the portal, so a reopened popup can never
+     surface a stale menu — and the menu's own listeners die with it. */
+  useEffect(() => {
+    if (!panelOpen) setPrefMenu(null);
+  }, [panelOpen]);
 
   /* NOTE: the Delete Account control was REMOVED from the profile popup
      (UI redesign). The backend Edge Function + deleteCurrentUserAccount
@@ -499,6 +469,7 @@ export default memo(function Header({ onMenuToggle }) {
   const closePanel = () => {
     setEditing(false);
     setConfirmSignOut(false);
+    setPrefMenu(null); // kill the floating language menu with the popup
     setClosing(true);
     setTimeout(() => {
       setClosing(false);
@@ -786,6 +757,7 @@ export default memo(function Header({ onMenuToggle }) {
                   <div className="profile-modal__prefs" ref={prefsRef}>
                     <div className="profile-modal__pref-wrap">
                       <button
+                        ref={langBtnRef}
                         className="profile-modal__pref"
                         onClick={() => setPrefMenu(prefMenu === 'lang' ? null : 'lang')}
                         aria-expanded={prefMenu === 'lang'}
@@ -793,18 +765,14 @@ export default memo(function Header({ onMenuToggle }) {
                         <Globe size={14} />
                         <span>{currentLang?.native || t("settings.language")}</span>
                       </button>
-                      {prefMenu === 'lang' && langMenuStyle != null && createPortal(
-                        <div className="profile-modal__pref-menu" ref={langMenuRef} style={langMenuStyle}>
-                          {languages.map((lang) => (
-                            <button
-                              key={lang.code}
-                              className={`profile-modal__pref-option ${lang.code === language ? 'profile-modal__pref-option--active' : ''}`}
-                              onClick={() => { changeLanguage(lang.code); setPrefMenu(null); }}
-                            >
-                              {lang.native}
-                            </button>
-                          ))}
-                        </div>,
+                      {prefMenu === 'lang' && createPortal(
+                        <LanguageMenu
+                          anchorRef={langBtnRef}
+                          languages={languages}
+                          activeCode={language}
+                          onSelect={(code) => { changeLanguage(code); setPrefMenu(null); }}
+                          onClose={() => setPrefMenu(null)}
+                        />,
                         document.body
                       )}
                     </div>

@@ -533,7 +533,10 @@
      solid (opaque) background keeps the hero photo from bleeding
      through the option text. */
   position: fixed;
-  z-index: 90;
+  /* Must out-rank the popup's own top-level portal layer
+     (.profile-modal__portal = z-index 9000) — both are <body>-level
+     siblings, so paint order between them is decided here. */
+  z-index: 9100;
   min-width: 152px;
   padding: 6px;
   border-radius: 14px;
