@@ -4,7 +4,7 @@ import {
   Bug, TrendingDown, FlaskConical, TrendingUp, Activity, CheckCheck,
   UserPlus, LogOut, User,
 } from 'lucide-react';
-import { useState, useRef, useEffect, useCallback, memo } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect, useCallback, memo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useTheme } from '../../hooks/useTheme';
@@ -300,14 +300,49 @@ export default memo(function Header({ onMenuToggle }) {
      toggleTheme drive the whole app). */
   const [prefMenu, setPrefMenu] = useState(null); // null | 'lang'
   const prefsRef = useRef(null);
+  const langMenuRef = useRef(null);
   useEffect(() => {
     if (!prefMenu) return undefined;
     const handleClick = (e) => {
-      if (prefsRef.current && !prefsRef.current.contains(e.target)) setPrefMenu(null);
+      // The menu renders through a portal (outside prefsRef), so clicks
+      // inside it must count as "inside" — otherwise option taps would
+      // close the menu before the click registered.
+      const inPrefs = prefsRef.current && prefsRef.current.contains(e.target);
+      const inMenu = langMenuRef.current && langMenuRef.current.contains(e.target);
+      if (!inPrefs && !inMenu) setPrefMenu(null);
     };
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, [prefMenu]);
+
+  /* Language menu anchor — measured from the Language button's live
+     rect and kept in state: fixed position (portal-rendered under
+     <body>), left-aligned with the button and clamped to the viewport,
+     opening DOWNWARD below the button unless there is no room (then it
+     flips above, bottom-anchored so it stays fully visible). Tracked
+     on scroll/resize so the menu never detaches from its button. */
+  const [langMenuStyle, setLangMenuStyle] = useState(null);
+  const measureLangMenu = useCallback(() => {
+    const btn = prefsRef.current?.querySelector('.profile-modal__pref');
+    if (!btn) return;
+    const r = btn.getBoundingClientRect();
+    const MENU_H = 190; // 5 options + padding — decision estimate only
+    const openUp = r.bottom + 8 + MENU_H > window.innerHeight && r.top - 8 - MENU_H >= 0;
+    const left = Math.max(8, Math.min(r.left, window.innerWidth - 160));
+    setLangMenuStyle(openUp
+      ? { position: 'fixed', left, bottom: window.innerHeight - r.top + 8 }
+      : { position: 'fixed', left, top: r.bottom + 8 });
+  }, []);
+  useLayoutEffect(() => {
+    if (prefMenu !== 'lang') { setLangMenuStyle(null); return undefined; }
+    measureLangMenu();
+    window.addEventListener('resize', measureLangMenu);
+    document.addEventListener('scroll', measureLangMenu, true);
+    return () => {
+      window.removeEventListener('resize', measureLangMenu);
+      document.removeEventListener('scroll', measureLangMenu, true);
+    };
+  }, [prefMenu, measureLangMenu]);
 
   /* NOTE: the Delete Account control was REMOVED from the profile popup
      (UI redesign). The backend Edge Function + deleteCurrentUserAccount
@@ -758,8 +793,8 @@ export default memo(function Header({ onMenuToggle }) {
                         <Globe size={14} />
                         <span>{currentLang?.native || t("settings.language")}</span>
                       </button>
-                      {prefMenu === 'lang' && (
-                        <div className="profile-modal__pref-menu">
+                      {prefMenu === 'lang' && langMenuStyle != null && createPortal(
+                        <div className="profile-modal__pref-menu" ref={langMenuRef} style={langMenuStyle}>
                           {languages.map((lang) => (
                             <button
                               key={lang.code}
@@ -769,7 +804,8 @@ export default memo(function Header({ onMenuToggle }) {
                               {lang.native}
                             </button>
                           ))}
-                        </div>
+                        </div>,
+                        document.body
                       )}
                     </div>
                     <button
