@@ -633,6 +633,10 @@ export default memo(function Header({ onMenuToggle }) {
                 <X size={16} />
               </button>
 
+              {/* Inner scroll area — the hero card can exceed the dialog
+                  height on short viewports; content scrolls here while the
+                  close button stays pinned to the dialog corner. */}
+              <div className="profile-modal__scroll">
               {editing ? (
                 /* ---------------- Edit Profile panel ----------------
                    The ONLY place profile data can be changed: photo
@@ -716,12 +720,12 @@ export default memo(function Header({ onMenuToggle }) {
                 </div>
               ) : (
                 /* ---------------- Main (view) profile layout ----------------
-                   Modern profile card: large rounded-square photo LEFT,
-                   identity block beside it, prefs + actions under. */
+                   Profile card: full-width square hero photo on TOP,
+                   identity block below it, prefs + actions under. */
                 <div className="profile-modal__identity">
-                  {/* Hero row — photo (visual focal point) + name/email.
-                      NO photo button here: photos change ONLY via Edit
-                      Profile (spec §7). */}
+                  {/* Hero — full-width square photo (visual focal point);
+                      identity sits BELOW it. NO photo button here: photos
+                      change ONLY via Edit Profile (spec §7). */}
                   <div className="profile-modal__hero">
                     <div className="profile-modal__avatar">
                       {profileImage
@@ -730,7 +734,7 @@ export default memo(function Header({ onMenuToggle }) {
                           ? <img src={user.avatarUrl} alt={displayName} referrerPolicy="no-referrer" />
                           : initials
                             ? <span className="profile-modal__initials">{initials}</span>
-                            : <User size={34} aria-hidden="true" />}
+                            : <User size={72} aria-hidden="true" />}
                     </div>
 
                     {/* Name → email → type: clean hierarchy, real data only. */}
@@ -806,6 +810,7 @@ export default memo(function Header({ onMenuToggle }) {
                   </div>
                 </div>
               )}
+              </div>
             </div>
           </div>
 
