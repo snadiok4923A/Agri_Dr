@@ -247,6 +247,62 @@
   z-index: 2;
 }
 
+/* Column stack inside the overlay: the popup card, then a separate
+   Close control below it — OUTSIDE the card's border, horizontally
+   centered on it, with a small consistent gap (no overlap). */
+.profile-modal__stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  max-height: 100%;
+}
+
+/* Close control — glass pill in the same vocabulary as the card and
+   pills, but a separate floating element below the popup (never
+   inside it). Fades in with the overlay, fades out on close. */
+.profile-modal__closebar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border-radius: var(--radius-full, 999px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(12, 18, 15, 0.55);
+  -webkit-backdrop-filter: blur(20px) saturate(130%);
+  backdrop-filter: blur(20px) saturate(130%);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+  animation: profileFadeIn 340ms ease-out both;
+}
+
+.profile-modal__closebar:hover {
+  background: rgba(12, 18, 15, 0.72);
+  border-color: rgba(255, 255, 255, 0.4);
+  color: #fff;
+}
+
+[data-theme="light"] .profile-modal__closebar {
+  background: rgba(255, 253, 250, 0.78);
+  border-color: rgba(41, 38, 31, 0.2);
+  color: rgba(41, 38, 31, 0.85);
+}
+
+[data-theme="light"] .profile-modal__closebar:hover {
+  background: rgba(255, 253, 250, 0.95);
+  border-color: rgba(41, 38, 31, 0.32);
+  color: rgba(41, 38, 31, 1);
+}
+
+/* Exit: the Close control fades out together with the card. */
+.profile-modal__portal--closing .profile-modal__closebar {
+  animation: profileFadeOut 280ms ease-in both;
+}
+
 .profile-modal__dialog {
   position: relative;
   display: flex;
@@ -255,7 +311,9 @@
      follows content instead of a fixed hero box. Centered column layout:
      hero photo → name → email → type → prefs → bottom corner actions. */
   width: min(480px, 100%);
-  max-height: min(780px, calc(100vh - 32px));
+  /* The −96 reserves room below the card for the separate Close control
+     (gap + button) so card + control always fit the overlay together. */
+  max-height: min(780px, calc(100vh - 96px));
   overflow-y: auto;
   padding: 44px 28px 24px;
   border-radius: 24px;
@@ -328,7 +386,8 @@
     width: 94vw;
     padding: 42px 20px 20px;
     border-radius: 20px;
-    max-height: calc(100dvh - 24px);
+    /* Leaves room below the card for the separate Close control. */
+    max-height: calc(100dvh - 78px);
   }
 
 }
@@ -393,29 +452,6 @@
   min-width: 0; /* shrink gracefully instead of overflowing */
 }
 
-.profile-modal__close {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  width: 34px;
-  height: 34px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: rgba(0, 0, 0, 0.35);
-  color: #fff;
-  cursor: pointer;
-  transition: background var(--transition-fast);
-  z-index: 3;
-}
-
-.profile-modal__close:hover {
-  background: rgba(0, 0, 0, 0.55);
-}
-
-/* View pane wrapper — simple column: hero → prefs → actions */
 .profile-modal__identity {
   display: flex;
   flex-direction: column;
@@ -828,11 +864,13 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .profile-modal__dialog {
+  .profile-modal__dialog,
+  .profile-modal__closebar {
     animation: none;
   }
 
   .profile-modal__portal--closing .profile-modal__dialog,
+  .profile-modal__portal--closing .profile-modal__closebar,
   .profile-modal__portal--closing .profile-modal__backdrop,
   .profile-modal__backdrop {
     animation: none;

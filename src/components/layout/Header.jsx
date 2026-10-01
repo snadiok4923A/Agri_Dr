@@ -618,24 +618,19 @@ export default memo(function Header({ onMenuToggle }) {
             aria-hidden="true"
           />
           <div className="profile-modal__overlay">
+            {/* Column stack: popup card with a SEPARATE Close control
+                floating BELOW it — outside the popup border, centered on
+                it. Uses the SAME closePanel handler as the old corner X;
+                no new close state. */}
+            <div className="profile-modal__stack">
             <div
               className="profile-modal__dialog"
               role="dialog"
               aria-modal="true"
               aria-label={t("settings.profile")}
             >
-              {/* Circular close button, top-right (spec §7). */}
-              <button
-                className="profile-modal__close"
-                onClick={closePanel}
-                aria-label="Close profile"
-              >
-                <X size={16} />
-              </button>
-
               {/* Inner scroll area — the hero card can exceed the dialog
-                  height on short viewports; content scrolls here while the
-                  close button stays pinned to the dialog corner. */}
+                  height on short viewports; content scrolls internally. */}
               <div className="profile-modal__scroll">
               {editing ? (
                 /* ---------------- Edit Profile panel ----------------
@@ -811,6 +806,15 @@ export default memo(function Header({ onMenuToggle }) {
                 </div>
               )}
               </div>
+            </div>
+            <button
+              type="button"
+              className="profile-modal__closebar"
+              onClick={closePanel}
+            >
+              <X size={13} aria-hidden="true" />
+              <span>Close</span>
+            </button>
             </div>
           </div>
 
