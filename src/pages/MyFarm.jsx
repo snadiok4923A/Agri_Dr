@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../hooks/useLanguage";
-import { MapPin, Wheat } from "lucide-react";
+import { MapPin, Wheat, Pencil } from "lucide-react";
+import EditFarmModal from "../components/farm/EditFarmModal";
 import EmptyFarmNotice from "../components/onboarding/EmptyFarmNotice";
 import { useOnboarding } from "../hooks/useOnboarding";
 import "./MyFarm.css";
@@ -49,6 +51,7 @@ export default function MyFarm() {
     const { t, formatNumber } = useLanguage();
     const navigate = useNavigate();
     const { isFarmComplete, farm } = useOnboarding();
+    const [editOpen, setEditOpen] = useState(false);
 
     /* NO FAKE DATA for users without farm details: until the onboarding
        survey is completed (or a skipped user fills it via the empty
@@ -72,8 +75,22 @@ export default function MyFarm() {
     return (
         <div className="page-container myfarm">
             <section className="myfarm__header section">
-                <h1 className="myfarm__title">{t("nav.myFarm")}</h1>
-                <p className="myfarm__subtitle">{t("farm.selectField")}</p>
+                <div className="myfarm__header-row">
+                    <div>
+                        <h1 className="myfarm__title">{t("nav.myFarm")}</h1>
+                        <p className="myfarm__subtitle">
+                            {t("farm.selectField")}
+                        </p>
+                    </div>
+                    <button
+                        type="button"
+                        className="myfarm__edit-btn"
+                        onClick={() => setEditOpen(true)}
+                    >
+                        <Pencil size={13} />
+                        {t("editfarm.open")}
+                    </button>
+                </div>
             </section>
 
             {/* Compact summary — only the two facts the diagram doesn't
@@ -247,6 +264,11 @@ export default function MyFarm() {
                     </div>
                 </div>
             </section>
+
+            <EditFarmModal
+                open={editOpen}
+                onClose={() => setEditOpen(false)}
+            />
         </div>
     );
 }

@@ -12,6 +12,47 @@
     letter-spacing: -0.03em;
 }
 
+/* Header row: title/subtitle left, compact Edit button right. */
+.myfarm__header-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.myfarm__edit-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    padding: 7px 14px;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border);
+    background: var(--bg-surface);
+    color: var(--text-secondary);
+    font-family: inherit;
+    font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
+    font-weight: 600;
+    cursor: pointer;
+    transition: color var(--transition-fast), border-color
+            var(--transition-fast), background var(--transition-fast);
+}
+
+.myfarm__edit-btn:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: var(--accent-soft);
+}
+
+.myfarm__edit-btn:focus-visible {
+    outline: 1.5px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.myfarm__edit-btn:active {
+    transform: translateY(1px);
+}
+
 .myfarm__subtitle {
     font-size: min(max(calc(14px * var(--ts-body, 1)), 9px), 24px);
     color: var(--text-muted);
@@ -403,5 +444,14 @@
     .myfarm__map-field-bottom > span {
         min-width: 0;
         overflow-wrap: anywhere;
+    }
+
+    /* Edit pill stays top-right, never overflows the title row. */
+    .myfarm__header-row {
+        align-items: center;
+    }
+
+    .myfarm__edit-btn {
+        padding: 6px 12px;
     }
 }

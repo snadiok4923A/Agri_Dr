@@ -1,0 +1,497 @@
+/* ==================== Edit Farm floating window ====================
+   Same floating-window language as the profile modal (Header.css):
+   body-level portal → dimmed blurred backdrop → centered glass dialog.
+   The dialog is a flex column: header + footer pinned, middle scrolls. */
+
+.editfarm__portal {
+    position: fixed;
+    inset: 0;
+    z-index: 9000;
+    pointer-events: none;
+}
+
+.editfarm__backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    /* Same cost-conscious backdrop as the profile modal: 10px blur on a
+       slightly denser dim — the dialog in front is the real glass. */
+    background: rgba(4, 12, 8, 0.56);
+    -webkit-backdrop-filter: blur(10px) saturate(120%);
+    backdrop-filter: blur(10px) saturate(120%);
+    pointer-events: auto;
+    animation: editfarmFadeIn 340ms ease-out both;
+}
+
+.editfarm__overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    pointer-events: auto;
+    background: transparent;
+}
+
+.editfarm__dialog {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: min(560px, 100%);
+    max-height: min(720px, calc(100vh - 48px));
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(12, 18, 15, 0.55);
+    -webkit-backdrop-filter: blur(20px) saturate(130%);
+    backdrop-filter: blur(20px) saturate(130%);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+    animation: editfarmDrawerIn 300ms cubic-bezier(0.22, 0.8, 0.36, 1) both;
+}
+
+/* Middle section scrolls; header + footer stay put. */
+.editfarm__scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+/* ------- Header ------- */
+.editfarm__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 18px 20px 0;
+}
+
+.editfarm__title {
+    margin: 0;
+    font-size: max(min(calc(17px * var(--ts-mid, 1)), 26px), 10px);
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+}
+
+.editfarm__close {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-full);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background var(--transition-fast), color
+            var(--transition-fast);
+}
+
+.editfarm__close:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: var(--text-primary);
+}
+
+/* ------- Fields count meta row ------- */
+.editfarm__meta {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin: 12px 20px 0;
+}
+
+.editfarm__meta-label {
+    font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
+    color: var(--text-muted);
+}
+
+.editfarm__meta-value {
+    font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+/* ------- Section labels ------- */
+.editfarm__section-label {
+    margin: 0 0 8px;
+    font-size: min(max(calc(11.5px * var(--ts-body, 1)), 9px), 24px);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+}
+
+/* ------- Live crop chips (variety → fields) ------- */
+.editfarm__crops {
+    margin: 16px 20px 0;
+}
+
+.editfarm__crop-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.editfarm__crop-chip {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px 12px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    background: var(--bg-elevated);
+    min-width: 0;
+}
+
+.editfarm__crop-name {
+    font-size: min(max(calc(12.5px * var(--ts-body, 1)), 9px), 24px);
+    font-weight: 700;
+    color: var(--text-primary);
+    overflow-wrap: anywhere;
+}
+
+.editfarm__crop-fields {
+    font-size: min(max(calc(11px * var(--ts-body, 1)), 8px), 17px);
+    color: var(--text-muted);
+    overflow-wrap: anywhere;
+}
+
+/* ------- Field editor cards ------- */
+.editfarm__fields {
+    margin: 18px 20px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-bottom: 8px;
+}
+
+.editfarm__field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    background: var(--bg-elevated);
+}
+
+.editfarm__field-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.editfarm__field-name {
+    font-size: max(min(calc(14px * var(--ts-mid, 1)), 22px), 10px);
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.editfarm__icon-btn {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: color var(--transition-fast), border-color
+            var(--transition-fast), background var(--transition-fast);
+}
+
+.editfarm__icon-btn--danger:hover {
+    color: var(--danger);
+    border-color: var(--danger);
+    background: var(--danger-soft);
+}
+
+.editfarm__label {
+    display: block;
+    font-size: min(max(calc(11.5px * var(--ts-body, 1)), 9px), 24px);
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.editfarm__input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px 10px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    background: var(--bg-input, #14231f);
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
+    min-width: 0;
+}
+
+.editfarm__input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.editfarm__select {
+    width: auto;
+    cursor: pointer;
+}
+
+.editfarm__area {
+    display: grid;
+    grid-template-columns: 1fr 112px;
+    gap: 8px;
+}
+
+/* ------- Stage chips (per field — never shared state) ------- */
+.editfarm__stages {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.editfarm__stage {
+    padding: 5px 11px;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-secondary);
+    font-family: inherit;
+    font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
+    cursor: pointer;
+    transition: background var(--transition-fast), color
+            var(--transition-fast), border-color var(--transition-fast);
+}
+
+.editfarm__stage:hover {
+    border-color: var(--accent);
+    color: var(--text-primary);
+}
+
+.editfarm__stage--active {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--accent);
+    font-weight: 600;
+}
+
+/* ------- Add field ------- */
+.editfarm__add {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 9px 16px;
+    border-radius: var(--radius-full);
+    border: 1px dashed var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    font-family: inherit;
+    font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
+    font-weight: 600;
+    cursor: pointer;
+    transition: color var(--transition-fast), border-color
+            var(--transition-fast);
+}
+
+.editfarm__add:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+}
+
+/* ------- Errors ------- */
+.editfarm__error {
+    margin: 0;
+    font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
+    color: var(--danger);
+}
+
+/* ------- Footer: error + Cancel/Save ------- */
+.editfarm__foot {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 14px 20px 18px;
+    border-top: 1px solid var(--border-light);
+}
+
+.editfarm__error--foot {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.editfarm__foot-actions {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.editfarm__btn {
+    padding: 9px 18px;
+    border-radius: var(--radius-md);
+    border: 1px solid transparent;
+    font-family: inherit;
+    font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background var(--transition-fast), border-color
+            var(--transition-fast), color var(--transition-fast);
+}
+
+.editfarm__btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.editfarm__btn--ghost {
+    background: transparent;
+    border-color: var(--border);
+    color: var(--text-secondary);
+}
+
+.editfarm__btn--ghost:hover:not(:disabled) {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.editfarm__btn--primary {
+    background: var(--accent);
+    color: var(--bg-base, #0a1512);
+}
+
+.editfarm__btn--primary:hover:not(:disabled) {
+    background: var(--accent-hover);
+}
+
+/* ------- Closing state ------- */
+.editfarm__portal--closing .editfarm__backdrop {
+    animation: editfarmFadeOut 260ms ease-in both;
+}
+
+.editfarm__portal--closing .editfarm__dialog {
+    animation: editfarmDrawerOut 260ms cubic-bezier(0.5, 0, 0.75, 0.4) both;
+}
+
+/* ------- Light theme ------- */
+[data-theme="light"] .editfarm__backdrop {
+    background: rgba(240, 236, 228, 0.55);
+}
+
+[data-theme="light"] .editfarm__dialog {
+    background: rgba(255, 255, 255, 0.72);
+    border-color: rgba(41, 38, 31, 0.12);
+    box-shadow: 0 24px 60px rgba(41, 38, 31, 0.22);
+}
+
+[data-theme="light"] .editfarm__close {
+    border-color: rgba(41, 38, 31, 0.16);
+    background: rgba(41, 38, 31, 0.05);
+}
+
+[data-theme="light"] .editfarm__input {
+    background: rgba(255, 255, 255, 0.75);
+    border-color: rgba(41, 38, 31, 0.16);
+}
+
+/* Light --accent is dark green → white text for contrast. */
+[data-theme="light"] .editfarm__btn--primary {
+    color: #fff;
+}
+
+/* ------- Animations ------- */
+@keyframes editfarmDrawerIn {
+    from {
+        opacity: 0;
+        transform: translateX(calc(100% + 24px));
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes editfarmDrawerOut {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(calc(100% + 24px));
+    }
+}
+
+@keyframes editfarmFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes editfarmFadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+/* ------- Mobile ------- */
+@media (max-width: 480px) {
+    .editfarm__overlay {
+        padding: 12px;
+    }
+
+    .editfarm__dialog {
+        width: 100%;
+        border-radius: 20px;
+        max-height: min(720px, calc(100dvh - 32px));
+    }
+
+    .editfarm__head {
+        padding: 16px 16px 0;
+    }
+
+    .editfarm__meta,
+    .editfarm__crops,
+    .editfarm__fields {
+        margin-left: 16px;
+        margin-right: 16px;
+    }
+
+    .editfarm__foot {
+        padding: 12px 16px 16px;
+    }
+
+    .editfarm__foot-actions {
+        flex: 1 1 100%;
+        margin-left: 0;
+    }
+
+    .editfarm__foot-actions .editfarm__btn {
+        flex: 1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .editfarm__backdrop,
+    .editfarm__dialog,
+    .editfarm__portal--closing .editfarm__backdrop,
+    .editfarm__portal--closing .editfarm__dialog {
+        animation: none;
+    }
+}
