@@ -124,8 +124,7 @@
     margin-top: 1px;
 }
 
-/* Variety → fields hierarchy: variety is the parent node, its parcels
-   are leaves joined by connector lines. */
+/* Variety grid — compact name boxes, side-by-side, centered rows. */
 .myfarm__varieties-empty {
     font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
     color: var(--text-muted);
@@ -133,45 +132,27 @@
 }
 
 .myfarm__variety-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-    gap: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
 }
 
 .myfarm__variety {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    justify-content: center;
+    padding: 7px 14px;
     background: var(--bg-surface);
     border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 12px 14px 14px;
+    border-radius: var(--radius-md);
     min-width: 0;
-}
-
-.myfarm__variety-head {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin: 0;
-    font-size: max(min(calc(14px * var(--ts-mid, 1)), 22px), 10px);
-    font-weight: 700;
-    color: var(--text-primary);
-    min-width: 0;
-}
-
-/* Bridge from the variety's dot down to the first field's spine. */
-.myfarm__variety-head::after {
-    content: "";
-    position: absolute;
-    left: 10px;
-    top: 100%;
-    height: 10px;
-    width: 1px;
-    background: var(--border-light);
 }
 
 .myfarm__variety-dot {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     border-radius: var(--radius-full);
     background: var(--success-soft);
     color: var(--success);
@@ -182,83 +163,11 @@
 }
 
 .myfarm__variety-name {
-    overflow-wrap: anywhere;
-    min-width: 0;
-}
-
-.myfarm__variety-fields {
-    list-style: none;
-    margin: 10px 0 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.myfarm__variety-field {
-    position: relative;
-    padding-left: 25px;
-    min-width: 0;
-}
-
-/* Vertical spine segment (the −2px overshoot bridges the 2px row gaps). */
-.myfarm__variety-field::before {
-    content: "";
-    position: absolute;
-    left: 10px;
-    top: -2px;
-    bottom: -2px;
-    width: 1px;
-    background: var(--border-light);
-}
-
-/* The last leaf's spine stops at its own center (└─ shape). */
-.myfarm__variety-field:last-child::before {
-    bottom: 50%;
-}
-
-/* Horizontal tick toward the field name. */
-.myfarm__variety-field::after {
-    content: "";
-    position: absolute;
-    left: 10px;
-    top: 50%;
-    width: 9px;
-    height: 1px;
-    background: var(--border-light);
-}
-
-.myfarm__variety-field-btn {
-    display: inline-flex;
-    align-items: center;
-    background: none;
-    border: none;
-    padding: 3px 8px;
-    margin-left: -8px;
-    border-radius: var(--radius-md);
-    color: var(--text-secondary);
-    font-family: inherit;
     font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
-    line-height: 1.4;
-    cursor: pointer;
-    text-align: left;
-    max-width: 100%;
-    min-width: 0;
+    font-weight: 600;
+    color: var(--text-primary);
     overflow-wrap: anywhere;
-    transition: background var(--transition-fast), color
-            var(--transition-fast);
-}
-
-.myfarm__variety-field-btn:hover {
-    background: var(--bg-elevated);
-    color: var(--text-primary);
-}
-
-.myfarm__variety-field-btn:focus-visible {
-    outline: 1.5px solid var(--accent);
-    outline-offset: 1px;
-    background: var(--bg-elevated);
-    color: var(--text-primary);
+    min-width: 0;
 }
 
 /* Farm Map (kept as the primary detail surface) */
@@ -402,12 +311,19 @@
     }
 
     .myfarm__variety-list {
-        grid-template-columns: 1fr;
-        gap: 8px;
+        gap: 6px;
     }
 
     .myfarm__variety {
-        padding: 10px 12px 12px;
+        padding: 6px 10px;
+        /* Prefer 2 boxes per row on phones: each takes half the row
+           (minus its gap share); a box whose name needs more width
+           grows and simply gets a row of its own. */
+        min-width: calc(50% - 4px);
+    }
+
+    .myfarm__variety-name {
+        font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
     }
 
     .myfarm__map-container {

@@ -125,8 +125,9 @@ export default function MyFarm() {
                 </div>
             </section>
 
-            {/* Variety → fields hierarchy: each variety is a parent node,
-                the parcels growing it are its leaves (survey data only). */}
+            {/* Variety grid — names only, derived from the existing survey
+                parcels (no duplicate data source). Fields, stages and areas
+                stay in the field diagram below. */}
             <section className="myfarm__varieties section">
                 <h2 className="myfarm__section-title">
                     {t("farm.riceVarieties")}
@@ -138,44 +139,17 @@ export default function MyFarm() {
                 ) : (
                     <div className="myfarm__variety-list">
                         {varietyGroups.map((group) => (
-                            <article
+                            <div
                                 className="myfarm__variety"
                                 key={group.variety}
                             >
-                                <h3 className="myfarm__variety-head">
-                                    <span className="myfarm__variety-dot">
-                                        <Wheat size={12} />
-                                    </span>
-                                    <span className="myfarm__variety-name">
-                                        {group.variety}
-                                    </span>
-                                </h3>
-                                <ul className="myfarm__variety-fields">
-                                    {group.fields.map((idx) => (
-                                        <li
-                                            className="myfarm__variety-field"
-                                            key={idx}
-                                        >
-                                            <button
-                                                type="button"
-                                                className="myfarm__variety-field-btn"
-                                                /* Same destination as the
-                                                   diagram cards below. */
-                                                onClick={() =>
-                                                    navigate(
-                                                        `/crops/parcel-${idx}`,
-                                                    )
-                                                }
-                                            >
-                                                {t(
-                                                    "onboarding.area.parcelLabel",
-                                                )}{" "}
-                                                {formatNumber(idx + 1)}
-                                            </button>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </article>
+                                <span className="myfarm__variety-dot">
+                                    <Wheat size={11} />
+                                </span>
+                                <span className="myfarm__variety-name">
+                                    {group.variety}
+                                </span>
+                            </div>
                         ))}
                     </div>
                 )}
