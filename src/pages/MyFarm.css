@@ -141,25 +141,36 @@
 .myfarm__variety {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    justify-content: center;
-    padding: 7px 14px;
+    gap: 9px;
+    padding: 6px 14px 6px 6px;
     background: var(--bg-surface);
     border: 1px solid var(--border);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
     min-width: 0;
+    transition: transform var(--transition-fast), box-shadow
+            var(--transition-fast), border-color var(--transition-fast);
 }
 
-.myfarm__variety-dot {
-    width: 18px;
-    height: 18px;
-    border-radius: var(--radius-full);
-    background: var(--success-soft);
-    color: var(--success);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.myfarm__variety:hover {
+    transform: translateY(-1px);
+    border-color: var(--success);
+    box-shadow: var(--shadow-md);
+}
+
+.myfarm__variety:active {
+    transform: translateY(0);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Square variety photo — the card's visual accent. */
+.myfarm__variety-img {
+    width: 34px;
+    height: 34px;
+    border-radius: var(--radius-md);
+    object-fit: cover;
     flex-shrink: 0;
+    background: var(--bg-elevated);
 }
 
 .myfarm__variety-name {
@@ -315,11 +326,16 @@
     }
 
     .myfarm__variety {
-        padding: 6px 10px;
-        /* Prefer 2 boxes per row on phones: each takes half the row
-           (minus its gap share); a box whose name needs more width
+        padding: 5px 12px 5px 5px;
+        /* Prefer 2 cards per row on phones: each takes half the row
+           (minus its gap share); a card whose name needs more width
            grows and simply gets a row of its own. */
         min-width: calc(50% - 4px);
+    }
+
+    .myfarm__variety-img {
+        width: 30px;
+        height: 30px;
     }
 
     .myfarm__variety-name {

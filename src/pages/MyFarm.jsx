@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../hooks/useLanguage";
 import { MapPin, Wheat, Pencil } from "lucide-react";
+import { riceVarieties } from "../data/riceVarieties";
 import EditFarmModal from "../components/farm/EditFarmModal";
 import EmptyFarmNotice from "../components/onboarding/EmptyFarmNotice";
 import { useOnboarding } from "../hooks/useOnboarding";
@@ -45,6 +46,20 @@ function groupByVariety(parcels) {
         byVariety.get(p.riceVariety).fields.push(i);
     });
     return groups;
+}
+
+/* Variety photo lookup — the rice dataset already maps each variety
+   name to its image in /crops (single source of truth, nothing
+   hardcoded here). Matches case/spacing-insensitively and falls back
+   to the shared rice illustration, same as the Crops page. */
+const RICE_LOGO = `${import.meta.env.BASE_URL}crop.svg`;
+function varietyImage(name) {
+    const match = riceVarieties.find(
+        (v) => v.name.trim().toLowerCase() === name.trim().toLowerCase(),
+    );
+    return match?.image
+        ? `${import.meta.env.BASE_URL}${match.image.replace(/^\//, "")}`
+        : RICE_LOGO;
 }
 
 export default function MyFarm() {
@@ -143,9 +158,13 @@ export default function MyFarm() {
                                 className="myfarm__variety"
                                 key={group.variety}
                             >
-                                <span className="myfarm__variety-dot">
-                                    <Wheat size={11} />
-                                </span>
+                                <img
+                                    className="myfarm__variety-img"
+                                    src={varietyImage(group.variety)}
+                                    alt=""
+                                    loading="lazy"
+                                    decoding="async"
+                                />
                                 <span className="myfarm__variety-name">
                                     {group.variety}
                                 </span>
