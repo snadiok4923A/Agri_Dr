@@ -1,9 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../hooks/useLanguage";
-import { MapPin, Layers, Wheat, TrendingUp } from "lucide-react";
+import { MapPin, Wheat } from "lucide-react";
 import EmptyFarmNotice from "../components/onboarding/EmptyFarmNotice";
 import { useOnboarding } from "../hooks/useOnboarding";
-import { CROP_STAGES } from "../data/cropStages";
 import "./MyFarm.css";
 
 /* Sum same-unit areas only — the survey stores number + unit without
@@ -24,15 +23,26 @@ function summarizeParcels(parcels) {
     };
 }
 
-/** Furthest stage across parcels (the crop's most advanced progress). */
-function furthestStageKey(parcels) {
-    const keys = CROP_STAGES.map((s) => s.key);
-    let best = -1;
-    parcels.forEach((p) => {
-        const idx = keys.indexOf(p.stage);
-        if (idx > best) best = idx;
+/* Variety → fields hierarchy, derived only from the existing survey
+   parcels (no duplicate data source). Varieties keep their
+   first-appearance order; parcels without a variety stay diagram-only
+   (the summary count follows the same rule). No stage info here —
+   stages live in the field diagram's click details. */
+function groupByVariety(parcels) {
+    const groups = [];
+    const byVariety = new Map();
+    parcels.forEach((p, i) => {
+        if (!p.riceVariety) return;
+        if (!byVariety.has(p.riceVariety)) {
+            byVariety.set(p.riceVariety, {
+                variety: p.riceVariety,
+                fields: [],
+            });
+            groups.push(byVariety.get(p.riceVariety));
+        }
+        byVariety.get(p.riceVariety).fields.push(i);
     });
-    return best >= 0 ? keys[best] : null;
+    return groups;
 }
 
 export default function MyFarm() {
@@ -57,10 +67,7 @@ export default function MyFarm() {
     /* Real user farm data (from the onboarding survey). */
     const parcels = farm.parcels || [];
     const totals = summarizeParcels(parcels);
-    const furthest = furthestStageKey(parcels);
-    const varieties = new Set(
-        parcels.map((p) => p.riceVariety).filter(Boolean),
-    );
+    const varietyGroups = groupByVariety(parcels);
 
     return (
         <div className="page-container myfarm">
@@ -69,89 +76,92 @@ export default function MyFarm() {
                 <p className="myfarm__subtitle">{t("farm.selectField")}</p>
             </section>
 
-            {/* Stats: Farm Overview — computed from the user's parcels */}
-            <section className="myfarm__stats section">
-                <div className="myfarm__stat">
-                    <div
-                        className="myfarm__stat-icon"
-                        style={{
-                            background: "var(--accent-soft)",
-                            color: "var(--accent)",
-                        }}
-                    >
-                        <MapPin size={20} />
-                    </div>
-                    <div className="myfarm__stat-content">
-                        <span className="myfarm__stat-value">
+            {/* Compact summary — only the two facts the diagram doesn't
+                show at a glance: total area and variety count. */}
+            <section className="myfarm__summary section">
+                <div className="myfarm__summary-item">
+                    <span className="myfarm__summary-icon myfarm__summary-icon--land">
+                        <MapPin size={15} />
+                    </span>
+                    <div className="myfarm__summary-text">
+                        <span className="myfarm__summary-value">
                             {totals.label}
                         </span>
-                        <span className="myfarm__stat-label">
+                        <span className="myfarm__summary-label">
                             {t("farm.totalLand")}
                         </span>
                     </div>
                 </div>
-
-                <div className="myfarm__stat">
-                    <div
-                        className="myfarm__stat-icon"
-                        style={{
-                            background: "var(--success-soft)",
-                            color: "var(--success)",
-                        }}
-                    >
-                        <Layers size={20} />
-                    </div>
-                    <div className="myfarm__stat-content">
-                        <span className="myfarm__stat-value">
-                            {formatNumber(parcels.length)}
+                <div className="myfarm__summary-item myfarm__summary-item--divided">
+                    <span className="myfarm__summary-icon myfarm__summary-icon--variety">
+                        <Wheat size={15} />
+                    </span>
+                    <div className="myfarm__summary-text">
+                        <span className="myfarm__summary-value">
+                            {formatNumber(varietyGroups.length)}
+                            {t("farm.countSuffix")}
                         </span>
-                        <span className="myfarm__stat-label">
-                            {t("onboarding.review.summaryParcels")}
+                        <span className="myfarm__summary-label">
+                            {t("farm.riceVarieties")}
                         </span>
                     </div>
                 </div>
+            </section>
 
-                <div className="myfarm__stat">
-                    <div
-                        className="myfarm__stat-icon"
-                        style={{
-                            background: "var(--info-soft)",
-                            color: "var(--info)",
-                        }}
-                    >
-                        <Wheat size={20} />
+            {/* Variety → fields hierarchy: each variety is a parent node,
+                the parcels growing it are its leaves (survey data only). */}
+            <section className="myfarm__varieties section">
+                <h2 className="myfarm__section-title">
+                    {t("farm.riceVarieties")}
+                </h2>
+                {varietyGroups.length === 0 ? (
+                    <p className="myfarm__varieties-empty">
+                        {t("farm.noFields")}
+                    </p>
+                ) : (
+                    <div className="myfarm__variety-list">
+                        {varietyGroups.map((group) => (
+                            <article
+                                className="myfarm__variety"
+                                key={group.variety}
+                            >
+                                <h3 className="myfarm__variety-head">
+                                    <span className="myfarm__variety-dot">
+                                        <Wheat size={12} />
+                                    </span>
+                                    <span className="myfarm__variety-name">
+                                        {group.variety}
+                                    </span>
+                                </h3>
+                                <ul className="myfarm__variety-fields">
+                                    {group.fields.map((idx) => (
+                                        <li
+                                            className="myfarm__variety-field"
+                                            key={idx}
+                                        >
+                                            <button
+                                                type="button"
+                                                className="myfarm__variety-field-btn"
+                                                /* Same destination as the
+                                                   diagram cards below. */
+                                                onClick={() =>
+                                                    navigate(
+                                                        `/crops/parcel-${idx}`,
+                                                    )
+                                                }
+                                            >
+                                                {t(
+                                                    "onboarding.area.parcelLabel",
+                                                )}{" "}
+                                                {formatNumber(idx + 1)}
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </article>
+                        ))}
                     </div>
-                    <div className="myfarm__stat-content">
-                        <span className="myfarm__stat-value">
-                            {formatNumber(varieties.size)}
-                        </span>
-                        <span className="myfarm__stat-label">
-                            {t("farm.activeCrops")}
-                        </span>
-                    </div>
-                </div>
-
-                <div className="myfarm__stat">
-                    <div
-                        className="myfarm__stat-icon"
-                        style={{
-                            background: "var(--warning-soft)",
-                            color: "var(--warning)",
-                        }}
-                    >
-                        <TrendingUp size={20} />
-                    </div>
-                    <div className="myfarm__stat-content">
-                        <span className="myfarm__stat-value">
-                            {furthest
-                                ? t(`onboarding.stages.${furthest}`)
-                                : "—"}
-                        </span>
-                        <span className="myfarm__stat-label">
-                            {t("farm.growthStage") || t("onboarding.review.summaryStage")}
-                        </span>
-                    </div>
-                    </div>
+                )}
             </section>
 
             {/* Farm parcels — real survey data, one card per parcel */}
@@ -164,7 +174,7 @@ export default function MyFarm() {
                             alignItems: "center",
                             flexWrap: "wrap",
                             gap: 8,
-                            marginBottom: 14,
+                            marginBottom: 10,
                         }}
                     >
                         <div>
