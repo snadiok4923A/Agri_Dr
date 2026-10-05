@@ -2,7 +2,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useLanguage } from "../hooks/useLanguage";
 import { marketPrices, marketFilters, buildPriceHistory } from "../data/marketPrices";
-import { Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, Wheat, Pill, Sprout } from "lucide-react";
+import { MedicineSection, FertilizerSection } from "./MarketCatalog";
 import { registerOverlay } from "../voice/overlayBus";
 import {
     VOICE_OPEN_MARKET_EVENT,
@@ -80,8 +81,19 @@ const fmtOrDash = (v, fmt) =>
 const localDay = (dateStr, opts, formatLabel) =>
     formatLabel(new Date(dateStr + "T12:00:00").toLocaleDateString("en-GB", opts));
 
+/* Main category selector (top-level, above every category-specific
+ * control). "rice" is initial, so the existing Rice UI is what the
+ * page opens with. The Rice query/filter state below is untouched and
+ * only ever affects the Rice section. */
+const MARKET_CATEGORIES = [
+    { id: "rice", labelKey: "market.catRice", Icon: Wheat },
+    { id: "medicine", labelKey: "market.catMedicine", Icon: Pill },
+    { id: "fertilizer", labelKey: "market.catFertilizer", Icon: Sprout },
+];
+
 export default function Market() {
     const { t, formatNumber, formatLabel } = useLanguage();
+    const [activeMarketCategory, setActiveMarketCategory] = useState("rice");
     const [query, setQuery] = useState("");
     const [filter, setFilter] = useState("all");
     const [selected, setSelected] = useState(null);
@@ -237,6 +249,29 @@ export default function Market() {
                 </div>
             </section>
 
+            {/* MAIN CATEGORY SELECTOR — below the subtitle, above the
+                Rice search bar / chips. Horizontal on all viewports. */}
+            <div className="market-cat" role="tablist" aria-label={t("market.catAria")}>
+                {MARKET_CATEGORIES.map(({ id, labelKey, Icon }) => (
+                    <button
+                        key={id}
+                        type="button"
+                        role="tab"
+                        aria-selected={activeMarketCategory === id}
+                        className={`market-cat__btn${
+                            activeMarketCategory === id ? " market-cat__btn--active" : ""
+                        }`}
+                        onClick={() => setActiveMarketCategory(id)}
+                    >
+                        <Icon size={15} strokeWidth={1.9} />
+                        {t(labelKey)}
+                    </button>
+                ))}
+            </div>
+
+            {/* ==================== RICE (original UI, untouched) ==================== */}
+            {activeMarketCategory === "rice" ? (
+                <>
             <div className="market-page__controls">
                 <div className="market-page__search">
                     <Search size={16} />
@@ -333,7 +368,9 @@ export default function Market() {
                 </div>
             )}
 
-            {selected &&
+            {/* Rice floating details window — original markup, unchanged */}
+            {activeMarketCategory === "rice" &&
+                selected &&
                 createPortal(
                     <div
                         className={`market-page__portal${
@@ -546,6 +583,12 @@ export default function Market() {
                     </div>,
                     document.body,
                 )}
+                </>
+            ) : activeMarketCategory === "medicine" ? (
+                <MedicineSection />
+            ) : (
+                <FertilizerSection />
+            )}
         </div>
     );
 }
