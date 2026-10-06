@@ -1,5 +1,6 @@
+import { useEffect, useMemo } from "react";
 import { useLanguage } from "../hooks/useLanguage";
-import { financeData } from "../data/mockData";
+import { computeFarmFinance } from "../lib/financeCalc";
 import {
     PieChart,
     Pie,
@@ -19,12 +20,24 @@ import "./Finance.css";
 
 export default function Finance() {
     const { t, formatNumber } = useLanguage();
-    const { isFarmComplete } = useOnboarding();
+    const { isFarmComplete, farm, refreshFarm } = useOnboarding();
+
+    /* REAL-TIME SYNC (spec §10): re-fetch the shared farm rows whenever
+       this page opens. Edit-Farm saves already flow through the shared
+       onboarding context, so no farm value is ever cached locally here. */
+    useEffect(() => {
+        refreshFarm();
+    }, [refreshFarm]);
+
+    /* ONE SOURCE OF TRUTH (spec §1): the exact same survey parcels that
+       My Farm renders — no second farm dataset, no demo values. */
+    const parcels = farm?.parcels || [];
+    const finance = useMemo(() => computeFarmFinance(parcels), [parcels]);
 
     /* NO FAKE DATA: cost & profit only make sense with real farm details.
        Until onboarding completes, show the empty state instead of demo
        numbers (CTA re-opens the wizard). */
-    if (!isFarmComplete) {
+    if (!isFarmComplete || parcels.length === 0) {
         return (
             <div className="page-container finance-page">
                 <section className="finance-page__header section">
@@ -37,8 +50,7 @@ export default function Finance() {
         );
     }
 
-    const { expenses, revenue, monthlyExpenses, varietyWiseProfit } =
-        financeData;
+    const { rows, totals } = finance;
 
     return (
         <div className="page-container finance-page">
@@ -51,7 +63,8 @@ export default function Finance() {
                 </div>
             </section>
 
-            {/* Financial Summary */}
+            {/* Financial Summary — all three cards derive from the same
+                My Farm parcels (area × variety rates from project data). */}
             <section className="finance-page__summary section">
                 <div className="finance-page__summary-card finance-page__summary-card--expense">
                     <span className="finance-page__summary-label">
@@ -59,10 +72,15 @@ export default function Finance() {
                     </span>
                     <span className="finance-page__summary-value">
                         {t("common.rupeeSymbol")}
-                        {formatNumber(expenses.total)}
+                        {formatNumber(totals.cost)}
                     </span>
                     <span className="finance-page__summary-sub">
-                        {t("finance.acresAt")}
+                        {totals.costPerAcre !== null
+                            ? t("finance.acresAt", {
+                                  acres: formatNumber(totals.acres),
+                                  perAcre: formatNumber(totals.costPerAcre),
+                              })
+                            : t("common.noData")}
                     </span>
                 </div>
                 <div className="finance-page__summary-card finance-page__summary-card--revenue">
@@ -71,10 +89,14 @@ export default function Finance() {
                     </span>
                     <span className="finance-page__summary-value">
                         {t("common.rupeeSymbol")}
-                        {formatNumber(revenue.expected)}
+                        {formatNumber(totals.revenue)}
                     </span>
                     <span className="finance-page__summary-sub">
-                        {t("finance.tonsTotal")}
+                        {totals.yieldTons > 0
+                            ? t("finance.tonsTotal", {
+                                  tons: formatNumber(totals.yieldTons),
+                              })
+                            : t("common.noData")}
                     </span>
                 </div>
                 <div className="finance-page__summary-card finance-page__summary-card--profit">
@@ -92,16 +114,19 @@ export default function Finance() {
                         >
                             {t("finance.estimatedProfit")}
                         </span>
-                        <span className="finance-page__profit-badge">
-                            +{formatNumber(financeData.profitMargin)}% {t("finance.marginBadge")}
-                        </span>
+                        {totals.margin !== null && (
+                            <span className="finance-page__profit-badge">
+                                +{formatNumber(totals.margin)}%{" "}
+                                {t("finance.marginBadge")}
+                            </span>
+                        )}
                     </div>
                     <span
                         className="finance-page__summary-value"
                         style={{ color: "var(--success)" }}
                     >
                         {t("common.rupeeSymbol")}
-                        {formatNumber(revenue.estimatedProfit)}
+                        {formatNumber(totals.profit)}
                     </span>
                     <span className="finance-page__summary-sub">
                         {t("finance.netAfter")}
@@ -109,7 +134,9 @@ export default function Finance() {
                 </div>
             </section>
 
-            {/* Variety-Wise Profit Table */}
+            {/* Field-level table — ONE ROW PER ACTUAL MY FARM FIELD
+                (spec §7): variety, field, area, yield, cost, revenue,
+                profit all update the moment Edit Farm saves. */}
             <section className="finance-page__variety-table-section section">
                 <h2 className="finance-page__section-title">
                     {t("finance.varietyBreakdown")}
@@ -128,18 +155,31 @@ export default function Finance() {
                             </tr>
                         </thead>
                         <tbody>
-                            {varietyWiseProfit.map((v, i) => (
-                                <tr key={i}>
+                            {rows.map((row) => (
+                                <tr key={`${row.index}-${row.variety}`}>
                                     <td>
-                                        <strong>{v.variety}</strong>
+                                        <strong>{row.variety || "—"}</strong>
                                     </td>
                                     <td>
-                                        {v.field} ({formatNumber(v.area)} ac)
+                                        {t("onboarding.area.parcelLabel")}{" "}
+                                        {formatNumber(row.index + 1)} (
+                                        {formatNumber(row.area)}{" "}
+                                        {t(`onboarding.unitNames.${row.unit}`)})
                                     </td>
-                                    <td>{formatNumber(v.expectedYield)} {t("common.ton")}</td>
-                                    <td>₹{formatNumber(v.cost)}</td>
                                     <td>
-                                        ₹{formatNumber(v.revenue)}
+                                        {row.yieldTons === null
+                                            ? "—"
+                                            : `${formatNumber(row.yieldTons)} ${t("common.ton")}`}
+                                    </td>
+                                    <td>
+                                        {row.cost === null
+                                            ? "—"
+                                            : `₹${formatNumber(row.cost)}`}
+                                    </td>
+                                    <td>
+                                        {row.revenue === null
+                                            ? "—"
+                                            : `₹${formatNumber(row.revenue)}`}
                                     </td>
                                     <td
                                         style={{
@@ -147,11 +187,15 @@ export default function Finance() {
                                             fontWeight: 700,
                                         }}
                                     >
-                                        ₹{formatNumber(v.profit)}
+                                        {row.profit === null
+                                            ? "—"
+                                            : `₹${formatNumber(row.profit)}`}
                                     </td>
                                     <td>
                                         <span className="finance-page__margin-pill">
-                                            {formatNumber(v.margin)}%
+                                            {row.margin === null
+                                                ? "—"
+                                                : `${formatNumber(row.margin)}%`}
                                         </span>
                                     </td>
                                 </tr>
@@ -162,7 +206,8 @@ export default function Finance() {
             </section>
 
             <div className="finance-page__grid">
-                {/* Cost Breakdown */}
+                {/* Cost Breakdown — categories kept, amounts derived from
+                    the farm's calculated total cost (sum === total). */}
                 <section className="finance-page__breakdown section">
                 <h2 className="finance-page__section-title">
                     {t("finance.costCategories")}
@@ -172,7 +217,7 @@ export default function Finance() {
                             <ResponsiveContainer width={180} height={180}>
                                 <PieChart>
                                     <Pie
-                                        data={expenses.breakdown}
+                                        data={finance.costCategories}
                                         dataKey="amount"
                                         cx="50%"
                                         cy="50%"
@@ -180,7 +225,7 @@ export default function Finance() {
                                         outerRadius={80}
                                         strokeWidth={0}
                                     >
-                                        {expenses.breakdown.map((entry, i) => (
+                                        {finance.costCategories.map((entry, i) => (
                                             <Cell key={i} fill={entry.color} />
                                         ))}
                                     </Pie>
@@ -200,7 +245,7 @@ export default function Finance() {
                             </ResponsiveContainer>
                         </div>
                         <div className="finance-page__legend">
-                            {expenses.breakdown.map((item, i) => (
+                            {finance.costCategories.map((item, i) => (
                                 <div
                                     key={i}
                                     className="finance-page__legend-item"
@@ -222,14 +267,18 @@ export default function Finance() {
                     </div>
                 </section>
 
-                {/* Monthly Expense Schedule */}
+                {/* Monthly Expense Schedule — estimated seasonal split of
+                    the SAME total cost, clearly labelled (spec §9). */}
                 <section className="finance-page__trend section">
                 <h2 className="finance-page__section-title">
                     {t("finance.monthlyExpenditure")}
                 </h2>
+                    <p className="finance-page__chart-note">
+                        {t("finance.estimateNote")}
+                    </p>
                     <div className="finance-page__chart-container">
                         <ResponsiveContainer width="100%" height={220}>
-                            <BarChart data={monthlyExpenses}>
+                            <BarChart data={finance.monthly}>
                                 <CartesianGrid
                                     stroke="var(--chart-grid)"
                                     strokeDasharray="3 3"

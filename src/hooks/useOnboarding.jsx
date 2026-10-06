@@ -267,6 +267,30 @@ export function OnboardingProvider({ children }) {
         [userId],
     );
 
+    /** Re-fetch the shared farm rows from Supabase — called by farm
+     *  pages (Profit & Cost) when they open so no stale farm value is
+     *  ever shown. The server wins ONLY when it actually returns rows:
+     *  a failed/absent migration (degraded local mode) or an error keeps
+     *  the current local state untouched. */
+    const refreshFarm = useCallback(async () => {
+        if (!userId) return;
+        try {
+            const [farmRow, parcels] = await Promise.all([
+                fetchFarm(userId),
+                fetchParcels(userId),
+            ]);
+            if (!farmRow && !(parcels && parcels.length)) return;
+            const nextFarm = {
+                name: farmRow?.name || "",
+                parcels: parcels || [],
+            };
+            setFarm(nextFarm);
+            lsSet(draftKeyFor(userId), JSON.stringify(nextFarm));
+        } catch {
+            /* keep the current state — never blank a live farm */
+        }
+    }, [userId]);
+
     /** "Skip for now" inside the wizard (or re-skip later). The language
      *  picked in step 1 still persists — a skipped user keeps their voice. */
     const skipOnboarding = useCallback(
@@ -345,6 +369,7 @@ export function OnboardingProvider({ children }) {
             skipOnboarding,
             saveDraft,
             resetOnboarding,
+            refreshFarm,
         }),
         [
             status,
@@ -358,6 +383,7 @@ export function OnboardingProvider({ children }) {
             skipOnboarding,
             saveDraft,
             resetOnboarding,
+            refreshFarm,
         ],
     );
 

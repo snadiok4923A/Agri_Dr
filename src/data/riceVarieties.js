@@ -26,7 +26,9 @@
  */
 
 // Shared economics blocks straight from rice.txt
-const COMMON_ECON = {
+// (COMMON_ECON is exported: financeCalc.js reuses it as the project's
+//  configured default economics when a variety has no own record.)
+export const COMMON_ECON = {
     price: { label: "≈₹2,300", per: "/Q", note: "MSP" },
     yieldQ: { label: "20–25", per: "Q/acre" },
     cost: { label: "₹17.5–24.5K", per: "/acre" },
