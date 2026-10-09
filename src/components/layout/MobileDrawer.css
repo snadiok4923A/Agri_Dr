@@ -16,7 +16,7 @@
   pointer-events: auto;
 }
 
-/* ==================== Glass drawer ==================== */
+/* ==================== Drawer ==================== */
 .mobile-drawer {
   position: fixed;
   left: 0;
@@ -28,17 +28,10 @@
   width: min(280px, 84vw);
   display: flex;
   flex-direction: column;
-  /* Translucent dark kolapata-green glass — the dashboard stays visible
-     and blurred behind it */
-  background: color-mix(in srgb, var(--sidebar-bg) 68%, transparent);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
-  backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
+  /* SOLID near-black panel — opaque, no frost, no green glow */
+  background: var(--sidebar-bg);
   border-right: 1px solid var(--glass-border);
-  border-top-color: rgba(255, 255, 255, 0.12);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    12px 0 44px rgba(0, 0, 0, 0.35),
-    0 0 42px rgba(111, 207, 142, 0.06);
+  box-shadow: 12px 0 44px rgba(0, 0, 0, 0.35);
   transform: translateX(-102%);
   transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
   visibility: hidden;
@@ -93,7 +86,7 @@
   height: 32px;
   border-radius: var(--radius-md);
   color: var(--text-secondary);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-hover);
   border: 1px solid var(--glass-border);
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -101,7 +94,7 @@
 
 .mobile-drawer__close:hover {
   color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--bg-active);
 }
 
 /* ==================== Nav ==================== */

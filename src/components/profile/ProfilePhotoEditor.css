@@ -36,11 +36,8 @@
     flex-direction: column;
     gap: 16px;
     padding: 22px 20px 18px;
-    background: rgba(10, 18, 15, 0.6);
-    -webkit-backdrop-filter: blur(20px) saturate(130%);
-    backdrop-filter: blur(20px) saturate(130%);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-top-color: rgba(255, 255, 255, 0.18);
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
     border-radius: 20px;
     box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
 }
@@ -70,7 +67,7 @@
     overflow: hidden;
     cursor: grab;
     touch-action: none; /* pointer pan + pinch only — no scroll hijack */
-    background: rgba(255, 255, 255, 0.04);
+    background: var(--bg-elevated);
 }
 
 .ppe__stage--drag {
@@ -94,8 +91,7 @@
     inset: 0;
     border-radius: 50%;
     border: 2px solid rgba(255, 255, 255, 0.85);
-    box-shadow:
-        0 0 0 9999px rgba(5, 9, 7, 0.55);
+    box-shadow: 0 0 0 9999px rgba(5, 9, 7, 0.55);
     pointer-events: none;
 }
 
@@ -118,8 +114,8 @@
     height: 34px;
     flex-shrink: 0;
     border-radius: 50%;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--border);
+    background: var(--bg-hover);
     color: var(--text-secondary);
     cursor: pointer;
     transition: all 0.15s ease;
@@ -127,7 +123,7 @@
 
 .ppe__zoom-btn:hover:not(:disabled) {
     color: var(--text-primary);
-    background: rgba(255, 255, 255, 0.12);
+    background: var(--bg-active);
 }
 
 .ppe__zoom-btn:disabled {
@@ -161,14 +157,14 @@
 }
 
 .ppe__btn--ghost {
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--border);
+    background: var(--bg-hover);
     color: var(--text-secondary);
 }
 
 .ppe__btn--ghost:hover:not(:disabled) {
     color: var(--text-primary);
-    background: rgba(255, 255, 255, 0.12);
+    background: var(--bg-active);
 }
 
 .ppe__btn--primary {

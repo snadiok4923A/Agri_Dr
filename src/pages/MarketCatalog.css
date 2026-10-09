@@ -320,7 +320,7 @@
 
 .market-cat-modal-price {
     padding-bottom: 12px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid var(--border);
 }
 
 .market-cat-modal-price strong {
@@ -340,8 +340,8 @@
 .market-cat-modal-note {
     padding: 10px 12px;
     border-radius: 12px;
-    background: rgba(255, 255, 255, 0.045);
-    border: 1px solid rgba(255, 255, 255, 0.07);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
     font-size: min(max(calc(12.5px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 600;
     color: var(--text-secondary);
@@ -355,8 +355,8 @@
     align-items: flex-start;
     padding: 10px 12px;
     border-radius: 12px;
-    background: rgba(255, 255, 255, 0.045);
-    border: 1px solid rgba(255, 255, 255, 0.07);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
     font-size: min(max(calc(12.5px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 600;
     color: var(--text-secondary);
@@ -374,7 +374,7 @@
     justify-content: space-between;
     gap: 4px 14px;
     padding-top: 10px;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid var(--border);
     font-size: min(max(calc(10.5px * var(--ts-small, 1)), 8px), 18px);
     font-weight: 600;
     color: var(--text-muted);

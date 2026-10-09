@@ -157,16 +157,13 @@
    panel is a subtle frost, the fields are the strong frost. */
 .auth-card {
     width: min(412px, 100%);
-    background: rgba(255, 255, 255, 0.14);
-    -webkit-backdrop-filter: blur(10px) saturate(125%);
-    backdrop-filter: blur(10px) saturate(125%);
-    border: 1px solid rgba(255, 255, 255, 0.18);
+    /* Solid near-black sign-in card — no frosted translucent fill */
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
     border-radius: 26px;
     padding: 34px 32px 30px;
     box-sizing: border-box;
-    box-shadow:
-        0 24px 60px rgba(4, 8, 16, 0.38),
-        inset 0 1px 0 rgba(255, 255, 255, 0.14);
+    box-shadow: 0 24px 60px rgba(4, 8, 16, 0.38);
 }
 
 .auth-card__head {
@@ -273,7 +270,7 @@
     font-family: inherit;
     color: #eef2f8;
     background: rgba(28, 32, 36, 0.18);
-    border: 1px solid rgba(255, 255, 255, 0.24);
+    border: 1px solid var(--border);
     border-radius: 13px;
     outline: none;
     /* Real frosted glass: with the card no longer acting as a
@@ -298,7 +295,7 @@
 }
 
 .auth-field__input:hover {
-    border-color: rgba(255, 255, 255, 0.3);
+    border-color: var(--border);
 }
 
 .auth-field__input:focus {
@@ -336,7 +333,7 @@
 
 .auth-field__toggle:hover {
     color: #d6dfec;
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--bg-hover);
 }
 
 .auth-field__toggle:focus-visible {
@@ -400,7 +397,7 @@
 .auth-btn--google {
     background: rgba(28, 32, 36, 0.2);
     color: #e8edf5;
-    border-color: rgba(255, 255, 255, 0.24);
+    border-color: var(--border);
     /* Same real frosted glass as the inputs — now samples the
        photo; logo and label stay crisp (content, not backdrop). */
     -webkit-backdrop-filter: blur(20px) saturate(115%);
@@ -409,7 +406,7 @@
 
 .auth-btn--google:not(:disabled):hover {
     background: rgba(34, 39, 44, 0.28);
-    border-color: rgba(255, 255, 255, 0.3);
+    border-color: var(--border);
 }
 
 .auth-btn__google-icon {
@@ -536,7 +533,7 @@
 
 .auth-skip-external:not(:disabled):hover {
     color: #e8eefb;
-    background: rgba(255, 255, 255, 0.07);
+    background: var(--bg-active);
 }
 
 .auth-skip-external:focus-visible {

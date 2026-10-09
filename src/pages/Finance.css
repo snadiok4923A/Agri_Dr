@@ -27,14 +27,12 @@
     border-color: rgba(56, 189, 248, 0.3);
 }
 
+/* Profit keeps its GREEN identity in the border and the value text —
+   the card surface itself stays solid near-black (no green wash, no
+   top-of-card gradient). */
 .finance-page__summary-card--profit {
     background: var(--bg-surface);
     border-color: rgba(74, 222, 128, 0.35);
-    background: linear-gradient(
-        180deg,
-        rgba(74, 222, 128, 0.05) 0%,
-        var(--bg-surface) 100%
-    );
 }
 
 .finance-page__summary-label {

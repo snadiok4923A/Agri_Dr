@@ -42,10 +42,8 @@
     width: min(560px, 100%);
     max-height: min(720px, calc(100vh - 48px));
     border-radius: 24px;
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    background: rgba(12, 18, 15, 0.55);
-    -webkit-backdrop-filter: blur(20px) saturate(130%);
-    backdrop-filter: blur(20px) saturate(130%);
+    border: 1px solid var(--border);
+    background: var(--bg-surface);
     box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
     animation: editfarmDrawerIn 300ms cubic-bezier(0.22, 0.8, 0.36, 1) both;
 }
@@ -83,8 +81,8 @@
     align-items: center;
     justify-content: center;
     border-radius: var(--radius-full);
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--border);
+    background: var(--bg-hover);
     color: var(--text-secondary);
     cursor: pointer;
     transition: background var(--transition-fast), color
@@ -92,7 +90,7 @@
 }
 
 .editfarm__close:hover {
-    background: rgba(255, 255, 255, 0.12);
+    background: var(--bg-active);
     color: var(--text-primary);
 }
 

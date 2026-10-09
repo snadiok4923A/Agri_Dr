@@ -27,7 +27,7 @@
   }
 }
 
-/* ==================== Glass panel ==================== */
+/* ==================== Solid panel ==================== */
 .wmodal {
   position: relative;
   width: min(540px, 100%);
@@ -38,21 +38,11 @@
   flex-direction: column;
   gap: 20px;
   padding: 28px;
-  /* True transparent glass: deep kolapata-green tint at low opacity —
-     the blurred background glows through the panel. */
-  background: rgba(12, 15, 18, 0.45);
-  -webkit-backdrop-filter: blur(24px) saturate(140%);
-  backdrop-filter: blur(24px) saturate(140%);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-top-color: rgba(255, 255, 255, 0.18);
-  border-left-color: rgba(255, 255, 255, 0.1);
-  border-bottom-color: rgba(255, 255, 255, 0.045);
+  /* Opaque near-black surface — no frosted glass, no green halo */
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
   border-radius: 24px;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    inset 0 -1px 0 rgba(111, 207, 142, 0.05),
-    0 18px 60px rgba(0, 0, 0, 0.38),
-    0 0 52px rgba(111, 207, 142, 0.08);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.38);
   animation: wmodal-in 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
@@ -67,21 +57,18 @@
   }
 }
 
-/* Subtle glass sheen near the top — a BACKGROUND layer only. z-index: 0
-   keeps it behind the content wrapper (.wmodal__content sits at z-index 1),
-   so it tints the glass surface without ever fading the foreground. */
+/* Sheen layer — structural only in the DARK theme: the panel is solid
+   near-black now, so the old white top-edge sheen is painted by nothing
+   here (no glossy highlight anywhere on the surface). The light theme
+   still supplies its own sheen in the [data-theme="light"] block below,
+   reusing this layer's positioning. */
 .wmodal::before {
   content: "";
   position: absolute;
   inset: 0;
   z-index: 0;
   border-radius: inherit;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.07),
-    rgba(255, 255, 255, 0.015) 22%,
-    transparent 38%
-  );
+  background: none;
   pointer-events: none;
 }
 
@@ -121,15 +108,15 @@
   height: 32px;
   border-radius: 50%;
   color: var(--text-secondary);
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
   cursor: pointer;
   transition: all var(--transition-fast);
 }
 
 .wmodal__close:hover {
   color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.11);
+  background: var(--bg-active);
 }
 
 /* ==================== Location caption ==================== */
@@ -252,7 +239,7 @@
   align-items: center;
   gap: 10px;
   padding: 13px 13px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--bg-elevated);
   border-radius: 14px;
   min-width: 0;
 }
@@ -366,7 +353,7 @@
 }
 
 .wmodal__day:hover {
-  background: rgba(255, 255, 255, 0.045);
+  background: var(--bg-elevated);
 }
 
 .wmodal__day:active {

@@ -26,7 +26,7 @@
 .obw-progress__bar {
     height: 4px;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.12);
+    background: var(--bg-active);
     overflow: hidden;
 }
 
@@ -55,14 +55,14 @@
     text-align: left;
     color: #eef2f8;
     background: rgba(28, 32, 36, 0.18);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid var(--border);
     border-radius: 13px;
     cursor: pointer;
     transition: border-color 160ms ease, background 160ms ease;
 }
 
 .obw-lang:hover {
-    border-color: rgba(255, 255, 255, 0.3);
+    border-color: var(--border);
 }
 
 .obw-lang--active {
@@ -129,14 +129,14 @@
     height: 44px;
     color: #eef2f8;
     background: rgba(28, 32, 36, 0.18);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid var(--border);
     border-radius: 13px;
     cursor: pointer;
     transition: border-color 160ms ease, background 160ms ease;
 }
 
 .obw-stepper__btn:not(:disabled):hover {
-    border-color: rgba(255, 255, 255, 0.3);
+    border-color: var(--border);
     background: rgba(31, 41, 38, 0.26);
 }
 
@@ -159,7 +159,7 @@
     font-family: inherit;
     color: #eef2f8;
     background: rgba(28, 32, 36, 0.18);
-    border: 1px solid rgba(255, 255, 255, 0.24);
+    border: 1px solid var(--border);
     border-radius: 13px;
     outline: none;
     -moz-appearance: textfield;
@@ -231,7 +231,7 @@
     font-family: inherit;
     color: #eef2f8;
     background: rgba(28, 32, 36, 0.18);
-    border: 1px solid rgba(255, 255, 255, 0.24);
+    border: 1px solid var(--border);
     border-radius: 13px;
     outline: none;
     transition: border-color 180ms ease, box-shadow 180ms ease;
@@ -254,7 +254,7 @@
     font-family: inherit;
     color: #eef2f8;
     background: rgba(28, 32, 36, 0.18);
-    border: 1px solid rgba(255, 255, 255, 0.24);
+    border: 1px solid var(--border);
     border-radius: 13px;
     outline: none;
     cursor: pointer;
@@ -287,7 +287,7 @@
     font-family: inherit;
     color: #eef2f8;
     background: rgba(28, 32, 36, 0.18);
-    border: 1px solid rgba(255, 255, 255, 0.24);
+    border: 1px solid var(--border);
     border-radius: 13px;
     outline: none;
     width: 100%;
@@ -317,7 +317,7 @@
     padding: 6px;
     list-style: none;
     background: #101828;
-    border: 1px solid rgba(255, 255, 255, 0.16);
+    border: 1px solid var(--border);
     border-radius: 13px;
     box-shadow: 0 18px 44px rgba(4, 8, 16, 0.55);
     /* Height = content, up to a live maximum measured by VarietyInput
@@ -369,7 +369,7 @@
     font-family: inherit;
     color: #b6c3d6;
     background: rgba(28, 32, 36, 0.18);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid var(--border);
     border-radius: 999px;
     cursor: pointer;
     transition: color 150ms ease, background 150ms ease, border-color 150ms ease;
@@ -411,7 +411,7 @@
     gap: 4px;
     padding: 14px 8px;
     background: rgba(28, 32, 36, 0.18);
-    border: 1px solid rgba(255, 255, 255, 0.14);
+    border: 1px solid var(--border);
     border-radius: 13px;
 }
 
@@ -462,7 +462,7 @@
 
 .obw-nav__ghost:hover {
     color: #e8eefb;
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--bg-hover);
 }
 
 .obw-nav__right {

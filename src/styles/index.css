@@ -15,11 +15,10 @@
     --transition-slow: 350ms ease;
     --sidebar-width: 240px;
     --header-height: 64px;
-    /* PERF: blur radius for CHROME that permanently sits over scrolling
-       content (sticky header, floating bottom nav, sticky AI chat bar).
-       These re-blur on every scroll frame, so they run cooler than the
-       static glass panels (--glass-blur) with a slightly denser tint to
-       keep the same read. */
+    /* Legacy chrome-blur radius. The sticky header and the floating bottom
+       nav are now SOLID near-black surfaces (no backdrop blur at all), so
+       nothing reads this token any more; it is kept only so an
+       out-of-tree reference still resolves. */
     --chrome-blur: 16px;
     /* Agricultural accent palette — Sonali gold + Kacha kolapata leaf green */
     --gold: #e8b84b;
@@ -30,17 +29,21 @@
     --forest: #123524;
 }
 
-/* Dark Theme (Default) */
+/* Dark Theme (Default) — SOLID BLACK 
+   Pure neutral near-black palette. Cards are OPAQUE (#0B0B0B), one
+   hair above the page (#050505), separated by a subtle dark-grey
+   border (#252525). Deliberately NO charcoal-grey surfaces, no white
+   tints, no frosted glass on standard cards. */
 [data-theme="dark"] {
-    --bg-primary: #08090a;
-    --bg-secondary: #0b0c0e;
-    --bg-surface: #141618;
-    --bg-elevated: #191b1e;
-    --bg-hover: #1b1d20;
-    --bg-active: #202429;
+    --bg-primary: #050505;
+    --bg-secondary: #080808;
+    --bg-surface: #0b0b0b;
+    --bg-elevated: #0d0d0d;
+    --bg-hover: #141414;
+    --bg-active: #1a1a1a;
     --text-primary: #f5f5f5;
-    --text-secondary: #a0a4aa;
-    --text-muted: #767b82;
+    --text-secondary: #a0a0a0;
+    --text-muted: #7a7a7a;
     --accent: #22d3ee;
     --accent-soft: rgba(34, 211, 238, 0.1);
     --accent-hover: #06b6d4;
@@ -52,33 +55,36 @@
     --success-soft: rgba(74, 222, 128, 0.1);
     --info: #6bb8e8;
     --info-soft: rgba(107, 184, 232, 0.1);
-    --border: #34373b;
-    --border-light: #1e2124;
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
-    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
-    --sidebar-bg: #0a0b0c;
-    --sidebar-hover: #141619;
+    --border: #252525;
+    --border-light: #1a1a1a;
+    --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.35);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.25);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
+    --sidebar-bg: #050505;
+    --sidebar-hover: #141414;
     --sidebar-active: rgba(34, 211, 238, 0.08);
     --sidebar-active-border: rgba(34, 211, 238, 0.2);
-    --header-bg: rgba(8, 9, 10, 0.92);
-    --overlay: rgba(0, 0, 0, 0.7);
-    --chart-grid: #1e2124;
-    --chart-text: #7a7f85;
+    --header-bg: #050505;
+    --overlay: rgba(0, 0, 0, 0.72);
+    --chart-grid: #1a1a1a;
+    --chart-text: #8a8a8a;
     --green-50: #4ade80;
     --green-100: #166534;
     --green-200: #14532d;
-    --green-900: #08090a;
-    --earth-100: #16181a;
-    --earth-200: #101214;
-    /* Glassmorphism tokens (dark) — neutral charcoal, translucent over the flat near-black page background (no green tint) */
-    --glass-bg: rgba(24, 27, 30, 0.55);
-    --glass-bg-strong: rgba(33, 37, 41, 0.6);
-    --glass-border: rgba(255, 255, 255, 0.08);
-    --glass-highlight:
-        inset 0 1px 0 rgba(255, 255, 255, 0.07),
-        0 8px 32px rgba(0, 0, 0, 0.25);
-    --glass-blur: 24px;
+    --green-900: #050505;
+    --earth-100: #0d0d0d;
+    --earth-200: #080808;
+    /* Legacy "glass" tokens (dark) — now ALIASED TO SOLID BLACK.
+       Anything still reading them (modals, sticky chrome) renders as an
+       opaque near-black surface instead of a frosted translucent panel.
+       The highlight is a zero-size transparent shadow so
+       `box-shadow: var(--glass-highlight), ...` lists stay valid while
+       contributing nothing visible. */
+    --glass-bg: #0b0b0b;
+    --glass-bg-strong: #0d0d0d;
+    --glass-border: #252525;
+    --glass-highlight: 0 0 0 0 rgba(0, 0, 0, 0);
+    --glass-blur: 0px;
     --gold: #e8b84b;
     --gold-soft: rgba(232, 184, 75, 0.12);
     --gold-dim: rgba(232, 184, 75, 0.55);
@@ -176,11 +182,14 @@ body {
    ============================================================ */
 
 /* ============================================================
-   TRUE GLASS PANELS (dark theme)
-   Frosted, translucent surfaces over the aurora — the background
-   glow must stay faintly visible THROUGH each card. Neutral glass
-   with an illuminated rim; color lives only in the background and
-   in small accents (numbers, icons, status pills).
+   SOLID BLACK PANELS (dark theme)
+   Every standard dashboard / content card is an OPAQUE near-black
+   surface (#0B0B0B) sitting on the #050505 page, its boundary read
+   from a single subtle dark-grey border (#252525).
+   There is deliberately NO white inset highlight, NO top sheen
+   gradient, NO radial glow and NO backdrop blur on these cards —
+   those were the source of the faded grey/silver look. Colour lives
+   only in accents (numbers, icons, status pills, charts).
    ============================================================ */
 [data-theme="dark"] .dashboard-hero-card,
 [data-theme="dark"] .dashboard-weather-card,
@@ -191,15 +200,10 @@ body {
 [data-theme="dark"] .improve-page__goal-chip,
 [data-theme="dark"] .improve-page__action-card,
 [data-theme="dark"] .crops-page__card {
-    /* Solid, rich charcoal surface — a premium, clearly-defined card
-       (not faded glass). Neutral, no green. Crisp 1px border + a delicate
-       top-edge highlight + a restrained layered shadow for depth. */
     background: var(--bg-surface);
+    background-image: none;
     border: 1px solid var(--border);
-    box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.07),
-        0 1px 2px rgba(0, 0, 0, 0.45),
-        0 4px 16px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
     position: relative;
     overflow: hidden;
     transition:
@@ -209,71 +213,42 @@ body {
         box-shadow 280ms ease;
 }
 
-/* Extremely subtle sheen near the top edge of every glass panel */
-[data-theme="dark"] .dashboard-hero-card::after,
-[data-theme="dark"] .dashboard-weather-card::after,
-[data-theme="dark"] .dashboard-action-card::after,
-[data-theme="dark"] .dashboard-insight-card::after,
-[data-theme="dark"] .dashboard-diagnosis-card::after,
-[data-theme="dark"] .improve-page__hero-card::after,
-[data-theme="dark"] .improve-page__goal-chip::after,
-[data-theme="dark"] .improve-page__action-card::after,
-[data-theme="dark"] .crops-page__card::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 35%);
-    pointer-events: none;
-}
-
-/* Glass chrome: neutral dark-translucent sidebar, header and mobile
-   nav (dark only) — no green tint, blends into the near-black page. */
+/* Chrome: header, sidebar and mobile nav are SOLID near-black — no
+   translucent grey glass, no frosted blur, no green tint. */
 [data-theme="dark"] .sidebar {
-    background: rgba(10, 11, 12, 0.55);
+    background: var(--sidebar-bg);
 }
 
 [data-theme="dark"] .header {
-    background: rgba(10, 11, 12, 0.35);
+    background: var(--bg-primary);
 }
 
 [data-theme="dark"] .mobile-nav {
-    background: rgba(10, 11, 12, 0.55);
+    background: var(--bg-primary);
 }
 
-/* Slightly lighter charcoal on hover — soft lift, no flashy glow */
+/* Slightly lighter solid on hover — a soft lift, no glow */
 [data-theme="dark"] .dashboard-action-card:hover {
     background: var(--bg-elevated);
-    border-color: #3d4147;
+    border-color: #333333;
 }
 
-/* Nested surfaces inside glass cards go translucent — never opaque blocks */
+/* Nested surfaces inside cards are opaque near-black panels */
 [data-theme="dark"] .dashboard-action-card__icon {
-    background: rgba(255, 255, 255, 0.045);
+    background: var(--bg-elevated);
 }
 
 [data-theme="dark"] .dashboard-profit-bar-track {
-    background: rgba(255, 255, 255, 0.06);
+    background: #1a1a1a;
 }
 
-/* Modal gets its own glass tier — scrollable (y) without losing the frost */
+/* Detail windows are solid too — no frosted layer behind them */
 [data-theme="dark"] .crops-page__modal {
-    background: var(--glass-bg);
-    -webkit-backdrop-filter: blur(28px) saturate(150%);
-    backdrop-filter: blur(28px) saturate(150%);
+    background: var(--bg-surface);
     overflow: hidden auto;
 }
 
-@media (max-width: 768px) {
-    [data-theme="dark"] .crops-page__modal {
-        -webkit-backdrop-filter: blur(20px) saturate(140%);
-        backdrop-filter: blur(20px) saturate(140%);
-    }
-}
-
-/* Cards are now SOLID charcoal (no backdrop blur), so the old mobile
-   blur-reduction block was removed — there is no blur left to reduce. */
-
+/* Cards are SOLID (no backdrop blur anywhere on card surfaces). */
 
 #root {
     min-height: 100vh;
@@ -581,13 +556,9 @@ html[data-textsize="200"] {
     max-width: min(86vw, 420px);
     padding: 10px 18px;
     border-radius: 999px;
-    background: rgba(10, 25, 18, 0.78);
-    -webkit-backdrop-filter: blur(14px) saturate(140%);
-    backdrop-filter: blur(14px) saturate(140%);
+    background: #0b0b0b;
     border: 1px solid rgba(111, 207, 142, 0.35);
-    box-shadow:
-        0 10px 34px rgba(0, 0, 0, 0.4),
-        0 0 22px rgba(111, 207, 142, 0.12);
+    box-shadow: 0 10px 34px rgba(0, 0, 0, 0.4), 0 0 22px rgba(111, 207, 142, 0.12);
     color: #eaf6ee;
     font-size: min(max(calc(14px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 600;
