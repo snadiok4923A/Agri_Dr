@@ -34,8 +34,8 @@
 [data-theme="dark"] {
     --bg-primary: #08090a;
     --bg-secondary: #0b0c0e;
-    --bg-surface: #111315;
-    --bg-elevated: #151719;
+    --bg-surface: #141618;
+    --bg-elevated: #191b1e;
     --bg-hover: #1b1d20;
     --bg-active: #202429;
     --text-primary: #f5f5f5;
@@ -52,7 +52,7 @@
     --success-soft: rgba(74, 222, 128, 0.1);
     --info: #6bb8e8;
     --info-soft: rgba(107, 184, 232, 0.1);
-    --border: #292c30;
+    --border: #34373b;
     --border-light: #1e2124;
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
     --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
@@ -191,19 +191,15 @@ body {
 [data-theme="dark"] .improve-page__goal-chip,
 [data-theme="dark"] .improve-page__action-card,
 [data-theme="dark"] .crops-page__card {
-    background: var(--glass-bg);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
-    backdrop-filter: blur(var(--glass-blur)) saturate(140%);
-    /* Per-side glass rims, one step more visible than before — still
-       whisper-thin 1px, but clearly enough contrast to read each card's
-       boundary against the aurora background. */
-    border-color: rgba(255, 255, 255, 0.13);
-    border-top-color: rgba(255, 255, 255, 0.22);
-    border-left-color: rgba(255, 255, 255, 0.17);
-    border-right-color: rgba(255, 255, 255, 0.14);
+    /* Solid, rich charcoal surface — a premium, clearly-defined card
+       (not faded glass). Neutral, no green. Crisp 1px border + a delicate
+       top-edge highlight + a restrained layered shadow for depth. */
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
     box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.06),
-        0 8px 32px rgba(0, 0, 0, 0.25);
+        inset 0 1px 0 rgba(255, 255, 255, 0.07),
+        0 1px 2px rgba(0, 0, 0, 0.45),
+        0 4px 16px rgba(0, 0, 0, 0.25);
     position: relative;
     overflow: hidden;
     transition:
@@ -227,7 +223,7 @@ body {
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent 35%);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 35%);
     pointer-events: none;
 }
 
@@ -247,9 +243,8 @@ body {
 
 /* Slightly lighter charcoal on hover — soft lift, no flashy glow */
 [data-theme="dark"] .dashboard-action-card:hover {
-    background: rgba(38, 42, 46, 0.42);
-    border-color: rgba(255, 255, 255, 0.19);
-    border-top-color: rgba(255, 255, 255, 0.23);
+    background: var(--bg-elevated);
+    border-color: #3d4147;
 }
 
 /* Nested surfaces inside glass cards go translucent — never opaque blocks */
@@ -276,20 +271,8 @@ body {
     }
 }
 
-/* Gentler blur on small screens — keep the transparency, save the GPU */
-@media (max-width: 768px) {
-    [data-theme="dark"] .dashboard-hero-card,
-    [data-theme="dark"] .dashboard-action-card,
-    [data-theme="dark"] .dashboard-insight-card,
-    [data-theme="dark"] .dashboard-diagnosis-card,
-    [data-theme="dark"] .improve-page__hero-card,
-    [data-theme="dark"] .improve-page__goal-chip,
-    [data-theme="dark"] .improve-page__action-card,
-    [data-theme="dark"] .crops-page__card {
-        -webkit-backdrop-filter: blur(16px) saturate(140%);
-        backdrop-filter: blur(16px) saturate(140%);
-    }
-}
+/* Cards are now SOLID charcoal (no backdrop blur), so the old mobile
+   blur-reduction block was removed — there is no blur left to reduce. */
 
 
 #root {
