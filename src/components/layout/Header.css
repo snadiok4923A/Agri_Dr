@@ -211,7 +211,7 @@
      expensive thing on screen while the modal animates in. 10px at a
      slightly denser dim reads identically (the panel in front is the
      glass the user actually looks through) at a fraction of the cost. */
-  background: rgba(4, 12, 8, 0.56);
+  background: rgba(5, 6, 8, 0.6);
   -webkit-backdrop-filter: blur(10px) saturate(120%);
   backdrop-filter: blur(10px) saturate(120%);
   pointer-events: auto;
@@ -541,7 +541,7 @@
   padding: 6px;
   border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, 0.14);
-  background: #101712; /* solid — photo cannot interfere with the text */
+  background: #0d0f11; /* solid — photo cannot interfere with the text */
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
   display: flex;
   flex-direction: column;

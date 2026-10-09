@@ -16,7 +16,7 @@
     z-index: 0;
     /* Same cost-conscious backdrop as the profile modal: 10px blur on a
        slightly denser dim — the dialog in front is the real glass. */
-    background: rgba(4, 12, 8, 0.56);
+    background: rgba(5, 6, 8, 0.6);
     -webkit-backdrop-filter: blur(10px) saturate(120%);
     backdrop-filter: blur(10px) saturate(120%);
     pointer-events: auto;
@@ -227,7 +227,7 @@
     padding: 8px 10px;
     border-radius: var(--radius-md);
     border: 1px solid var(--border);
-    background: var(--bg-input, #14231f);
+    background: var(--bg-input, #171a1d);
     color: var(--text-primary);
     font-family: inherit;
     font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);

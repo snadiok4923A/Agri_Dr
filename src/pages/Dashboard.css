@@ -1421,7 +1421,7 @@
 
 /* Dark theme: same pill, charcoal glass surface. */
 [data-theme="dark"] .dashboard-diagnosis-btn--primary {
-    background: linear-gradient(180deg, #181e1a 0%, #0d110e 100%);
+    background: linear-gradient(180deg, #1b1d20 0%, #0d0f10 100%);
     color: #f2f6fa;
     box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.1),
@@ -1429,7 +1429,7 @@
 }
 
 [data-theme="dark"] .dashboard-diagnosis-btn--primary:hover {
-    background: linear-gradient(180deg, #1d2420 0%, #10140f 100%);
+    background: linear-gradient(180deg, #202327 0%, #101214 100%);
     border-color: transparent;
     box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.12),
@@ -1618,7 +1618,7 @@
 
 .dashboard-action-card:hover {
     transform: translateY(-2px);
-    background: rgba(30, 35, 30, 0.38);
+    background: rgba(38, 42, 46, 0.42);
     border-color: rgba(255, 255, 255, 0.14);
     border-top-color: rgba(255, 255, 255, 0.16);
     box-shadow:

@@ -272,7 +272,7 @@
     font-size: 14.5px;
     font-family: inherit;
     color: #eef2f8;
-    background: rgba(25, 35, 30, 0.18);
+    background: rgba(28, 32, 36, 0.18);
     border: 1px solid rgba(255, 255, 255, 0.24);
     border-radius: 13px;
     outline: none;
@@ -303,7 +303,7 @@
 
 .auth-field__input:focus {
     border-color: rgba(56, 189, 248, 0.65);
-    background: rgba(31, 41, 38, 0.26);
+    background: rgba(34, 39, 44, 0.26);
     box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.14);
 }
 
@@ -398,7 +398,7 @@
 }
 
 .auth-btn--google {
-    background: rgba(25, 35, 30, 0.2);
+    background: rgba(28, 32, 36, 0.2);
     color: #e8edf5;
     border-color: rgba(255, 255, 255, 0.24);
     /* Same real frosted glass as the inputs — now samples the
@@ -408,7 +408,7 @@
 }
 
 .auth-btn--google:not(:disabled):hover {
-    background: rgba(31, 41, 38, 0.28);
+    background: rgba(34, 39, 44, 0.28);
     border-color: rgba(255, 255, 255, 0.3);
 }
 

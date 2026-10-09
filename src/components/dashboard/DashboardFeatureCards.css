@@ -25,7 +25,7 @@
    Deep charcoal surface + crisp text, scoped strictly to the Voice card;
    its border is handled by the shared rim rule above. */
 [data-theme="dark"] .feature-card--voice {
-    background: linear-gradient(180deg, #0d1310 0%, #090c0a 100%);
+    background: linear-gradient(180deg, #101214 0%, #0a0b0c 100%);
     box-shadow: 0 14px 34px rgba(0, 0, 0, 0.5);
 }
 
@@ -492,7 +492,7 @@
    never the washed translucent-white surface. */
 [data-theme="dark"] .feature-card__btn--start,
 [data-theme="dark"] .feature-card__btn--stop {
-    background: linear-gradient(180deg, #181e1a 0%, #0a0e0b 100%);
+    background: linear-gradient(180deg, #1b1d20 0%, #0b0c0e 100%);
     border-color: rgba(255, 255, 255, 0.18);
     color: #f2f6fa;
     box-shadow:
@@ -613,7 +613,7 @@
 }
 
 [data-theme="dark"] .feature-card--voice .feature-card__icon--leaf {
-    background: #101a12;
+    background: #131619;
     color: #7fdb9a;
 }
 

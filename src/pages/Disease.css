@@ -361,7 +361,7 @@
     padding: 20px;
     /* True transparent glass: deep kolapata-green tint at low opacity —
        the blurred dashboard glows through the panel (Weather-modal family). */
-    background: rgba(10, 25, 18, 0.45);
+    background: rgba(12, 15, 18, 0.5);
     -webkit-backdrop-filter: blur(22px) saturate(135%);
     backdrop-filter: blur(22px) saturate(135%);
     border: 1px solid rgba(255, 255, 255, 0.1);

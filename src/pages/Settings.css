@@ -276,7 +276,7 @@
 }
 
 .settings-page__theme-preview--dark {
-  background: #0D110F;
+  background: #08090A;
 }
 
 .settings-page__theme-preview--light {
@@ -289,7 +289,7 @@
 }
 
 .settings-page__theme-preview--dark .settings-page__theme-preview-bar {
-  background: #181F1B;
+  background: #1B1D20;
 }
 
 .settings-page__theme-preview--light .settings-page__theme-preview-bar {
@@ -302,7 +302,7 @@
 }
 
 .settings-page__theme-preview--dark .settings-page__theme-preview-content {
-  background: #131916;
+  background: #131517;
 }
 
 .settings-page__theme-preview--light .settings-page__theme-preview-content {
