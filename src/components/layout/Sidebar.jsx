@@ -113,19 +113,6 @@ export default function Sidebar() {
 
       <div className="sidebar__bottom">
         <div className="sidebar__divider" />
-        {bottomItems.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            className={({ isActive }) =>
-              `sidebar__link ${isActive ? 'sidebar__link--active' : ''}`
-            }
-            title={collapsed ? t(item.labelKey) : undefined}
-          >
-            <item.icon size={20} />
-            {!collapsed && <span>{t(item.labelKey)}</span>}
-          </NavLink>
-        ))}
 
         {user ? (
           <div className="sidebar__user">
@@ -153,6 +140,24 @@ export default function Sidebar() {
             )}
           </NavLink>
         )}
+
+        {/* Settings lives in its OWN section pinned to the very bottom
+            edge of the sidebar, clear of the profile block above it. */}
+        <div className="sidebar__settings">
+          {bottomItems.map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              className={({ isActive }) =>
+                `sidebar__link ${isActive ? 'sidebar__link--active' : ''}`
+              }
+              title={collapsed ? t(item.labelKey) : undefined}
+            >
+              <item.icon size={20} />
+              {!collapsed && <span>{t(item.labelKey)}</span>}
+            </NavLink>
+          ))}
+        </div>
       </div>
 
       <button

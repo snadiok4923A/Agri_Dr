@@ -22,6 +22,8 @@
   left: 0;
   top: 0;
   bottom: 0;
+  /* Full dynamic-viewport height (fallback: top/bottom) */
+  height: 100dvh;
   z-index: 201;
   width: min(280px, 84vw);
   display: flex;
@@ -166,6 +168,14 @@
   height: 1px;
   background: var(--border);
   margin: 8px 12px;
+}
+
+/* Pinned footer — Settings sits at the very bottom edge, clear of the
+   scrolling nav above. Safe-area padding keeps it off the screen edge. */
+.mobile-drawer__footer {
+  flex-shrink: 0;
+  margin-top: auto;
+  padding: 0 10px max(12px, env(safe-area-inset-bottom));
 }
 
 @media (max-width: 360px) {

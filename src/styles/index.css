@@ -32,15 +32,15 @@
 
 /* Dark Theme (Default) */
 [data-theme="dark"] {
-    --bg-primary: #090b0a;
-    --bg-secondary: #0d100f;
-    --bg-surface: #121514;
-    --bg-elevated: #151817;
-    --bg-hover: #1d211f;
-    --bg-active: #142326;
-    --text-primary: #f2f3f1;
-    --text-secondary: #c2c7c3;
-    --text-muted: #9aa09b;
+    --bg-primary: #08090a;
+    --bg-secondary: #0b0c0e;
+    --bg-surface: #111315;
+    --bg-elevated: #151719;
+    --bg-hover: #1b1d20;
+    --bg-active: #202429;
+    --text-primary: #f5f5f5;
+    --text-secondary: #a0a4aa;
+    --text-muted: #767b82;
     --accent: #22d3ee;
     --accent-soft: rgba(34, 211, 238, 0.1);
     --accent-hover: #06b6d4;
@@ -52,28 +52,28 @@
     --success-soft: rgba(74, 222, 128, 0.1);
     --info: #6bb8e8;
     --info-soft: rgba(107, 184, 232, 0.1);
-    --border: #2a2e2c;
-    --border-light: #1a1e1c;
+    --border: #292c30;
+    --border-light: #1e2124;
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
     --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
     --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
-    --sidebar-bg: #0d100f;
-    --sidebar-hover: #151917;
+    --sidebar-bg: #0a0b0c;
+    --sidebar-hover: #141619;
     --sidebar-active: rgba(34, 211, 238, 0.08);
     --sidebar-active-border: rgba(34, 211, 238, 0.2);
-    --header-bg: rgba(9, 11, 10, 0.92);
+    --header-bg: rgba(8, 9, 10, 0.92);
     --overlay: rgba(0, 0, 0, 0.7);
-    --chart-grid: #1a1e1c;
-    --chart-text: #737873;
+    --chart-grid: #1e2124;
+    --chart-text: #7a7f85;
     --green-50: #4ade80;
     --green-100: #166534;
     --green-200: #14532d;
-    --green-900: #090b0a;
-    --earth-100: #1c1b1a;
-    --earth-200: #141312;
-    /* Glassmorphism tokens (dark) — translucent so the aurora glows through */
-    --glass-bg: rgba(20, 25, 22, 0.35);
-    --glass-bg-strong: rgba(30, 35, 30, 0.42);
+    --green-900: #08090a;
+    --earth-100: #16181a;
+    --earth-200: #101214;
+    /* Glassmorphism tokens (dark) — neutral charcoal, translucent over the flat near-black page background (no green tint) */
+    --glass-bg: rgba(24, 27, 30, 0.55);
+    --glass-bg-strong: rgba(33, 37, 41, 0.6);
     --glass-border: rgba(255, 255, 255, 0.08);
     --glass-highlight:
         inset 0 1px 0 rgba(255, 255, 255, 0.07),
@@ -165,58 +165,15 @@ body {
 }
 
 /* ============================================================
-   ATMOSPHERIC GRADIENT BACKGROUND (dark theme)
-   Large, heavily-softened gold + leaf-green glows behind the glass
-   panels, with the faint seating vignette painted in the SAME layer.
-   Scoped to dark theme so the coffee light theme is untouched.
-
-   PERFORMANCE (this is the single most important rule on the page):
-   the aurora is STATIC. It used to run `auroraDrift` — a 22s loop
-   animating `filter: hue-rotate()` AND `background-position` on a
-   fixed, full-viewport layer. That forced a full-screen repaint on
-   every single frame, and worse: because the layer sits BEHIND every
-   `.card` / header / nav that uses `backdrop-filter`, a continuously
-   changing backdrop invalidates the blur cache, so every glass
-   surface on screen re-blurred every frame — the dashboard was
-   fighting the compositor while scrolling. A static layer is painted
-   once, cached, and lets every `backdrop-filter` result be reused.
-
-   The gradients, their geometry and their colors are byte-identical;
-   only the imperceptible ±3% drift is gone. The vignette that used to
-   be a separate `body::after` full-screen layer is folded in here as
-   the top-most backdrop layer (same paint order), so the page keeps
-   one full-viewport layer instead of two.
+   FLAT NEUTRAL BACKGROUND (dark theme)
+   A consistent, premium near-black surface (#08090A via
+   --bg-primary) painted by `body` itself. The old "aurora"
+   body::before layer — gold + leaf-green radial glows plus a forest
+   tint — was REMOVED entirely: those colored gradients were the source
+   of the green screen cast. No replacement overlay is painted, so the
+   page reads as a clean neutral dark-mode dashboard. Scoped to the
+   dark theme; the warm coffee light theme is untouched.
    ============================================================ */
-[data-theme="dark"] body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    z-index: -2;
-    pointer-events: none;
-    background:
-        /* vignette (was body::after) — paints above the glows below */
-        radial-gradient(
-            120rem 80rem at 50% 40%,
-            transparent 55%,
-            rgba(0, 0, 0, 0.28) 100%
-        ),
-        radial-gradient(
-            48rem 38rem at 10% -8%,
-            rgba(232, 184, 75, 0.17),
-            transparent 70%
-        ),
-        radial-gradient(
-            52rem 44rem at 98% 10%,
-            rgba(111, 207, 142, 0.13),
-            transparent 72%
-        ),
-        radial-gradient(
-            56rem 48rem at 50% 120%,
-            rgba(18, 53, 36, 0.6),
-            transparent 74%
-        ),
-        var(--bg-primary);
-}
 
 /* ============================================================
    TRUE GLASS PANELS (dark theme)
@@ -274,22 +231,23 @@ body {
     pointer-events: none;
 }
 
-/* Glass chrome: transparent sidebar, header and mobile nav (dark only) */
+/* Glass chrome: neutral dark-translucent sidebar, header and mobile
+   nav (dark only) — no green tint, blends into the near-black page. */
 [data-theme="dark"] .sidebar {
-    background: rgba(10, 15, 12, 0.4);
+    background: rgba(10, 11, 12, 0.55);
 }
 
 [data-theme="dark"] .header {
-    background: rgba(10, 15, 12, 0.3);
+    background: rgba(10, 11, 12, 0.35);
 }
 
 [data-theme="dark"] .mobile-nav {
-    background: rgba(10, 15, 12, 0.4);
+    background: rgba(10, 11, 12, 0.55);
 }
 
-/* Lighter, brighter glass on hover — soft lift, no flashy glow */
+/* Slightly lighter charcoal on hover — soft lift, no flashy glow */
 [data-theme="dark"] .dashboard-action-card:hover {
-    background: rgba(30, 35, 30, 0.38);
+    background: rgba(38, 42, 46, 0.42);
     border-color: rgba(255, 255, 255, 0.19);
     border-top-color: rgba(255, 255, 255, 0.23);
 }

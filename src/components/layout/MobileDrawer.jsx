@@ -90,7 +90,7 @@ export default function MobileDrawer({ open, onClose }) {
                     </div>
 
                     <div className="mobile-drawer__section">
-                        {[...subItems, ...bottomItems].map((item) => (
+                        {subItems.map((item) => (
                             <NavLink
                                 key={item.path}
                                 to={item.path}
@@ -103,6 +103,25 @@ export default function MobileDrawer({ open, onClose }) {
                         ))}
                     </div>
                 </nav>
+
+                {/* Settings pinned to the drawer's bottom edge — a separate
+                    section, clear of the scrolling nav above. */}
+                <div className="mobile-drawer__footer">
+                    <div className="mobile-drawer__divider" />
+                    <div className="mobile-drawer__section">
+                        {bottomItems.map((item) => (
+                            <NavLink
+                                key={item.path}
+                                to={item.path}
+                                className={subLinkClassFor(item.path)}
+                                onClick={onClose}
+                            >
+                                <item.icon size={18} />
+                                <span>{t(item.labelKey)}</span>
+                            </NavLink>
+                        ))}
+                    </div>
+                </div>
             </aside>
         </>
     );

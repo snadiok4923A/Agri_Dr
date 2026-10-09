@@ -3,6 +3,10 @@
     left: 0;
     top: 0;
     bottom: 0;
+    /* Full dynamic-viewport height so the panel stays edge-to-edge even
+       when mobile browser chrome resizes. top/bottom act as a fallback
+       where dvh is unsupported. */
+    height: 100dvh;
     width: var(--sidebar-width);
     /* Translucent glass panel floating over the aurora background */
     background: color-mix(in srgb, var(--sidebar-bg) 72%, transparent);
@@ -51,6 +55,9 @@
 
 .sidebar__nav {
     flex: 1;
+    /* Let the nav shrink below its content so it SCROLLS independently
+       when items are tall, while the footer stays pinned at the bottom. */
+    min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
     padding: 0 10px;
@@ -119,8 +126,20 @@
     margin: 8px 12px;
 }
 
+/* Pinned footer: the nav above grows/shrinks, this stays glued to the
+   bottom edge. margin-top:auto guarantees it (belt-and-suspenders with
+   the nav's flex:1), and safe-area padding keeps Settings off the screen
+   edge / home-indicator. */
 .sidebar__bottom {
-    padding: 0 10px 12px;
+    flex-shrink: 0;
+    margin-top: auto;
+    padding: 0 10px max(12px, env(safe-area-inset-bottom));
+}
+
+/* Settings section — the very last item, comfortably clear of the
+   profile block above it. */
+.sidebar__settings {
+    margin-top: 6px;
 }
 
 .sidebar__user {
