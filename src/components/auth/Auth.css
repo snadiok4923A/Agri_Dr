@@ -144,26 +144,19 @@
    medium frosted blur so the rice field stays recognizable
    through the panel, thin glass border, soft diffused shadow
    and a faint top-edge highlight for the premium glass read. */
-/* Frosted-glass card: the panel's transform now releases at rest
-   (fill-mode backwards), so this backdrop-filter actually renders —
-   the photo behind the card is genuinely blurred while everything
-   painted INSIDE the card stays perfectly sharp (backdrop-filter
-   never touches an element's own content). The inputs'/Google
-   button's blur sits inside this backdrop root and samples the
-   already-frosted card surface — control surfaces read slightly
-   deeper-frosted than the panel, which is the intended premium
-   layering. Tint stays low-alpha: image recognizable, softly muted.
-   Blur is deliberately LIGHTER than the inner controls' 20px — the
-   panel is a subtle frost, the fields are the strong frost. */
 .auth-card {
     width: min(412px, 100%);
-    /* Solid near-black sign-in card — no frosted translucent fill */
-    background: var(--bg-surface);
-    border: 1px solid var(--border);
+    /* Translucent dark glass over the agricultural slideshow — the
+       photo stays clearly recognizable through the panel, read as a
+       premium frosted surface, never a solid opaque rectangle. */
+    background: rgba(8, 9, 10, 0.76);
+    -webkit-backdrop-filter: blur(20px) saturate(125%);
+    backdrop-filter: blur(20px) saturate(125%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 26px;
     padding: 34px 32px 30px;
     box-sizing: border-box;
-    box-shadow: 0 24px 60px rgba(4, 8, 16, 0.38);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
 }
 
 .auth-card__head {
