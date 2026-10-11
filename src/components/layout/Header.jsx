@@ -182,6 +182,11 @@ export default memo(function Header({ onMenuToggle }) {
     setAccountError('');
     try {
       await signOut(); // EXISTING Supabase logout — unchanged
+      // Close BOTH layers first (confirm dialog + profile window), then
+      // land on the public page. navigate() is basename-aware — the app
+      // lives under /Agri_Dr, so a raw window.location.href = '/login'
+      // would 404 outside dev. ProtectedRoute re-guards every protected
+      // URL (Back button / direct entry) once the session is null.
       setConfirmSignOut(false);
       setPanelOpen(false);
       navigate('/login'); // spec §11: land on the public page after logout
@@ -853,6 +858,12 @@ export default memo(function Header({ onMenuToggle }) {
                 <p className="profile-modal__confirm-text">
                   {t("common.profile.signOutConfirmText")}
                 </p>
+                {/* Sign-out failure surfaces HERE: the profile card's own
+                    error line sits behind this layer's blurred backdrop
+                    and is unreadable while the confirm dialog is open. */}
+                {accountError && (
+                  <p className="profile-modal__error">{accountError}</p>
+                )}
                 <div className="profile-modal__confirm-actions">
                   <button
                     className="profile-modal__pill profile-modal__pill--ghost"

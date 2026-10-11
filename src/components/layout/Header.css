@@ -667,6 +667,14 @@
 .profile-modal__confirm-dialog {
   position: relative;
   z-index: 1;
+  /* The portal above is `pointer-events: none` and each layer opts back
+     in individually (backdrop + overlay already do). This dialog never
+     did, so the whole confirm card — buttons included — was click-
+     transparent: real mouse clicks fell through to the backdrop, whose
+     handler only closed the dialog. Sign Out therefore NEVER ran for a
+     real click (programmatic .click() and keyboard input bypass
+     hit-testing, which is why scripted tests appeared to pass). */
+  pointer-events: auto;
   width: min(320px, calc(100vw - 48px));
   text-align: center;
   padding: 22px 20px 18px;
@@ -757,6 +765,18 @@
   font-size: 12px;
   color: #fecaca;
   text-align: center;
+}
+
+/* Inside the sign-out confirm dialog the card's 20px side padding would
+   eat a third of the 320px card — inherit the dialog's own padding
+   instead, and darken the text on light glass so a failure stays
+   readable there too (same ink as the light-theme sign-out hover). */
+.profile-modal__confirm-dialog .profile-modal__error {
+  padding: 0 0 14px;
+}
+
+[data-theme="light"] .profile-modal__confirm-dialog .profile-modal__error {
+  color: #b91c1c;
 }
 
 /* --- Editor over the photo ------------------------------------------ */
