@@ -36,10 +36,12 @@
     flex-direction: column;
     gap: 16px;
     padding: 22px 20px 18px;
-    background: var(--bg-surface);
-    border: 1px solid var(--border);
+    background: rgba(12, 13, 15, 0.72);
+    -webkit-backdrop-filter: blur(18px) saturate(125%);
+    backdrop-filter: blur(18px) saturate(125%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 20px;
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.40);
 }
 
 .ppe__card--error {
@@ -196,10 +198,14 @@
 }
 
 [data-theme="light"] .ppe__card {
-    background: rgba(255, 255, 255, 0.74);
-    border-color: rgba(41, 38, 31, 0.1);
+    background: rgba(255, 255, 255, 0.72);
+    -webkit-backdrop-filter: blur(22px) saturate(135%);
+    backdrop-filter: blur(22px) saturate(135%);
+    border: 1px solid rgba(41, 38, 31, 0.1);
     border-top-color: rgba(255, 255, 255, 0.85);
-    box-shadow: 0 24px 60px rgba(41, 38, 31, 0.18);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.6),
+      0 24px 60px rgba(41, 38, 31, 0.18);
 }
 
 [data-theme="light"] .ppe__stage {
