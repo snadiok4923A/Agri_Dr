@@ -137,60 +137,7 @@
 /* Settings section — the very last item, comfortably clear of the
    profile block above it. */
 .sidebar__settings {
-    margin-top: 6px;
-}
-
-.sidebar__user {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    margin-top: 4px;
-}
-
-/* Logged-out variant: the block is a sign-in LINK (no fake profile). */
-.sidebar__user--signin {
-    text-decoration: none;
-    color: inherit;
-    cursor: pointer;
-}
-
-.sidebar--collapsed .sidebar__user {
-    justify-content: center;
-    padding: 10px;
-}
-
-.sidebar__avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: var(--radius-full);
-    background: var(--bg-elevated);
-    border: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-muted);
-    flex-shrink: 0;
-}
-
-.sidebar__user-info {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-}
-
-.sidebar__user-name {
-    font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
-    font-weight: 600;
-    color: var(--text-primary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.sidebar__user-role {
-    font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
-    color: var(--text-muted);
+    margin-top: 8px;
 }
 
 .sidebar__toggle {

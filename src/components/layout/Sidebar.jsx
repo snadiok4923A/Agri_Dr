@@ -111,38 +111,10 @@ export default function Sidebar() {
         </div>
       </nav>
 
+      {/* Desktop sidebar no longer shows the bottom profile/name row.
+          The top-right header avatar and all account functionality
+          remain intact; only this sidebar footer block is removed. */}
       <div className="sidebar__bottom">
-        <div className="sidebar__divider" />
-
-        {user ? (
-          <div className="sidebar__user">
-            <div className="sidebar__avatar">
-              <User size={18} />
-            </div>
-            {!collapsed && (
-              <div className="sidebar__user-info">
-                <span className="sidebar__user-name">{displayName}</span>
-                {displayRole && <span className="sidebar__user-role">{displayRole}</span>}
-              </div>
-            )}
-          </div>
-        ) : (
-          /* LOGGED OUT (incl. "Skip for now") — sign-in link instead of a
-             profile; there is no account to show. */
-          <NavLink to="/login" className="sidebar__user sidebar__user--signin">
-            <div className="sidebar__avatar">
-              <User size={18} />
-            </div>
-            {!collapsed && (
-              <div className="sidebar__user-info">
-                <span className="sidebar__user-name">{t('nav.login')}</span>
-              </div>
-            )}
-          </NavLink>
-        )}
-
-        {/* Settings lives in its OWN section pinned to the very bottom
-            edge of the sidebar, clear of the profile block above it. */}
         <div className="sidebar__settings">
           {bottomItems.map((item) => (
             <NavLink
