@@ -75,7 +75,7 @@ export default function OnboardingWizard() {
     );
     const [parcels, setParcels] = useState(() =>
         Array.from({ length: count }, (_, i) =>
-            parcelFromDraft(farm.parcels[i], "acre"),
+            parcelFromDraft(farm.parcels[i], "bigha"),
         ),
     );
     const [errors, setErrors] = useState({});
@@ -87,7 +87,7 @@ export default function OnboardingWizard() {
         setCount(clamped);
         setParcels((prev) => {
             const merged = Array.from({ length: clamped }, (_, i) =>
-                prev[i] ? { ...prev[i] } : parcelFromDraft(farm.parcels[i], "acre"),
+                prev[i] ? { ...prev[i] } : parcelFromDraft(farm.parcels[i], "bigha"),
             );
             return merged;
         });
