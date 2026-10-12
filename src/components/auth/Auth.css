@@ -500,6 +500,56 @@
 
 
 
+/* ---------- language-gate Continue button ---------- */
+
+/* Inside the auth glass card, below the language grid. Keeps the same
+   premium feel as auth-btn--primary but does not open a new feature set
+   — it is scoped to the first-time language screen only. */
+.obw-lang-continue {
+    width: 100%;
+    height: 48px;
+    margin-top: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    font-size: 14.5px;
+    font-weight: 600;
+    font-family: inherit;
+    color: #fff;
+    background: linear-gradient(135deg, #4f46e5 0%, #2563eb 46%, #06b6d4 100%);
+    box-shadow: 0 10px 26px rgba(37, 99, 235, 0.3);
+    border: 1px solid transparent;
+    border-radius: 13px;
+    cursor: pointer;
+    transition: filter 160ms ease, transform 160ms ease, background 160ms ease,
+        border-color 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
+}
+
+.obw-lang-continue:not(:disabled):hover {
+    filter: brightness(1.12);
+    transform: translateY(-1px);
+    box-shadow: 0 12px 30px rgba(37, 99, 235, 0.38);
+}
+
+.obw-lang-continue:not(:disabled):active {
+    transform: translateY(0);
+    filter: brightness(1.04);
+}
+
+.obw-lang-continue:focus-visible {
+    outline: 2px solid rgba(56, 189, 248, 0.7);
+    outline-offset: 2px;
+}
+
+.obw-lang-continue:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+    filter: none;
+    box-shadow: 0 10px 26px rgba(37, 99, 235, 0.18);
+}
+
 /* ---------- external "Skip for now" (below the card) ---------- */
 
 /* Independent control OUTSIDE the glass window (belowCard slot), per the

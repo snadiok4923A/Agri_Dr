@@ -552,6 +552,7 @@ export const translations = {
             language: {
                 title: "Choose your language",
                 subtitle: "You can change this anytime in Settings.",
+                continue: "Continue",
             },
             auth: {
                 title: "Sign in to set up your farm",
@@ -1166,6 +1167,7 @@ export const translations = {
             language: {
                 title: "আপনার ভাষা বেছে নিন",
                 subtitle: "আপনি যেকোনো সময় সেটিংসে এটি পরিবর্তন করতে পারবেন।",
+                continue: "চালিয়ে যান",
             },
             auth: {
                 title: "আপনার খামার সেট আপ করতে সাইন ইন করুন",
@@ -1750,6 +1752,7 @@ export const translations = {
             language: {
                 title: "अपनी भाषा चुनें",
                 subtitle: "आप इसे कभी भी सेटिंग्स में बदल सकते हैं।",
+                continue: "जारी रखें",
             },
             auth: {
                 title: "अपना खेत सेट करने के लिए साइन इन करें",
@@ -2334,6 +2337,7 @@ export const translations = {
             language: {
                 title: "మీ భాషను ఎంచుకోండి",
                 subtitle: "దీన్ని ఎప్పుడైనా సెట్టింగ్స్‌లో మార్చుకోవచ్చు.",
+                continue: "కొనసాగించండి",
             },
             auth: {
                 title: "మీ పొలాన్ని సిద్ధం చేయడానికి సైన్ ఇన్ చేయండి",
@@ -2918,6 +2922,7 @@ export const translations = {
             language: {
                 title: "உங்கள் மொழியைத் தேர்ந்தெடுக்கவும்",
                 subtitle: "இதை எப்போது வேண்டுமானாலும் அமைப்புகளில் மாற்றலாம்.",
+                continue: "தொடரவும்",
             },
             auth: {
                 title: "உங்கள் பண்ணையை அமைக்க உள்நுழையுங்கள்",

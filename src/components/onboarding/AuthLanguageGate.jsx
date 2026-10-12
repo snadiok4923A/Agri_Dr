@@ -24,22 +24,25 @@ import { useLanguage } from "../../hooks/useLanguage";
 export default function AuthLanguageGate({ children }) {
     const { t, language, changeLanguage, languages } = useLanguage();
 
-    // Language already selected (previous visit or previous pick in this
-    // session) → continue to authentication without re-asking.
+    // Language already persisted (previous visit) → skip straight to auth.
     if (localStorage.getItem("krisiveda-lang")) return children;
 
-    const pick = (code) => {
-        // Persist via the existing system, then reveal the auth window.
+    const select = (code) => {
+        // Persist via the EXISTING language system so Settings/Header stay
+        // in sync — no second language state anywhere.
         changeLanguage(code);
     };
+
+    // Never block on the default: English is pre-selected on first paint.
+    const canProceed = languages.some((l) => l.code === language);
 
     return (
         <AuthLayout
             title={t("onboarding.language.title")}
             subtitle={t("onboarding.language.subtitle")}
         >
-            {/* Selecting a language IS the continue action — no extra
-                Next button, and deliberately NO skip anywhere here. */}
+            {/* Picking a language only updates the selection — the user
+                must still confirm with Continue (no immediate navigation). */}
             <div
                 className="obw-lang-grid"
                 role="listbox"
@@ -52,7 +55,7 @@ export default function AuthLanguageGate({ children }) {
                         role="option"
                         aria-selected={language === l.code}
                         className={`obw-lang ${language === l.code ? "obw-lang--active" : ""}`}
-                        onClick={() => pick(l.code)}
+                        onClick={() => select(l.code)}
                     >
                         <span className="obw-lang__flag" aria-hidden="true">
                             {l.flag}
@@ -62,6 +65,20 @@ export default function AuthLanguageGate({ children }) {
                     </button>
                 ))}
             </div>
+
+            <button
+                type="button"
+                className="obw-lang-continue"
+                onClick={() => {
+                    // Persist + reveal the auth window the same way the old
+                    // single-pick path did, but only after an explicit
+                    // Continue — never on the language tap itself.
+                    select(language);
+                }}
+                disabled={!canProceed}
+            >
+                {t("onboarding.language.continue")}
+            </button>
         </AuthLayout>
     );
 }
