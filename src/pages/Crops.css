@@ -381,6 +381,10 @@
   }
 }
 
+/* Translucent dark glass — the blurred crop grid behind the modal
+   visibly glows through the panel. The panel surface itself stays
+   moderately transparent so the page behind it is recognizable, while
+   text/metrics remain readable on the darker frosted surface. */
 .crops-page__modal {
   position: relative;
   width: min(520px, 100%);
@@ -390,9 +394,7 @@
   flex-direction: column;
   gap: 18px;
   padding: 24px;
-  /* Translucent dark glass — the blurred crop grid glows through the
-     panel, reading as a clean premium dark surface, never a solid void. */
-  background: rgba(12, 13, 15, 0.72);
+  background: rgba(10, 10, 10, 0.60);
   -webkit-backdrop-filter: blur(18px) saturate(125%);
   backdrop-filter: blur(18px) saturate(125%);
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -413,7 +415,8 @@
   }
 }
 
-/* Scrollable content area — the bottom nav row stays visible while this scrolls */
+/* Scrollable content area — the bottom nav row stays visible while this scrolls.
+   Keep alpha OUT of this wrapper so the panel glass shows through it. */
 .crops-page__modal-body {
   display: flex;
   flex-direction: column;
@@ -429,7 +432,7 @@
   justify-content: space-between;
   gap: 12px;
   padding-top: 14px;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
   flex-shrink: 0;
 }
 
@@ -441,15 +444,15 @@
   height: 34px;
   border-radius: 50%;
   color: var(--text-secondary);
-  background: var(--bg-hover);
-  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   cursor: pointer;
   transition: all var(--transition-fast);
 }
 
 .crops-page__nav-btn:hover:not(:disabled) {
   color: var(--text-primary);
-  background: var(--bg-active);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .crops-page__nav-btn:disabled {
@@ -462,8 +465,8 @@
   height: 36px;
   border-radius: var(--radius-full, 999px);
   color: var(--text-secondary);
-  background: var(--bg-hover);
-  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.02em;
@@ -473,7 +476,7 @@
 
 .crops-page__nav-close:hover {
   color: var(--text-primary);
-  background: var(--bg-active);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .crops-page__modal-head {
@@ -512,8 +515,8 @@
   flex-direction: column;
   gap: 2px;
   padding: 10px 8px;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--radius-md);
   min-width: 0;
 }
@@ -553,8 +556,8 @@
   flex-direction: column;
   gap: 8px;
   padding: 14px;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--radius-md);
 }
 
@@ -615,8 +618,8 @@
   color: var(--text-secondary);
   background: linear-gradient(
     135deg,
-    rgba(111, 207, 142, 0.14),
-    rgba(232, 184, 75, 0.1)
+    rgba(111, 207, 142, 0.16),
+    rgba(232, 184, 75, 0.12)
   );
   border: 1px solid rgba(111, 207, 142, 0.35);
   border-radius: var(--radius-md);
