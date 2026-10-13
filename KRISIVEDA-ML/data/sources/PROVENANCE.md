@@ -25,6 +25,13 @@ Reviewed: 2026-10-13
 This is aggregate regional/state statistics. It is **not** an individual farm
 harvest dataset and is not eligible for farm-level supervised training.
 
+The publication's rice table was inspected. Table 2.4(b) on PDF page 80
+explicitly reports West Bengal and All India rice area, production, yield, and
+irrigation coverage for 2023-24 and 2024-25. The extracted aggregate rows are
+preserved separately in `data/regional_rice_statistics.csv`; details and the
+yield consistency check are in `data/regional_rice_statistics.md`. They are
+not copied into the farm-level training CSV.
+
 ## Official data.gov.in source
 
 - **Catalog:** <https://www.data.gov.in/catalog/district-wise-season-wise-crop-production-statistics-0>

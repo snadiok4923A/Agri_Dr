@@ -7,6 +7,12 @@ District-level averages may be stored separately for future district-level
 analysis, but they must not be mixed into this file or used as individual-farm
 ground truth.
 
+The official aggregate extraction from *Agricultural Statistics at a Glance,
+2024-25* is stored separately in
+[regional_rice_statistics.csv](regional_rice_statistics.csv) with its
+documentation in [regional_rice_statistics.md](regional_rice_statistics.md).
+It is not eligible for this farm-level training contract.
+
 ## Required columns
 
 | Column | Type | Required value |
