@@ -37,6 +37,12 @@ def test_validator_reports_missing_columns() -> None:
     assert report.issues[0].code == "missing_columns"
 
 
+def test_validator_rejects_empty_template() -> None:
+    report = validate_dataframe(pd.DataFrame(columns=["record_id"]))
+    assert report.valid is False
+    assert any(issue.code == "empty_dataset" for issue in report.issues)
+
+
 def test_validator_rejects_duplicates_units_and_unverified_rows() -> None:
     rows = [valid_row("same", 2023, "kharif"), valid_row("same", 2023, "kharif")]
     rows[1]["target_yield_unit"] = "kg_per_hectare"

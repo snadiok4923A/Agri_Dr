@@ -95,6 +95,8 @@ def _issue(code: str, message: str, rows: list[int] | None = None) -> Validation
 
 def validate_dataframe(frame: pd.DataFrame, path: str = "<dataframe>") -> DatasetValidation:
     issues: list[ValidationIssue] = []
+    if frame.empty:
+        issues.append(_issue("empty_dataset", "The dataset contains no harvest records."))
     missing_columns = [column for column in REQUIRED_COLUMNS if column not in frame.columns]
     if missing_columns:
         issues.append(_issue("missing_columns", f"Missing required columns: {missing_columns}"))
