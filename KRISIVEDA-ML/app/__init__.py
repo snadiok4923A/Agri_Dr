@@ -1,0 +1,1 @@
+"""Krisiveda yield prediction service."""
