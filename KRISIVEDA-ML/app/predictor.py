@@ -20,9 +20,18 @@ BASELINE_PATH = SERVICE_ROOT / "data" / "verified_baseline.csv"
 
 
 def _trained_model_available() -> bool:
-    # An artifact alone is not enough: a future pipeline must also mark it as
-    # trained from verified harvest records before it can be served.
-    return MODEL_PATH.is_file() and (MODEL_PATH.with_suffix(".verified")).is_file()
+    # Phase 2 writes artifacts for auditability, but serving is intentionally
+    # disabled until a reviewed inference adapter is implemented.
+    metadata_path = MODEL_PATH.with_suffix(".metadata.json")
+    if not MODEL_PATH.is_file() or not metadata_path.is_file():
+        return False
+    try:
+        import json
+
+        metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return False
+    return metadata.get("serving_supported") is True and (MODEL_PATH.with_suffix(".verified")).is_file()
 
 
 def _verified_baseline_available() -> bool:
