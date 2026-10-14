@@ -50,11 +50,43 @@ The API is then available at `http://127.0.0.1:8000`.
 - `GET /health`
 - `GET /model/status`
 - `POST /predict`
+- `GET /regional-baseline`
+- `POST /regional-baseline/estimate`
 
 The request accepts optional farm area, area unit, crop, rice variety, growth
 stage, weather data, fertilizer history, and medicine history. Unknown fields
 are rejected. Optional values remain absent rather than being filled with
 defaults.
+
+## Phase 5 regional baseline
+
+The regional endpoints are separate from `/predict` and do not activate the
+farm-specific ML `baseline` mode. They use only the verified aggregate rows in
+[data/regional_rice_statistics.csv](data/regional_rice_statistics.csv).
+
+`GET /regional-baseline` returns the latest explicitly reported West Bengal
+rice statistic. The current reference is **2,865 kg/hectare for 2024-25** and
+is labeled as a **state-level historical statistic, not a farm-specific
+prediction**. The source is the official publication documented in
+[data/regional_rice_statistics.md](data/regional_rice_statistics.md).
+
+`POST /regional-baseline/estimate` accepts:
+
+```json
+{"farm_area": 1, "area_unit": "hectare"}
+```
+
+`farm_area` and `area_unit` are optional together. If area is provided, only
+`hectare` and `acre` are accepted because their conversions are explicit. The
+response may contain an `illustrative_production_tonnes` value calculated from
+the latest state statistic. It is always labeled **illustrative regional
+estimate, not expected or guaranteed farm production**. Missing area produces
+no quantity. The calculation does not adjust for variety, growth stage,
+weather, fertilizer, or medicine.
+
+This regional reference is not farm-level ground truth, does not provide an
+accuracy metric, and does not change `/model/status` or `/predict`, which
+remain `unavailable` for farm-specific ML inference.
 
 ## Tests
 
