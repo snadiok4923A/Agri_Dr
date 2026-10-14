@@ -27,9 +27,13 @@ app = FastAPI(
 
 cors_origins = [
     origin.strip()
-    for origin in os.getenv("KRISIVEDA_ML_CORS_ORIGINS", "http://localhost:5173").split(",")
+    for origin in os.getenv("KRISIVEDA_ML_CORS_ORIGINS", "").split(",")
     if origin.strip()
 ]
+if "*" in cors_origins:
+    raise RuntimeError(
+        "KRISIVEDA_ML_CORS_ORIGINS must contain explicit frontend origins, not '*'."
+    )
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,

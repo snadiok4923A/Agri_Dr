@@ -45,6 +45,14 @@ uvicorn app.main:app --reload
 
 The API is then available at `http://127.0.0.1:8000`.
 
+For a production-style local run, bind to all interfaces and use the hosting
+platform's port:
+
+```powershell
+$env:PORT = "8000"
+uvicorn app.main:app --host 0.0.0.0 --port $env:PORT
+```
+
 ## Endpoints
 
 - `GET /health`
@@ -91,8 +99,67 @@ remain `unavailable` for farm-specific ML inference.
 For browser deployments, configure the frontend build variable
 `VITE_KRISIVEDA_ML_API_URL` with the deployed FastAPI base URL. Configure the
 FastAPI service variable `KRISIVEDA_ML_CORS_ORIGINS` with a comma-separated
-list containing the deployed frontend origin. The local default allows
-`http://localhost:5173`; production origins must be configured explicitly.
+list containing only the deployed frontend origin. This service rejects `*`
+and has no permissive default; production origins must be configured
+explicitly.
+
+## Phase 7: Render deployment
+
+The service can be deployed as a Render Web Service using the included
+[render.yaml](render.yaml). The repository root remains the Git repository
+root; the Render service's **Root Directory** is `KRISIVEDA-ML`.
+
+### Manual Render setup
+
+1. Push this repository to GitHub and create a new **Web Service** in Render.
+2. Select the repository and branch. Do not use a separate repository for the
+   Python service.
+3. Set **Root Directory** to `KRISIVEDA-ML`.
+4. Select the Python runtime. The checked-in `runtime.txt` requests Python
+   3.13.5.
+5. Set the build command to:
+
+   ```text
+   pip install -r requirements.txt
+   ```
+
+6. Set the start command to:
+
+   ```text
+   uvicorn app.main:app --host 0.0.0.0 --port $PORT
+   ```
+
+7. Add the environment variable
+   `KRISIVEDA_ML_CORS_ORIGINS` with the exact deployed frontend origin, for
+   example `https://your-frontend.example` (replace this with the real origin;
+   no deployment URL is assumed here).
+8. Add a health check path of `/health`.
+9. Deploy manually and verify the generated Render service URL with:
+
+   ```text
+   GET /health
+   GET /regional-baseline
+   POST /regional-baseline/estimate
+   GET /model/status
+   ```
+
+The service resolves the regional CSV from `Path(__file__)`, so it does not
+depend on Render's current working directory. The source CSV must remain
+present at `KRISIVEDA-ML/data/regional_rice_statistics.csv`.
+
+### Free-tier limitations
+
+Free hosting availability, quotas, sleep behavior, cold-start latency, and
+monthly usage limits depend on the provider and current plan. The service is
+stateless and reads its bundled CSV on each request; it does not provide a
+database, background jobs, persistent model storage, or guaranteed uptime.
+Do not treat free hosting as a production SLA. The frontend must be built with
+`VITE_KRISIVEDA_ML_API_URL` set to the actual service URL after deployment.
+
+The `/predict` endpoint remains `unavailable` until a real farm-level harvest
+dataset has been verified, evaluated with a leakage-aware split, and paired
+with a reviewed serving adapter. The regional baseline does not change that
+status.
 
 ## Tests
 

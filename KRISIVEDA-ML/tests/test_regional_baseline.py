@@ -8,6 +8,7 @@ from fastapi.testclient import TestClient
 from app.main import app
 from app.regional_baseline import (
     RegionalBaselineUnavailableError,
+    REGIONAL_STATISTICS_PATH,
     convert_area_to_hectares,
     estimate_regional_production,
     latest_west_bengal_statistic,
@@ -17,6 +18,8 @@ client = TestClient(app)
 
 
 def test_latest_reference_preserves_reported_west_bengal_value() -> None:
+    assert REGIONAL_STATISTICS_PATH.is_absolute()
+    assert REGIONAL_STATISTICS_PATH.is_file()
     statistic = latest_west_bengal_statistic()
     assert statistic.reporting_period == "2024-25"
     assert statistic.yield_kg_per_hectare == 2865
