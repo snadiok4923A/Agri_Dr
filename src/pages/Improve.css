@@ -23,6 +23,72 @@
   gap: 20px;
 }
 
+.improve-page__regional-reference {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.improve-page__regional-yield {
+  font-size: clamp(max(min(calc(28px * var(--ts-heading, 1)), 36px), 16px), 4vw, calc(38px * var(--ts-heading, 1)));
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.03em;
+}
+
+.improve-page__regional-label,
+.improve-page__regional-meta,
+.improve-page__regional-weather {
+  color: var(--text-muted);
+  font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
+  line-height: 1.5;
+}
+
+.improve-page__regional-label {
+  color: var(--gold);
+  font-weight: 700;
+}
+
+.improve-page__regional-status {
+  color: var(--text-secondary);
+  font-size: min(max(calc(14px * var(--ts-body, 1)), 9px), 24px);
+}
+
+.improve-page__regional-status--error {
+  color: var(--danger);
+}
+
+.improve-page__regional-status button {
+  margin-top: 10px;
+  padding: 7px 14px;
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  font: inherit;
+}
+
+.improve-page__regional-estimate {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  color: var(--leaf);
+  background: var(--leaf-soft);
+  border-radius: var(--radius-md);
+}
+
+.improve-page__regional-estimate strong {
+  font-size: min(max(calc(18px * var(--ts-mid, 1)), 11px), 28px);
+}
+
+.improve-page__regional-estimate span {
+  color: var(--text-secondary);
+  font-size: min(max(calc(12px * var(--ts-small, 1)), 9px), 20px);
+  line-height: 1.4;
+}
+
 .improve-page__ai-pill {
   display: inline-flex;
   align-items: center;

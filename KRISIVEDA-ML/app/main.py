@@ -1,7 +1,10 @@
 """FastAPI application for Krisiveda yield prediction."""
 
+import os
+
 from fastapi import FastAPI
 from fastapi import HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
 from .predictor import get_model_status, predict
 from .regional_baseline import (
@@ -20,6 +23,19 @@ app = FastAPI(
     title="Krisiveda ML Service",
     version="0.1.0",
     description="Transparent paddy yield prediction service; no model is active yet.",
+)
+
+cors_origins = [
+    origin.strip()
+    for origin in os.getenv("KRISIVEDA_ML_CORS_ORIGINS", "http://localhost:5173").split(",")
+    if origin.strip()
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=cors_origins,
+    allow_credentials=False,
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type"],
 )
 
 

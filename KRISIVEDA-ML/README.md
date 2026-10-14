@@ -88,6 +88,12 @@ This regional reference is not farm-level ground truth, does not provide an
 accuracy metric, and does not change `/model/status` or `/predict`, which
 remain `unavailable` for farm-specific ML inference.
 
+For browser deployments, configure the frontend build variable
+`VITE_KRISIVEDA_ML_API_URL` with the deployed FastAPI base URL. Configure the
+FastAPI service variable `KRISIVEDA_ML_CORS_ORIGINS` with a comma-separated
+list containing the deployed frontend origin. The local default allows
+`http://localhost:5173`; production origins must be configured explicitly.
+
 ## Tests
 
 ```powershell

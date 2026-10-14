@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { useEffect, useMemo, useState } from "react";
+import { useReducedMotion } from "framer-motion";
 import { useLanguage } from "../hooks/useLanguage";
-import { farmData, fields, recommendations } from "../data/mockData";
+import { fields, recommendations } from "../data/mockData";
 import {
     Sparkles,
     Wheat,
@@ -15,9 +15,14 @@ import {
     Activity,
     ArrowRight,
 } from "lucide-react";
-import AnimatedNumber from "../components/common/AnimatedNumber";
 import EmptyFarmNotice from "../components/onboarding/EmptyFarmNotice";
 import { useOnboarding } from "../hooks/useOnboarding";
+import { useWeather } from "../hooks/useWeather";
+import {
+    estimateRegionalBaseline,
+    fetchRegionalBaseline,
+    isRegionalBaselineApiConfigured,
+} from "../services/regionalBaselineService";
 import "./Improve.css";
 
 // Staggered fade-up reveal (same pattern as the Dashboard)
@@ -31,16 +36,14 @@ const sectionVariants = {
 };
 
 /*
- * Compact display forms derived from the REAL recommendation data in
- * mockData.js. When a future AI/API replaces `recommendations`, extend
- * this map (or read these fields from the API response) — nothing else
- * in the page needs to change.
+ * The action cards are general guidance from the existing content library.
+ * Their static impact values are intentionally not shown as farmer-specific
+ * yield or profit predictions.
  */
 const ACTION_META = {
     1: {
         icon: Bug,
         short: "Leaf Blast Treatment",
-        value: "+0.50T",
         tone: "danger",
         urgency: "Action Now",
         tags: ["protection", "yield"],
@@ -48,7 +51,6 @@ const ACTION_META = {
     2: {
         icon: TrendingDown,
         short: "Production Recovery",
-        value: "+0.50T",
         tone: "danger",
         urgency: "Action Now",
         tags: ["production", "yield"],
@@ -56,7 +58,6 @@ const ACTION_META = {
     3: {
         icon: FlaskConical,
         short: "Urea Top-Dressing",
-        value: "+0.25T",
         tone: "leaf",
         urgency: "This Week",
         tags: ["growth", "production", "yield"],
@@ -64,7 +65,6 @@ const ACTION_META = {
     4: {
         icon: TrendingUp,
         short: "Better Price Window",
-        value: "+₹18K",
         tone: "gold",
         urgency: "Good Time",
         tags: ["profit"],
@@ -72,7 +72,6 @@ const ACTION_META = {
     5: {
         icon: Activity,
         short: "DAP Subsidy",
-        value: "+₹1.2K",
         tone: "info",
         urgency: "Save Now",
         tags: ["profit"],
@@ -96,9 +95,70 @@ const URGENCY_KEY = {
 
 export default function Improve() {
     const { t, formatNumber } = useLanguage();
-    const { isFarmComplete } = useOnboarding();
+    const { farm, isFarmComplete } = useOnboarding();
+    const { phase: weatherPhase } = useWeather();
     const shouldReduceMotion = useReducedMotion();
     const [goal, setGoal] = useState("all");
+    const [regionalReference, setRegionalReference] = useState(null);
+    const [regionalEstimate, setRegionalEstimate] = useState(null);
+    const [regionalState, setRegionalState] = useState("loading");
+    const [regionalError, setRegionalError] = useState("");
+
+    const farmAreaInput = useMemo(() => {
+        const parcels = Array.isArray(farm?.parcels) ? farm.parcels : [];
+        if (!parcels.length) return { status: "missing" };
+        const validParcels = parcels.filter((parcel) => {
+            const area = Number(parcel?.area);
+            return Number.isFinite(area) && area > 0 && typeof parcel?.unit === "string";
+        });
+        if (!validParcels.length) return { status: "invalid" };
+        const units = new Set(validParcels.map((parcel) => parcel.unit));
+        if (units.size !== 1 || !["acre", "hectare"].includes(validParcels[0].unit)) {
+            return { status: "invalid", unit: validParcels[0].unit };
+        }
+        return {
+            status: "valid",
+            area: validParcels.reduce((sum, parcel) => sum + Number(parcel.area), 0),
+            unit: validParcels[0].unit,
+        };
+    }, [farm]);
+
+    const loadRegionalBaseline = async () => {
+        setRegionalState("loading");
+        setRegionalError("");
+        setRegionalReference(null);
+        setRegionalEstimate(null);
+        if (!isRegionalBaselineApiConfigured()) {
+            setRegionalState("error");
+            setRegionalError("Regional baseline API is not configured.");
+            return;
+        }
+        try {
+            const reference = await fetchRegionalBaseline();
+            setRegionalReference(reference);
+            if (farmAreaInput.status === "missing") {
+                setRegionalState("ready");
+                return;
+            }
+            if (farmAreaInput.status === "invalid") {
+                setRegionalState("invalid-area");
+                return;
+            }
+            const estimate = await estimateRegionalBaseline(
+                farmAreaInput.area,
+                farmAreaInput.unit,
+            );
+            setRegionalEstimate(estimate);
+            setRegionalState("ready");
+        } catch (error) {
+            setRegionalState("error");
+            setRegionalError(error.message || "Regional baseline is unavailable.");
+        }
+    };
+
+    useEffect(() => {
+        if (isFarmComplete) loadRegionalBaseline();
+    }, [isFarmComplete, farmAreaInput.status, farmAreaInput.area, farmAreaInput.unit]);
 
     /* Farm-data-dependent page (spec §13): without the user's own farm
        details there is nothing real to improve — show the empty state
@@ -124,11 +184,6 @@ export default function Improve() {
                   custom: i,
               };
 
-    const expected = farmData.expectedYield; // 16.1T
-    const potential = farmData.potentialYield; // 18.4T
-    const yieldGap = +(potential - expected).toFixed(1);
-    const pct = Math.round((expected / potential) * 100);
-    const potentialProfitGain = Math.round(yieldGap * 38000); // avg ~₹3,800/Q
     const criticalCount = recommendations.filter(
         (r) => r.category === "critical",
     ).length;
@@ -140,13 +195,13 @@ export default function Improve() {
             id: "production",
             label: t("improve.goalProduction"),
             icon: Wheat,
-            value: `${formatNumber(expected, { minimumFractionDigits: 1 })}T`,
+            value: null,
         },
         {
             id: "profit",
             label: t("improve.goalProfit"),
             icon: IndianRupee,
-            value: `₹${formatNumber(+(farmData.expectedProfit / 100000).toFixed(1), { minimumFractionDigits: 1 })}L`,
+            value: null,
         },
         {
             id: "protection",
@@ -160,7 +215,7 @@ export default function Improve() {
             icon: Sprout,
             value: `${formatNumber(fields.length)} ${t("improve.fields")}`,
         },
-        { id: "yield", label: t("improve.goalYield"), icon: TrendingUp, value: `${formatNumber(pct)}%` },
+        { id: "yield", label: t("improve.goalYield"), icon: TrendingUp, value: null },
     ];
 
     const visibleRecs =
@@ -176,80 +231,64 @@ export default function Improve() {
             <section className="improve-page__header section" {...reveal(0)}>
                 <h1 className="improve-page__title">{t("nav.improve")}</h1>
                 <p className="improve-page__subtitle">
-                    {t("improve.aiFinds", {
-                        from: formatNumber(expected, { minimumFractionDigits: 1 }),
-                        to: formatNumber(potential, { minimumFractionDigits: 1 }),
-                    })}
+                    Official regional reference and general crop-care guidance.
                 </p>
             </section>
 
-            {/* 1. AI Yield Summary Hero */}
+            {/* 1. Verified regional reference; not a farm-specific prediction. */}
             <section className="improve-page__hero section" {...reveal(1)}>
                 <div className="improve-page__hero-card">
                     <span className="improve-page__ai-pill">
                         <Sparkles size={13} />
-                        {t("improve.aiInsight")}
+                        Verified regional reference
                     </span>
-
-                    <p className="improve-page__hero-line">
-                        {t("improve.heroLine1")}{" "}
-                        <strong>
-                            <AnimatedNumber
-                                value={expected}
-                                decimals={1}
-                            />
-                            T
-                        </strong>{" "}
-                        {t("improve.heroLine2")}{" "}
-                        <strong className="improve-page__hero-line--gold">
-                            <AnimatedNumber value={potential} decimals={1} />T
-                        </strong>
-                    </p>
-
-                    <div className="improve-page__track">
-                        <span className="improve-page__track-end">
-                            <span className="improve-page__track-num">
-                                {expected}T
-                            </span>
-                            <span className="improve-page__track-cap">
-                                {t("improve.trackCurrent")}
-                            </span>
-                        </span>
-
-                        <div
-                            className="improve-page__track-bar"
-                            role="img"
-                            aria-label={t("improve.ariaTrack", { cur: formatNumber(expected, { minimumFractionDigits: 1 }), pot: formatNumber(potential, { minimumFractionDigits: 1 }) })}
-                        >
-                            <div
-                                className="improve-page__track-fill"
-                                style={{ "--fill": `${pct}%` }}
-                            />
-                            <div
-                                className="improve-page__track-knob"
-                                style={{ left: `${pct}%` }}
-                            />
+                    {regionalState === "loading" && (
+                        <p className="improve-page__regional-status">Loading verified regional reference…</p>
+                    )}
+                    {regionalState === "error" && (
+                        <div className="improve-page__regional-status improve-page__regional-status--error">
+                            <p>{regionalError}</p>
+                            <button type="button" onClick={loadRegionalBaseline}>Retry</button>
                         </div>
-
-                        <span className="improve-page__track-end improve-page__track-end--potential">
-                            <span className="improve-page__track-num">
-                                {potential}T
-                            </span>
-                            <span className="improve-page__track-cap">
-                                {t("improve.trackPotential")}
-                            </span>
-                        </span>
-                    </div>
-
-                    <div className="improve-page__gains">
-                        <span className="improve-page__gain improve-page__gain--leaf">
-                            +{formatNumber(yieldGap, { minimumFractionDigits: 1 })}T {t("improve.possible")}
-                        </span>
-                        <span className="improve-page__gain improve-page__gain--gold">
-                            +₹{formatNumber(potentialProfitGain)}{" "}
-                            {t("improve.possible")}
-                        </span>
-                    </div>
+                    )}
+                    {regionalReference && (
+                        <div className="improve-page__regional-reference">
+                            <p className="improve-page__regional-yield">
+                                {formatNumber(regionalReference.yield_kg_per_hectare)} kg/hectare
+                            </p>
+                            <p className="improve-page__regional-label">
+                                State-level historical statistic, not an ML prediction.
+                            </p>
+                            <p className="improve-page__regional-meta">
+                                West Bengal · {regionalReference.reporting_period} · PDF page{" "}
+                                {regionalReference.source_page}
+                            </p>
+                            <p className="improve-page__regional-meta">
+                                {regionalReference.table_title}
+                            </p>
+                        </div>
+                    )}
+                    {regionalState === "invalid-area" && (
+                        <p className="improve-page__regional-status improve-page__regional-status--error">
+                            Farmer area is unavailable in a supported unit. The regional reference is shown,
+                            but production cannot be estimated.
+                        </p>
+                    )}
+                    {regionalEstimate?.estimate_available && (
+                        <div className="improve-page__regional-estimate">
+                            <strong>
+                                {formatNumber(regionalEstimate.illustrative_production_tonnes, {
+                                    minimumFractionDigits: 2,
+                                })}{" "}
+                                tonnes
+                            </strong>
+                            <span>Illustrative regional estimate, not expected or guaranteed farm production.</span>
+                        </div>
+                    )}
+                    <p className="improve-page__regional-weather">
+                        Weather status: {weatherPhase === "ready" ? "available" : "unavailable"}.
+                        Weather is not used to adjust this regional statistic.
+                    </p>
                 </div>
             </section>
 
@@ -320,7 +359,7 @@ export default function Improve() {
 
                                 <div className="improve-page__action-side">
                                     <span className="improve-page__action-value">
-                                        {meta.value}
+                                        General guidance
                                     </span>
                                     <span
                                         className={`improve-page__action-pill improve-page__action-pill--${urgencyTone}`}
