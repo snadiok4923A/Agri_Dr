@@ -1,4 +1,7 @@
-const API_BASE_URL = (import.meta.env.VITE_KRISIVEDA_ML_API_URL || "").replace(/\/+$/, "");
+const DEFAULT_API_BASE_URL = "https://krisiveda-ml-api.onrender.com";
+const API_BASE_URL = (
+    import.meta.env.VITE_KRISIVEDA_ML_API_URL || DEFAULT_API_BASE_URL
+).replace(/\/+$/, "");
 
 function apiUrl(path) {
     if (!API_BASE_URL) {
