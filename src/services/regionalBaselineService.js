@@ -43,6 +43,10 @@ export function estimateRegionalBaseline(farmArea, areaUnit) {
     });
 }
 
+export function fetchModelStatus() {
+    return request("/model/status");
+}
+
 export function isRegionalBaselineApiConfigured() {
     return Boolean(API_BASE_URL);
 }

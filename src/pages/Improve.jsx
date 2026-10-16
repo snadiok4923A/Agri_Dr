@@ -21,6 +21,7 @@ import { useWeather } from "../hooks/useWeather";
 import {
     estimateRegionalBaseline,
     fetchRegionalBaseline,
+    fetchModelStatus,
     isRegionalBaselineApiConfigured,
 } from "../services/regionalBaselineService";
 import "./Improve.css";
@@ -103,6 +104,7 @@ export default function Improve() {
     const [regionalEstimate, setRegionalEstimate] = useState(null);
     const [regionalState, setRegionalState] = useState("loading");
     const [regionalError, setRegionalError] = useState("");
+    const [modelState, setModelState] = useState("loading");
 
     const farmAreaInput = useMemo(() => {
         const parcels = Array.isArray(farm?.parcels) ? farm.parcels : [];
@@ -128,11 +130,20 @@ export default function Improve() {
         setRegionalError("");
         setRegionalReference(null);
         setRegionalEstimate(null);
+        setModelState("loading");
         if (!isRegionalBaselineApiConfigured()) {
             setRegionalState("error");
             setRegionalError("Regional baseline API is not configured.");
+            setModelState("unavailable");
             return;
         }
+        fetchModelStatus()
+            .then((status) => {
+                setModelState(status?.mode === "unavailable" ? "unavailable" : "ready");
+            })
+            .catch(() => {
+                setModelState("error");
+            });
         try {
             const reference = await fetchRegionalBaseline();
             setRegionalReference(reference);
@@ -242,6 +253,22 @@ export default function Improve() {
                         <Sparkles size={13} />
                         Verified regional reference
                     </span>
+                    {modelState === "loading" && (
+                        <p className="improve-page__regional-status">
+                            Checking farm-level ML model availability…
+                        </p>
+                    )}
+                    {modelState === "unavailable" && (
+                        <p className="improve-page__regional-status">
+                            Farm-level ML prediction is unavailable because no trained and validated model is active.
+                            No farm-specific yield, profit, or confidence value is shown.
+                        </p>
+                    )}
+                    {modelState === "error" && (
+                        <p className="improve-page__regional-status improve-page__regional-status--error">
+                            Farm-level ML model status could not be checked. No farm-specific prediction is available.
+                        </p>
+                    )}
                     {regionalState === "loading" && (
                         <p className="improve-page__regional-status">Loading verified regional reference…</p>
                     )}
@@ -257,7 +284,7 @@ export default function Improve() {
                                 {formatNumber(regionalReference.yield_kg_per_hectare)} kg/hectare
                             </p>
                             <p className="improve-page__regional-label">
-                                State-level historical statistic, not an ML prediction.
+                                Historical West Bengal state-level baseline, not a farm-specific prediction.
                             </p>
                             <p className="improve-page__regional-meta">
                                 West Bengal · {regionalReference.reporting_period} · PDF page{" "}
@@ -282,7 +309,9 @@ export default function Improve() {
                                 })}{" "}
                                 tonnes
                             </strong>
-                            <span>Illustrative regional estimate, not expected or guaranteed farm production.</span>
+                            <span>
+                                Historical West Bengal state-level estimate; not expected or guaranteed farm production.
+                            </span>
                         </div>
                     )}
                     <p className="improve-page__regional-weather">
