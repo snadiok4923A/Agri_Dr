@@ -242,9 +242,11 @@ body {
     background: #1a1a1a;
 }
 
-/* Detail windows are solid too — no frosted layer behind them */
+/* Detail windows are the ONE intentional glass surface in dark mode.
+   The glass recipe (translucent background + backdrop blur) lives with
+   the component in pages/Crops.css; this theme file must not paint an
+   opaque surface over it. Only the scroll behaviour is pinned here. */
 [data-theme="dark"] .crops-page__modal {
-    background: var(--bg-surface);
     overflow: hidden auto;
 }
 
