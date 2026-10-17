@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <title>Krisiveda — Smart Farming Platform</title>
+    <script>
+      (function () {
+        var base = "/Agri_Dr";
+        var loc = window.location;
+        var rel = loc.pathname.indexOf(base) === 0
+          ? loc.pathname.slice(base.length)
+          : loc.pathname;
+        if (!rel || rel.charAt(0) !== '/') rel = '/' + rel.replace(/^\/+/, '');
+        rel = rel.replace(/\/{2,}/g, '/');
+        var target = rel + loc.search + loc.hash;
+        try {
+          window.sessionStorage.setItem("krisiveda:spa-redirect", target);
+        } catch (e) {}
+        loc.replace(base + '/?spa-redirect=' + encodeURIComponent(target));
+      })();
+    </script>
+  </head>
+  <body></body>
+</html>

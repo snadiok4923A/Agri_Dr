@@ -1,6 +1,22 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
   <head>
+    <script>(function () {
+  try {
+    var stored = null;
+    try {
+      stored = window.sessionStorage.getItem("krisiveda:spa-redirect");
+      window.sessionStorage.removeItem("krisiveda:spa-redirect");
+    } catch (e) {}
+    var match = new RegExp('[?&]spa-redirect=([^&]*)').exec(
+      window.location.search
+    );
+    var route = stored || (match && decodeURIComponent(match[1].replace(/\+/g, ' ')));
+    if (!route || route.charAt(0) !== '/') return;
+    window.history.replaceState(null, '', "/Agri_Dr" + route);
+  } catch (e) {}
+})();</script>
+
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/Agri_Dr/bit.png" />
     <link rel="apple-touch-icon" href="/Agri_Dr/bit.png" />
