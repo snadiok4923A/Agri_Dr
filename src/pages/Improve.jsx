@@ -94,6 +94,16 @@ const URGENCY_KEY = {
     "Save Now": "improve.saveNow",
 };
 
+const formatRegionalNumber = (value, options = {}) => {
+    if (value === null || value === undefined || !Number.isFinite(Number(value))) {
+        return "—";
+    }
+    return new Intl.NumberFormat("en-IN", {
+        useGrouping: true,
+        ...options,
+    }).format(Number(value));
+};
+
 export default function Improve() {
     const { t, formatNumber } = useLanguage();
     const { farm, isFarmComplete } = useOnboarding();
@@ -236,6 +246,14 @@ export default function Improve() {
                   (ACTION_META[rec.id]?.tags || []).includes(goal),
               );
 
+    const hasRegionalEstimate =
+        regionalEstimate?.estimate_available === true &&
+        Number.isFinite(Number(regionalEstimate.farm_area)) &&
+        Number(regionalEstimate.farm_area) > 0 &&
+        typeof regionalEstimate.farm_area_unit === "string" &&
+        regionalEstimate.farm_area_unit.trim() !== "" &&
+        Number.isFinite(Number(regionalEstimate.illustrative_production_tonnes));
+
     return (
         <div className="page-container improve-page">
             {/* Header */}
@@ -281,7 +299,7 @@ export default function Improve() {
                     {regionalReference && (
                         <div className="improve-page__regional-reference">
                             <p className="improve-page__regional-yield">
-                                {formatNumber(regionalReference.yield_kg_per_hectare)} kg/hectare
+                                {formatRegionalNumber(regionalReference.yield_kg_per_hectare)} kg/hectare
                             </p>
                             <p className="improve-page__regional-label">
                                 Historical West Bengal state-level baseline, not a farm-specific prediction.
@@ -301,16 +319,18 @@ export default function Improve() {
                             but production cannot be estimated.
                         </p>
                     )}
-                    {regionalEstimate?.estimate_available && (
+                    {hasRegionalEstimate && (
                         <div className="improve-page__regional-estimate">
                             <strong>
-                                {formatNumber(regionalEstimate.illustrative_production_tonnes, {
+                                {formatRegionalNumber(regionalEstimate.illustrative_production_tonnes, {
                                     minimumFractionDigits: 2,
                                 })}{" "}
                                 tonnes
                             </strong>
                             <span>
-                                Historical West Bengal state-level estimate; not expected or guaranteed farm production.
+                                Illustrative only, not a guaranteed farm yield. Based on {formatRegionalNumber(regionalEstimate.farm_area, {
+                                    maximumFractionDigits: 2,
+                                })} {regionalEstimate.farm_area_unit}.
                             </span>
                         </div>
                     )}
