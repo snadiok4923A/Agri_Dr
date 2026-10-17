@@ -65,6 +65,50 @@ def test_estimate_endpoint_without_area_returns_no_quantity() -> None:
     assert "illustrative regional estimate" in body["estimate_label"]
 
 
+@pytest.mark.parametrize(
+    ("farm_area", "area_unit", "expected_hectares"),
+    [
+        (12, "acre", 12 * 0.40468564224),
+        (2, "hectare", 2),
+    ],
+)
+def test_estimate_endpoint_returns_echoed_area_and_converted_production(
+    farm_area: float,
+    area_unit: str,
+    expected_hectares: float,
+) -> None:
+    response = client.post(
+        "/regional-baseline/estimate",
+        json={"farm_area": farm_area, "area_unit": area_unit},
+    )
+    body = response.json()
+
+    assert response.status_code == 200
+    assert body["estimate_available"] is True
+    assert body["farm_area"] == farm_area
+    assert body["farm_area_unit"] == area_unit
+    assert body["area_hectares"] == pytest.approx(expected_hectares)
+    assert body["illustrative_production_tonnes"] == pytest.approx(
+        expected_hectares * 2865 / 1000
+    )
+    assert "illustrative regional estimate" in body["estimate_label"]
+    assert "not expected or guaranteed" in body["estimate_label"]
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {"farm_area": 0, "area_unit": "acre"},
+        {"farm_area": -1, "area_unit": "hectare"},
+        {"farm_area": 1, "area_unit": "bigha"},
+    ],
+)
+def test_estimate_endpoint_rejects_invalid_area_or_unit(payload: dict) -> None:
+    response = client.post("/regional-baseline/estimate", json=payload)
+
+    assert response.status_code == 422
+
+
 def test_estimate_endpoint_requires_area_unit() -> None:
     response = client.post("/regional-baseline/estimate", json={"farm_area": 1})
     assert response.status_code == 422
