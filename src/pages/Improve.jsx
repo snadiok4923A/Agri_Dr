@@ -328,9 +328,10 @@ export default function Improve() {
                                 tonnes
                             </strong>
                             <span>
-                                Illustrative only, not a guaranteed farm yield. Based on {formatRegionalNumber(regionalEstimate.farm_area, {
+                                Math illustration only: based on the historical West Bengal state-level yield and your{" "}
+                                {formatRegionalNumber(regionalEstimate.farm_area, {
                                     maximumFractionDigits: 2,
-                                })} {regionalEstimate.farm_area_unit}.
+                                })} {regionalEstimate.farm_area_unit} area. Not a prediction for your farm or Pusa 1121.
                             </span>
                         </div>
                     )}
