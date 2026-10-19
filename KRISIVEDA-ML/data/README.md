@@ -66,3 +66,11 @@ The training command only proceeds when:
 The test split is the latest year/season group, not a random row split. This
 reduces season leakage. A small or single-season dataset is rejected rather
 than evaluated with an unsupported claim.
+
+## Data collection
+
+Use the documented [verified rice-farm harvest data collection
+workflow](collection_workflow.md) before adding any rows. It requires an
+auditable source record and reviewer verification; the `source` CSV field is
+provenance, not a substitute for retaining that evidence. Do not use the
+official aggregate regional CSV as farm training data.

@@ -8,6 +8,8 @@ import pytest
 from app.dataset import validate_dataframe
 from app.training import train_dataset
 
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
 
 def valid_row(record_id: str, year: int, season: str) -> dict[str, object]:
     return {
@@ -35,6 +37,29 @@ def test_validator_reports_missing_columns() -> None:
     report = validate_dataframe(pd.DataFrame({"record_id": ["x"]}))
     assert report.valid is False
     assert report.issues[0].code == "missing_columns"
+
+
+def test_template_exposes_farm_measurements_inputs_and_provenance() -> None:
+    headers = pd.read_csv(
+        PROJECT_ROOT / "data" / "rice_yield_template.csv", nrows=0
+    ).columns.tolist()
+    assert {
+        "observation_level",
+        "target_yield",
+        "target_yield_unit",
+        "harvested_area",
+        "harvested_area_unit",
+        "production",
+        "production_unit",
+        "rice_variety",
+        "district",
+        "year",
+        "season",
+        "source",
+        "data_quality_status",
+        "fertilizer_kg_per_hectare",
+        "medicine_applications",
+    }.issubset(headers)
 
 
 def test_validator_rejects_empty_template() -> None:
@@ -95,6 +120,16 @@ def test_training_writes_metadata_only_for_valid_multi_season_data(tmp_path: Pat
     assert metadata["feature_names"] == ["crop", "rice_variety", "growth_stage", "temperature_mean_c"]
     assert metadata["target_unit"] == "tonnes_per_hectare"
     assert metadata["evaluation_metrics"]["dummy_mean"]["mae"] >= 0
+    assert set(metadata["evaluation_metrics"]) == {
+        "dummy_mean",
+        "ridge",
+        "random_forest",
+    }
+    assert all(
+        {"mae", "rmse"}.issubset(metrics)
+        for metrics in metadata["evaluation_metrics"].values()
+    )
+    assert metadata["test_split"] == "latest year/season group held out"
     assert (output / "yield_model.joblib").is_file()
     assert (output / "yield_model.metadata.json").is_file()
     assert metadata["serving_supported"] is False

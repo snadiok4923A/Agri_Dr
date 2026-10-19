@@ -164,7 +164,7 @@ status.
 ## Tests
 
 ```powershell
-pytest
+python -m pytest
 ```
 
 The tests cover the API contract, valid and incomplete inputs, unavailable
@@ -177,6 +177,8 @@ metadata generation.
 The required CSV contract is documented in [data/README.md](data/README.md),
 and [data/rice_yield_template.csv](data/rice_yield_template.csv) contains
 headers only. No synthetic or example harvest labels are included.
+The required real-record intake and review steps are documented in
+[data/collection_workflow.md](data/collection_workflow.md).
 
 Validate a supplied dataset before training:
 
