@@ -74,3 +74,8 @@ workflow](collection_workflow.md) before adding any rows. It requires an
 auditable source record and reviewer verification; the `source` CSV field is
 provenance, not a substitute for retaining that evidence. Do not use the
 official aggregate regional CSV as farm training data.
+
+For field collection, use the blank
+[farmer collection sheet](rice_farm_collection_sheet.csv) and its
+[plain-language guide](farmer_collection_guide.md). The sheet intentionally
+has the exact canonical header and contains no sample or training rows.
