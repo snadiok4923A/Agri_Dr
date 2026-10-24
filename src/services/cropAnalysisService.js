@@ -6,8 +6,14 @@
  */
 
 const DEFAULT_API_BASE_URL = "https://krisiveda-ml-api.onrender.com";
+const configuredApiBaseUrl = import.meta.env.VITE_KRISIVEDA_ML_API_URL?.trim();
+const isLoopbackUrl = /^https?:\/\/(127\.0\.0\.1|localhost)(?::\d+)?(?:\/|$)/i.test(
+    configuredApiBaseUrl || "",
+);
 const API_BASE_URL = (
-    import.meta.env.VITE_KRISIVEDA_ML_API_URL || DEFAULT_API_BASE_URL
+    import.meta.env.PROD && isLoopbackUrl
+        ? DEFAULT_API_BASE_URL
+        : configuredApiBaseUrl || DEFAULT_API_BASE_URL
 ).replace(/\/+$/, "");
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 const SUPPORTED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
