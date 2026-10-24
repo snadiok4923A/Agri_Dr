@@ -196,6 +196,7 @@ export default function CameraModal({
         }
         const req = ++analysisReqRef.current;
         let alive = true;
+        setAnalysis({ status: "loading" });
         analyzeCropImage(photo?.file).then((result) => {
             if (alive && analysisReqRef.current === req) setAnalysis(result);
         });
@@ -358,10 +359,22 @@ export default function CameraModal({
                             <img className="camodal__thumb" src={photo.url} alt="" decoding="async" />
                         </div>
 
-                        {analysis?.status === "ok" || analysis?.status === "uncertain" ? (
+                        {analysis?.status === "loading" ? (
+                            <div className="camodal__analysis-body">
+                                <span className="camodal__status">
+                                    <span className="camodal__status-dot camodal__status-dot--pulse" />
+                                    Analyzing image...
+                                </span>
+                                <span className="camodal__analysis-msg">
+                                    Checking the image with the KRISIVEDA disease model.
+                                </span>
+                            </div>
+                        ) : analysis?.status === "ok" || analysis?.status === "uncertain" ? (
                             <div className="camodal__analysis-body">
                                 {analysis.disease && (
-                                    <span className="camodal__analysis-disease">{analysis.disease}</span>
+                                    <span className="camodal__analysis-disease">
+                                        {analysis.disease.replaceAll("_", " ")}
+                                    </span>
                                 )}
                                 {typeof analysis.confidence === "number" && (
                                     <span className="camodal__status">
@@ -372,6 +385,14 @@ export default function CameraModal({
                                 {analysis.message && (
                                     <span className="camodal__analysis-msg">{analysis.message}</span>
                                 )}
+                                {analysis.status === "uncertain" && analysis.top_predictions?.length > 0 && (
+                                    <span className="camodal__analysis-msg">
+                                        Possible matches:{" "}
+                                        {analysis.top_predictions
+                                            .map((prediction) => prediction.disease.replaceAll("_", " "))
+                                            .join(", ")}
+                                    </span>
+                                )}
                             </div>
                         ) : analysis?.status === "error" ? (
                             <div className="camodal__analysis-body">
@@ -380,12 +401,16 @@ export default function CameraModal({
                                     {t("dashboard.analysisNotReady")}
                                 </span>
                                 <span className="camodal__analysis-msg">
-                                    {analysis.reason === "no-image"
-                                        ? t("dashboard.analysisNotReady")
-                                        : "Disease recognition is unavailable. Please try again later."}
+                                    {analysis.reason === "unsupported-file-type"
+                                        ? "Please upload a JPEG, PNG, or WEBP image."
+                                        : analysis.reason === "file-too-large"
+                                            ? "The image must be smaller than 10 MB."
+                                            : analysis.reason === "no-image"
+                                                ? "No image was selected."
+                                                : "Disease recognition is unavailable. Please try again later."}
                                 </span>
                             </div>
-                        ) : (
+                        ) : analysis?.status === "not_connected" ? (
                             <div className="camodal__analysis-body">
                                 <span className="camodal__status">
                                     <span className="camodal__status-dot" />
@@ -395,7 +420,7 @@ export default function CameraModal({
                                     {t("dashboard.analysisNotReady")}
                                 </span>
                             </div>
-                        )}
+                        ) : null}
 
                         <button className="camodal__btn" onClick={onClose}>
                             {t("common.close")}
