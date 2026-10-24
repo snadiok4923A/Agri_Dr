@@ -32,9 +32,8 @@ import "./CameraModal.css";
  *                 photo-preview. The camera stream stops immediately.
  *   photo-preview the captured/uploaded photo + Retake (camera origin) or
  *                 Choose Another (upload origin) + Analyze.
- *   analysis      analyzeCropImage(file) → "Model not connected" today;
- *                 a future real model renders through the same window
- *                 (§16/§19) — no fake disease data is ever shown (§14/§31).
+ *   analysis      analyzeCropImage(file) → an explicit API result; no fake
+ *                 disease data is ever shown (§14/§31).
  *
  * Lifecycle (§13/§24/§25): every stream track stops on Capture, Close,
  * Escape, leaving the camera stage and unmount; the photo's object URL is
@@ -82,8 +81,7 @@ export default function CameraModal({
        "live" stage and an instantly-resolving getUserMedia). */
     const [camStream, setCamStream] = useState(null);
 
-    /* Analysis result — rendered only when the service returns one. Today
-       that is always the explicit "not connected" state (§15/§20). */
+    /* Analysis result — rendered only when the service returns one. */
     const [analysis, setAnalysis] = useState(null);
     const analysisReqRef = useRef(0);
 
@@ -190,8 +188,7 @@ export default function CameraModal({
         };
     }, [open, flow, startCamera, stopStream]);
 
-    /* Analysis (§17): call the service when the stage opens. No artificial
-       delay (§20) — the stub resolves immediately to "not connected". */
+    /* Analysis (§17): call the service when the stage opens. */
     useEffect(() => {
         if (!open || flow !== "analysis") {
             setAnalysis(null);
@@ -355,18 +352,13 @@ export default function CameraModal({
                 )}
 
                 {/* ==================== ANALYSIS ==================== */}
-                {/* Today: explicit "model not connected" — never a fake
-                    diagnosis (§14/§15/§31). A future real model renders its
-                    fields through the same window (§19). */}
                 {flow === "analysis" && photo && (
                     <div className="camodal__analysis">
                         <div className="camodal__thumb-frame">
                             <img className="camodal__thumb" src={photo.url} alt="" decoding="async" />
                         </div>
 
-                        {analysis?.status === "ok" ? (
-                            /* Future-proof result block — renders ONLY when a
-                               real model returns data; nothing is faked now. */
+                        {analysis?.status === "ok" || analysis?.status === "uncertain" ? (
                             <div className="camodal__analysis-body">
                                 {analysis.disease && (
                                     <span className="camodal__analysis-disease">{analysis.disease}</span>
@@ -377,9 +369,21 @@ export default function CameraModal({
                                         {Math.round(analysis.confidence * 100)}%
                                     </span>
                                 )}
-                                {analysis.treatment && (
-                                    <span className="camodal__analysis-msg">{analysis.treatment}</span>
+                                {analysis.message && (
+                                    <span className="camodal__analysis-msg">{analysis.message}</span>
                                 )}
+                            </div>
+                        ) : analysis?.status === "error" ? (
+                            <div className="camodal__analysis-body">
+                                <span className="camodal__status">
+                                    <AlertTriangle size={15} />
+                                    {t("dashboard.analysisNotReady")}
+                                </span>
+                                <span className="camodal__analysis-msg">
+                                    {analysis.reason === "no-image"
+                                        ? t("dashboard.analysisNotReady")
+                                        : "Disease recognition is unavailable. Please try again later."}
+                                </span>
                             </div>
                         ) : (
                             <div className="camodal__analysis-body">

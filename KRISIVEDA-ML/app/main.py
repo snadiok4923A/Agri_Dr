@@ -2,11 +2,15 @@
 
 import os
 
-from fastapi import FastAPI
-from fastapi import HTTPException
+from fastapi import File, FastAPI, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
 from .predictor import get_model_status, predict
+from .disease_service import (
+    DiseaseModelUnavailableError,
+    analyze_disease_image,
+    get_disease_model_status,
+)
 from .regional_baseline import (
     RegionalBaselineUnavailableError,
     estimate_regional_production,
@@ -51,6 +55,49 @@ def health() -> dict[str, str]:
 @app.get("/model/status", response_model=ModelStatus)
 def model_status() -> ModelStatus:
     return get_model_status()
+
+
+@app.get("/disease/status")
+def disease_status() -> dict:
+    return get_disease_model_status()
+
+
+@app.post("/disease/predict")
+async def disease_prediction(file: UploadFile = File(...)) -> dict:
+    allowed_types = {"image/jpeg", "image/png", "image/webp"}
+    if file.content_type not in allowed_types:
+        raise HTTPException(
+            status_code=415,
+            detail="Upload a JPEG, PNG, or WEBP image.",
+        )
+
+    image_bytes = await file.read(10 * 1024 * 1024 + 1)
+    if len(image_bytes) > 10 * 1024 * 1024:
+        raise HTTPException(
+            status_code=413,
+            detail="Image exceeds the 10 MB upload limit.",
+        )
+
+    try:
+        return analyze_disease_image(image_bytes)
+    except DiseaseModelUnavailableError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="Disease recognition is temporarily unavailable.",
+        ) from exc
+    except ValueError as exc:
+        message = str(exc)
+        if message == "Image exceeds the 10 MB upload limit.":
+            raise HTTPException(status_code=413, detail=message) from exc
+        raise HTTPException(
+            status_code=422,
+            detail="The uploaded file is not a valid supported image.",
+        ) from exc
+    except RuntimeError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="Disease recognition is temporarily unavailable.",
+        ) from exc
 
 
 @app.post("/predict", response_model=YieldPredictionResponse)

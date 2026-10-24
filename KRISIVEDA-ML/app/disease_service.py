@@ -137,6 +137,21 @@ def _preprocess_image(image: Image.Image) -> np.ndarray:
     return np.expand_dims(array, axis=0).astype(np.float32)
 
 
+def _decode_image(image_bytes: bytes) -> Image.Image:
+    from io import BytesIO
+
+    try:
+        image = Image.open(BytesIO(image_bytes))
+        image.verify()
+        if image.format not in {"JPEG", "PNG", "WEBP"}:
+            raise ValueError("Unsupported image format.")
+        return Image.open(BytesIO(image_bytes))
+    except (ValueError, OSError, Image.DecompressionBombError) as exc:
+        raise ValueError(
+            "Invalid image. Upload a valid JPG, PNG or WEBP photo."
+        ) from exc
+
+
 def analyze_disease_image(image_bytes: bytes) -> dict:
     if not image_bytes:
         raise ValueError("No image was provided.")
@@ -144,18 +159,13 @@ def analyze_disease_image(image_bytes: bytes) -> dict:
     if len(image_bytes) > MAX_IMAGE_BYTES:
         raise ValueError("Image exceeds the 10 MB upload limit.")
 
-    session, class_names = _load_model()
-
     try:
-        from io import BytesIO
-
-        with Image.open(BytesIO(image_bytes)) as image:
+        with _decode_image(image_bytes) as image:
             tensor = _preprocess_image(image)
+    except ValueError:
+        raise
 
-    except (ValueError, OSError) as exc:
-        raise ValueError(
-            "Invalid image. Upload a valid JPG, PNG or WEBP photo."
-        ) from exc
+    session, class_names = _load_model()
 
     input_name = session.get_inputs()[0].name
     output_name = session.get_outputs()[0].name

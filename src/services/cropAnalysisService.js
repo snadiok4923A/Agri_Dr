@@ -1,37 +1,41 @@
 /**
  * cropAnalysisService — the single entry point for crop-disease analysis.
  *
- * The Machine Learning model is NOT connected yet. analyzeCropImage() always
- * resolves to an explicit `{ status: "not_connected" }` result — it never
- * fabricates a diagnosis, confidence or treatment (spec §14/§15/§31).
- *
- * Future connection (spec §16): replace the stub body with a real inference
- * call — TensorFlow.js, ONNX Runtime Web, or a backend API — and return:
- *
- *   {
- *     status: "ok",
- *     disease: "Leaf Blast",
- *     confidence: 0.94,
- *     severity: "High",
- *     symptoms: ["..."],
- *     treatment: "...",
- *     medicine: "Tricyclazole 75% WP",
- *     dose: "0.6 g / L",
- *     coverage: "250 g for 1.8 acres",
- *     treatmentCost: "₹1,200 / acre",
- *   }
- *
- * The analysis window already renders every field above when present, so
- * connecting a model requires NO UI redesign — only this function changes.
+ * The backend returns classification only. It does not provide treatment
+ * recommendations, which must come from a separately verified source.
  */
+
+const API_BASE_URL = (import.meta.env.VITE_KRISIVEDA_ML_API_URL || "").replace(/\/+$/, "");
 
 export async function analyzeCropImage(file) {
     if (!file) return { status: "error", reason: "no-image" };
+    if (!API_BASE_URL) return { status: "not_connected" };
 
-    // ---- Future ML inference goes here ---------------------------------
-    // e.g. const model = await tf.loadLayersModel(MODEL_URL); ...
-    // There is intentionally NO artificial delay: the UI must not pretend
-    // that analysis is running when no model exists (spec §20).
+    const formData = new FormData();
+    formData.append("file", file);
 
-    return { status: "not_connected" };
+    let response;
+    try {
+        response = await fetch(`${API_BASE_URL}/disease/predict`, {
+            method: "POST",
+            body: formData,
+        });
+    } catch {
+        return { status: "not_connected" };
+    }
+
+    if (!response.ok) {
+        return {
+            status: "error",
+            reason: `api-${response.status}`,
+        };
+    }
+
+    try {
+        const result = await response.json();
+        if (["ok", "uncertain"].includes(result?.status)) return result;
+    } catch {
+        // The caller receives an explicit error state below.
+    }
+    return { status: "error", reason: "invalid-response" };
 }

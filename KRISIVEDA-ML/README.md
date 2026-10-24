@@ -103,6 +103,22 @@ list containing only the deployed frontend origin. This service rejects `*`
 and has no permissive default; production origins must be configured
 explicitly.
 
+The disease recognition API is separate from the yield API:
+
+* `GET /disease/status` reports whether the bundled CPU ONNX model is loaded.
+* `POST /disease/predict` accepts a multipart `file` field containing a JPEG,
+  PNG, or WEBP image up to 10 MB. It returns `ok` or `uncertain`; it never
+  fabricates a diagnosis when the model or image is unavailable.
+
+The checked-in Vite base path (`/Agri_Dr/`) and GitHub remote identify the
+production GitHub Pages origin as
+`https://snadiok4923a.github.io/Agri_Dr`. Set
+`KRISIVEDA_ML_CORS_ORIGINS` to that exact origin in Render. The disease
+model's original training notebook is not present in this repository, so the
+current inference preprocessing is the documented RGB 224-pixel center crop
+with ImageNet normalization; verify it against the training notebook before
+treating confidence as calibrated.
+
 ## Phase 7: Render deployment
 
 The service can be deployed as a Render Web Service using the included
@@ -130,9 +146,8 @@ root; the Render service's **Root Directory** is `KRISIVEDA-ML`.
    ```
 
 7. Add the environment variable
-   `KRISIVEDA_ML_CORS_ORIGINS` with the exact deployed frontend origin, for
-   example `https://your-frontend.example` (replace this with the real origin;
-   no deployment URL is assumed here).
+   `KRISIVEDA_ML_CORS_ORIGINS` with
+   `https://snadiok4923a.github.io/Agri_Dr`.
 8. Add a health check path of `/health`.
 9. Deploy manually and verify the generated Render service URL with:
 
@@ -141,6 +156,8 @@ root; the Render service's **Root Directory** is `KRISIVEDA-ML`.
    GET /regional-baseline
    POST /regional-baseline/estimate
    GET /model/status
+   GET /disease/status
+   POST /disease/predict
    ```
 
 The service resolves the regional CSV from `Path(__file__)`, so it does not
@@ -155,6 +172,8 @@ stateless and reads its bundled CSV on each request; it does not provide a
 database, background jobs, persistent model storage, or guaranteed uptime.
 Do not treat free hosting as a production SLA. The frontend must be built with
 `VITE_KRISIVEDA_ML_API_URL` set to the actual service URL after deployment.
+The local example remains `http://127.0.0.1:8000`; do not commit private
+tokens or secrets to frontend environment variables.
 
 The `/predict` endpoint remains `unavailable` until a real farm-level harvest
 dataset has been verified, evaluated with a leakage-aware split, and paired
