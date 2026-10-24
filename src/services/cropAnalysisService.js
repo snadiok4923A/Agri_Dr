@@ -25,6 +25,9 @@ export async function analyzeCropImage(file) {
     }
 
     if (!response.ok) {
+        if (response.status === 503) {
+            return { status: "not_connected" };
+        }
         return {
             status: "error",
             reason: `api-${response.status}`,
