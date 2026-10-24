@@ -137,6 +137,16 @@ def _preprocess_image(image: Image.Image) -> np.ndarray:
     return np.expand_dims(array, axis=0).astype(np.float32)
 
 
+def _probabilities_from_logits(logits: np.ndarray) -> np.ndarray:
+    if logits.ndim != 1 or logits.size == 0:
+        raise RuntimeError("Model produced an invalid output shape.")
+    if not np.isfinite(logits).all():
+        raise RuntimeError("Model produced invalid numeric output.")
+    shifted = logits - np.max(logits)
+    probabilities = np.exp(shifted)
+    return probabilities / probabilities.sum()
+
+
 def _decode_image(image_bytes: bytes) -> Image.Image:
     from io import BytesIO
 
@@ -175,13 +185,7 @@ def analyze_disease_image(image_bytes: bytes) -> dict:
         {input_name: tensor},
     )[0][0]
 
-    if not np.isfinite(logits).all():
-        raise RuntimeError("Model produced invalid numeric output.")
-
-    # Convert logits to probabilities.
-    shifted = logits - np.max(logits)
-    probabilities = np.exp(shifted)
-    probabilities = probabilities / probabilities.sum()
+    probabilities = _probabilities_from_logits(logits)
 
     ranked = np.argsort(probabilities)[::-1]
     best_index = int(ranked[0])
