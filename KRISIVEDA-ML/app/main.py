@@ -11,6 +11,12 @@ from .disease_service import (
     analyze_disease_image,
     get_disease_model_status,
 )
+from .disease_v2_schemas import DiseaseV2Response, DiseaseV2StatusResponse
+from .disease_v2_service import (
+    DiseaseV2ModelUnavailableError,
+    analyze_disease_v2_image,
+    get_disease_v2_model_status,
+)
 from .regional_baseline import (
     RegionalBaselineUnavailableError,
     estimate_regional_production,
@@ -171,3 +177,63 @@ def regional_baseline_estimate(
         estimate_label=estimate.label,
         limitations=limitations,
     )
+
+
+# --- 15-class development endpoints (Experiment A) -------------------------
+# These routes are additive: /disease/predict and /disease/status above keep
+# serving the 6-class production model with their original contract.
+
+async def _read_disease_v2_upload(file: UploadFile) -> bytes:
+    """Same upload rules as the v1 route, shared only by the v2 route."""
+
+    allowed_types = {"image/jpeg", "image/png", "image/webp"}
+    if file.content_type not in allowed_types:
+        raise HTTPException(
+            status_code=415,
+            detail="Upload a JPEG, PNG, or WEBP image.",
+        )
+
+    image_bytes = await file.read(10 * 1024 * 1024 + 1)
+    if len(image_bytes) > 10 * 1024 * 1024:
+        raise HTTPException(
+            status_code=413,
+            detail="Image exceeds the 10 MB upload limit.",
+        )
+    return image_bytes
+
+
+@app.get("/disease/v2/status", response_model=DiseaseV2StatusResponse)
+def disease_v2_status() -> DiseaseV2StatusResponse:
+    """Availability and version of the 15-class development model."""
+
+    return DiseaseV2StatusResponse(**get_disease_v2_model_status())
+
+
+@app.post("/disease/v2/predict", response_model=DiseaseV2Response)
+async def disease_v2_prediction(file: UploadFile = File(...)) -> DiseaseV2Response:
+    """Classify one image with the 15-class Experiment A model only."""
+
+    image_bytes = await _read_disease_v2_upload(file)
+
+    try:
+        result = analyze_disease_v2_image(image_bytes)
+    except DiseaseV2ModelUnavailableError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="15-class disease recognition is temporarily unavailable.",
+        ) from exc
+    except ValueError as exc:
+        message = str(exc)
+        if message == "Image exceeds the 10 MB upload limit.":
+            raise HTTPException(status_code=413, detail=message) from exc
+        raise HTTPException(
+            status_code=422,
+            detail="The uploaded file is not a valid supported image.",
+        ) from exc
+    except RuntimeError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="15-class disease recognition is temporarily unavailable.",
+        ) from exc
+
+    return DiseaseV2Response(**result)

@@ -23,8 +23,27 @@ dist-ssr
 *.sln
 *.sw?
 .freebuff
+# ML image dataset (~3.6 GB) — never commit source images
+KRISIVEDA-ML/data/rice_disease_15class/
+
+# ML reports, checkpoints, caches, and temporary outputs
+KRISIVEDA-ML/reports/
+__pycache__/
+*.py[cod]
+KRISIVEDA-ML/**/*.pt
+KRISIVEDA-ML/**/*.pth
+KRISIVEDA-ML/**/*.ckpt
+KRISIVEDA-ML/**/outputs/
+.pytest_cache/
+
+# Keep only the Experiment A runtime artifacts from the v3-exp20 directory
+KRISIVEDA-ML/models/rice_disease_15class/*
+!KRISIVEDA-ML/models/rice_disease_15class/rice-disease-15class-v3-exp20/
+KRISIVEDA-ML/models/rice_disease_15class/rice-disease-15class-v3-exp20/*
+!KRISIVEDA-ML/models/rice_disease_15class/rice-disease-15class-v3-exp20/rice_disease_15class.onnx
+!KRISIVEDA-ML/models/rice_disease_15class/rice-disease-15class-v3-exp20/model_metadata.json
+
 # Environment — never commit real keys
 .env
 .env.*
 !.env.example
-.env.example

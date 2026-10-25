@@ -110,6 +110,20 @@ The disease recognition API is separate from the yield API:
   PNG, or WEBP image up to 10 MB. It returns `ok` or `uncertain`; it never
   fabricates a diagnosis when the model or image is unavailable.
 
+The 6-class model above is the production model. A separate, versioned
+15-class rice disease & pest pipeline lives in
+[app/rice_disease_15class](app/rice_disease_15class) with documentation in
+[docs/rice_disease_15class.md](docs/rice_disease_15class.md). It writes only to
+`models/rice_disease_15class/` and is not imported by `app.main`; until its
+evaluation and ONNX parity checks are reviewed, `/disease/predict` keeps
+serving the 6-class model.
+
+Its label-review queue is generated with
+`python scripts/build_review_queue.py` and reviewed in
+`reports/rice_disease_15class/review/review.html`. Decisions are recorded, not
+applied: `python scripts/apply_label_decisions.py <decisions.csv>` writes a
+proposed override file for a future dataset version and never edits an image.
+
 The checked-in Vite base path (`/Agri_Dr/`) and GitHub remote identify the
 production GitHub Pages origin as
 `https://snadiok4923a.github.io/Agri_Dr`. Set

@@ -18,6 +18,14 @@ const API_BASE_URL = (
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 const SUPPORTED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
+/* Opt-in only: VITE_KRISIVEDA_DISEASE_API_VERSION=v2 switches the analysis
+   request to the 15-class development endpoint. Unset (the default) keeps the
+   6-class production path, so website behaviour is unchanged. */
+const DISEASE_API_VERSION =
+    import.meta.env.VITE_KRISIVEDA_DISEASE_API_VERSION?.trim() || "v1";
+const DISEASE_ENDPOINT =
+    DISEASE_API_VERSION === "v2" ? "/disease/v2/predict" : "/disease/predict";
+
 export async function analyzeCropImage(file) {
     if (!file) return { status: "error", reason: "no-image" };
     if (!SUPPORTED_IMAGE_TYPES.has(file.type)) {
@@ -32,7 +40,7 @@ export async function analyzeCropImage(file) {
 
     let response;
     try {
-        response = await fetch(`${API_BASE_URL}/disease/predict`, {
+        response = await fetch(`${API_BASE_URL}${DISEASE_ENDPOINT}`, {
             method: "POST",
             body: formData,
         });
