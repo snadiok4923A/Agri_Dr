@@ -7,32 +7,71 @@
 
 const DEFAULT_API_BASE_URL = "https://krisiveda-ml-api.onrender.com";
 const configuredApiBaseUrl = import.meta.env.VITE_KRISIVEDA_ML_API_URL?.trim();
-const isLoopbackUrl = /^https?:\/\/(127\.0\.0\.1|localhost)(?::\d+)?(?:\/|$)/i.test(
-    configuredApiBaseUrl || "",
-);
+const isLoopbackUrl =
+    /^https?:\/\/(127\.0\.0\.1|localhost)(?::\d+)?(?:\/|$)/i.test(
+        configuredApiBaseUrl || "",
+    );
 const API_BASE_URL = (
     import.meta.env.PROD && isLoopbackUrl
         ? DEFAULT_API_BASE_URL
         : configuredApiBaseUrl || DEFAULT_API_BASE_URL
 ).replace(/\/+$/, "");
+// Vite proxies only development V2 requests to the separate local backend.
+// Production and V1 retain the existing API URL and loopback safety guard.
+const V2_API_BASE_URL = import.meta.env.DEV
+    ? `${import.meta.env.BASE_URL}api`
+    : API_BASE_URL;
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
-const SUPPORTED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+export const SUPPORTED_IMAGE_TYPES = new Set([
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+]);
 
-/* Opt-in only: VITE_KRISIVEDA_DISEASE_API_VERSION=v2 switches the analysis
-   request to the 15-class development endpoint. Unset (the default) keeps the
-   6-class production path, so website behaviour is unchanged. */
-const DISEASE_API_VERSION =
-    import.meta.env.VITE_KRISIVEDA_DISEASE_API_VERSION?.trim() || "v1";
-const DISEASE_ENDPOINT =
-    DISEASE_API_VERSION === "v2" ? "/disease/v2/predict" : "/disease/predict";
+const DISEASE_ENDPOINTS = {
+    v1: "/disease/predict",
+    v2: "/disease/v2/predict",
+};
 
-export async function analyzeCropImage(file) {
-    if (!file) return { status: "error", reason: "no-image" };
-    if (!SUPPORTED_IMAGE_TYPES.has(file.type)) {
-        return { status: "error", reason: "unsupported-file-type" };
+export async function getDiseaseV2Status() {
+    try {
+        const response = await fetch(`${V2_API_BASE_URL}/disease/v2/status`, {
+            headers: { Accept: "application/json" },
+        });
+        if (!response.ok)
+            return { available: false, reason: `api-${response.status}` };
+        const result = await response.json();
+        if (
+            typeof result?.available === "boolean" &&
+            typeof result.classes === "number"
+        ) {
+            return result;
+        }
+        return { available: false, reason: "invalid-response" };
+    } catch {
+        return { available: false, reason: "not-connected" };
     }
-    if (file.size > MAX_IMAGE_BYTES) {
-        return { status: "error", reason: "file-too-large" };
+}
+
+export function validateCropImageFile(file) {
+    if (!file) return "no-image";
+    if (!SUPPORTED_IMAGE_TYPES.has(file.type)) return "unsupported-file-type";
+    if (file.size > MAX_IMAGE_BYTES) return "file-too-large";
+    return null;
+}
+
+export async function analyzeCropImage(file, model = "v1") {
+    const invalidReason = validateCropImageFile(file);
+    if (invalidReason) return { status: "error", reason: invalidReason };
+
+    if (model === "browser-v2") {
+        try {
+            const { analyzeBrowserCropImage } =
+                await import("./browserDiseaseService");
+            return await analyzeBrowserCropImage(file);
+        } catch {
+            return { status: "error", reason: "browser-model-unavailable" };
+        }
     }
 
     const formData = new FormData();
@@ -40,10 +79,13 @@ export async function analyzeCropImage(file) {
 
     let response;
     try {
-        response = await fetch(`${API_BASE_URL}${DISEASE_ENDPOINT}`, {
-            method: "POST",
-            body: formData,
-        });
+        response = await fetch(
+            `${model === "v2" ? V2_API_BASE_URL : API_BASE_URL}${DISEASE_ENDPOINTS[model] || DISEASE_ENDPOINTS.v1}`,
+            {
+                method: "POST",
+                body: formData,
+            },
+        );
     } catch {
         return { status: "not_connected" };
     }
@@ -51,6 +93,12 @@ export async function analyzeCropImage(file) {
     if (!response.ok) {
         if (response.status === 503) {
             return { status: "not_connected" };
+        }
+        if (response.status === 415) {
+            return { status: "error", reason: "unsupported-file-type" };
+        }
+        if (response.status === 422) {
+            return { status: "error", reason: "invalid-image" };
         }
         return {
             status: "error",

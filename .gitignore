@@ -23,8 +23,14 @@ dist-ssr
 *.sln
 *.sw?
 .freebuff
-# ML image dataset (~3.6 GB) — never commit source images
+# Training image datasets — keep small CSV baselines and collection docs tracked
 KRISIVEDA-ML/data/rice_disease_15class/
+.venv*/
+.model-build-cache/
+venv/
+KRISIVEDA-ML/**/.cache/
+KRISIVEDA-ML/**/wandb/
+KRISIVEDA-ML/**/runs/
 
 # ML reports, checkpoints, caches, and temporary outputs
 KRISIVEDA-ML/reports/
@@ -33,7 +39,10 @@ __pycache__/
 KRISIVEDA-ML/**/*.pt
 KRISIVEDA-ML/**/*.pth
 KRISIVEDA-ML/**/*.ckpt
+KRISIVEDA-ML/**/*.safetensors
 KRISIVEDA-ML/**/outputs/
+KRISIVEDA-ML/models/rice_disease_scratch*/
+KRISIVEDA-ML/models/rice_disease_warmstart_v1/
 .pytest_cache/
 
 # Keep only the Experiment A runtime artifacts from the v3-exp20 directory
@@ -42,6 +51,20 @@ KRISIVEDA-ML/models/rice_disease_15class/*
 KRISIVEDA-ML/models/rice_disease_15class/rice-disease-15class-v3-exp20/*
 !KRISIVEDA-ML/models/rice_disease_15class/rice-disease-15class-v3-exp20/rice_disease_15class.onnx
 !KRISIVEDA-ML/models/rice_disease_15class/rice-disease-15class-v3-exp20/model_metadata.json
+
+# Static-site model allowlist. Never publish training/model directories wholesale.
+# These rules do not affect the preserved backend six-class and v3 ONNX assets.
+public/models/*
+!public/models/rice-disease-warmstart-v1/
+public/models/rice-disease-warmstart-v1/*
+!public/models/rice-disease-warmstart-v1/rice_disease_15class.onnx
+!public/models/rice-disease-warmstart-v1/model_metadata.json
+!public/models/rice-disease-warmstart-v1/class_mapping.json
+!public/models/rice-disease-warmstart-v1/onnx_parity.json
+!public/models/rice-disease-warmstart-v1/manifest.json
+
+# Browser-test output is generated, not a deployment asset
+playwright-test/test-results/
 
 # Environment — never commit real keys
 .env

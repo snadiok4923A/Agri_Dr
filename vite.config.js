@@ -1,16 +1,16 @@
-import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vite'
+import react from "@vitejs/plugin-react";
+import { defineConfig, loadEnv } from "vite";
 
 /**
  * Deployment base. GitHub Pages serves this repo at /Agri_Dr/, so every
  * asset URL and the router basename must use the same value.
  */
-const BASE = '/Agri_Dr/'
-const BASE_NO_SLASH = BASE.replace(/\/+$/, '') // "/Agri_Dr"
+const BASE = "/Agri_Dr/";
+const BASE_NO_SLASH = BASE.replace(/\/+$/, ""); // "/Agri_Dr"
 
 /** Shared between 404.html and the injected restore script. */
-const REDIRECT_STORAGE_KEY = 'krisiveda:spa-redirect'
-const REDIRECT_PARAM = 'spa-redirect'
+const REDIRECT_STORAGE_KEY = "krisiveda:spa-redirect";
+const REDIRECT_PARAM = "spa-redirect";
 
 /**
  * Script injected into <head> of index.html (before the module bundle, so
@@ -32,7 +32,7 @@ function restoreRouteScript() {
     if (!route || route.charAt(0) !== '/') return;
     window.history.replaceState(null, '', ${JSON.stringify(BASE_NO_SLASH)} + route);
   } catch (e) {}
-})();`
+})();`;
 }
 
 /**
@@ -67,7 +67,7 @@ function notFoundPage() {
   </head>
   <body></body>
 </html>
-`
+`;
 }
 
 /**
@@ -84,30 +84,45 @@ function notFoundPage() {
  */
 function githubPagesSpaFallback() {
     return {
-        name: 'github-pages-spa-fallback',
+        name: "github-pages-spa-fallback",
         transformIndexHtml: {
-            order: 'pre',
+            order: "pre",
             handler() {
                 return [
                     {
-                        tag: 'script',
-                        injectTo: 'head-prepend',
+                        tag: "script",
+                        injectTo: "head-prepend",
                         children: restoreRouteScript(),
                     },
-                ]
+                ];
             },
         },
         generateBundle() {
             this.emitFile({
-                type: 'asset',
-                fileName: '404.html',
+                type: "asset",
+                fileName: "404.html",
                 source: notFoundPage(),
-            })
+            });
         },
-    }
+    };
 }
 
-export default defineConfig({
-    plugins: [react(), githubPagesSpaFallback()],
-    base: BASE,
-})
+export default defineConfig(({ mode }) => {
+    const env = loadEnv(mode, process.cwd(), "VITE_KRISIVEDA_ML_V2_API_URL");
+    const v2ApiTarget =
+        env.VITE_KRISIVEDA_ML_V2_API_URL?.trim() || "http://127.0.0.1:8001";
+
+    return {
+        plugins: [react(), githubPagesSpaFallback()],
+        base: BASE,
+        server: {
+            proxy: {
+                [`${BASE}api/disease/v2`]: {
+                    target: v2ApiTarget,
+                    changeOrigin: true,
+                    rewrite: (path) => path.slice(`${BASE}api`.length),
+                },
+            },
+        },
+    };
+});

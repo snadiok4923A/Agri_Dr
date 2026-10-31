@@ -132,6 +132,21 @@ export const translations = {
             usePhoto: "Use Photo",
             analyze: "Analyze",
             chooseAnother: "Choose Another",
+            paste: "Paste",
+            pasteImage: "Paste image from clipboard",
+            clipboardReading: "Reading clipboard…",
+            clipboardEmpty:
+                "No image found in the clipboard. Copy an image first, then try Paste.",
+            clipboardDenied:
+                "Clipboard access was blocked. Allow clipboard access or use Upload Photo.",
+            clipboardUnavailable:
+                "Clipboard access is unavailable here. Use Upload Photo, or try Ctrl+V / Cmd+V in the preview.",
+            clipboardInvalid:
+                "The clipboard image could not be opened. Copy a different image and try again.",
+            clipboardUnsupported: "Please paste a JPEG, PNG, or WEBP image.",
+            clipboardTooLarge: "The image must be smaller than 10 MB.",
+            clipboardReadFailed:
+                "The clipboard could not be read. Try Paste again or use Upload Photo.",
             cropAnalysis: "Crop Analysis",
             modelNotConnected: "Model not connected",
             analysisNotReady: "Analysis is not available yet. The crop diagnosis model will be connected here.",

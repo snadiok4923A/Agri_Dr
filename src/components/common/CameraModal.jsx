@@ -8,6 +8,8 @@ import {
     RotateCcw,
     RefreshCcw,
     ScanLine,
+    ClipboardPaste,
+    LoaderCircle,
 } from "lucide-react";
 import { useLanguage } from "../../hooks/useLanguage";
 import { analyzeCropImage } from "../../services/cropAnalysisService";
@@ -31,7 +33,7 @@ import "./CameraModal.css";
  *                 File → onCapture(file) → the parent flips the workflow to
  *                 photo-preview. The camera stream stops immediately.
  *   photo-preview the captured/uploaded photo + Retake (camera origin) or
- *                 Choose Another (upload origin) + Analyze.
+ *                 Choose Another (upload/clipboard origin), Paste + Analyze.
  *   analysis      analyzeCropImage(file) → an explicit API result; no fake
  *                 disease data is ever shown (§14/§31).
  *
@@ -66,8 +68,15 @@ export default function CameraModal({
     onClose, // parent decides: analysis → preview, otherwise → closed
     onCapture, // (file) => parent stores the photo + moves to photo-preview
     onRetake, // photo-preview → camera (§7)
-    onChooseAnother, // photo-preview → file picker (upload origin, §8)
+    onChooseAnother, // photo-preview → file picker (upload/clipboard origin)
     onAnalyze, // photo-preview → analysis (§17)
+    onPaste,
+    clipboardBusy = false,
+    clipboardMessage = "",
+    diseaseModel = "v1",
+    advancedAvailable = false,
+    browserAvailable = false,
+    onDiseaseModelChange,
 }) {
     const { t } = useLanguage();
 
@@ -119,7 +128,8 @@ export default function CameraModal({
             audio: false,
         };
         try {
-            const stream = await navigator.mediaDevices.getUserMedia(constraints);
+            const stream =
+                await navigator.mediaDevices.getUserMedia(constraints);
             if (!aliveRef.current) {
                 stream.getTracks().forEach((track) => track.stop());
                 return; // stage left while the permission dialog was open
@@ -197,13 +207,13 @@ export default function CameraModal({
         const req = ++analysisReqRef.current;
         let alive = true;
         setAnalysis({ status: "loading" });
-        analyzeCropImage(photo?.file).then((result) => {
+        analyzeCropImage(photo?.file, diseaseModel).then((result) => {
             if (alive && analysisReqRef.current === req) setAnalysis(result);
         });
         return () => {
             alive = false;
         };
-    }, [open, flow, photo?.file]);
+    }, [open, flow, photo?.file, diseaseModel]);
 
     /* Window-level: Escape closes any stage; page scroll locked while open */
     useEffect(() => {
@@ -230,12 +240,16 @@ export default function CameraModal({
         const canvas = document.createElement("canvas");
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
-        canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
+        canvas
+            .getContext("2d")
+            .drawImage(video, 0, 0, canvas.width, canvas.height);
         canvas.toBlob(
             (blob) => {
                 if (!blob) return;
                 stopStream(); // §13/§24 — camera off the moment a shot exists
-                onCapture?.(new File([blob], "crop-photo.jpg", { type: "image/jpeg" }));
+                onCapture?.(
+                    new File([blob], "crop-photo.jpg", { type: "image/jpeg" }),
+                );
             },
             "image/jpeg",
             0.9,
@@ -253,7 +267,11 @@ export default function CameraModal({
             onClick={onClose}
             role="dialog"
             aria-modal="true"
-            aria-label={flow === "analysis" ? t("dashboard.cropAnalysis") : t("dashboard.cropDiagnosis")}
+            aria-label={
+                flow === "analysis"
+                    ? t("dashboard.cropAnalysis")
+                    : t("dashboard.cropDiagnosis")
+            }
         >
             <div className="camodal" onClick={(e) => e.stopPropagation()}>
                 {/* ===== Header: stage title · Close ===== */}
@@ -263,7 +281,11 @@ export default function CameraModal({
                             ? t("dashboard.cropAnalysis")
                             : t("dashboard.cropDiagnosis")}
                     </span>
-                    <button className="camodal__close" onClick={onClose} aria-label={t("common.close")}>
+                    <button
+                        className="camodal__close"
+                        onClick={onClose}
+                        aria-label={t("common.close")}
+                    >
                         <X size={16} />
                     </button>
                 </header>
@@ -274,27 +296,53 @@ export default function CameraModal({
                         <div className="camodal__viewport">
                             {camStage === "starting" && (
                                 <div className="camodal__state">
-                                    <Camera className="camodal__state-ico camodal__state-ico--pulse" size={34} />
+                                    <Camera
+                                        className="camodal__state-ico camodal__state-ico--pulse"
+                                        size={34}
+                                    />
                                     <span>{t("dashboard.cameraStarting")}</span>
                                 </div>
                             )}
 
-                            {camStage === "live" && <video ref={videoRef} className="camodal__video" autoPlay playsInline muted />}
+                            {camStage === "live" && (
+                                <video
+                                    ref={videoRef}
+                                    className="camodal__video"
+                                    autoPlay
+                                    playsInline
+                                    muted
+                                />
+                            )}
 
                             {camStage === "error" && (
                                 <div className="camodal__state">
-                                    <CameraOff className="camodal__state-ico" size={34} />
-                                    <span className="camodal__state-text">{t(errorKeyState)}</span>
+                                    <CameraOff
+                                        className="camodal__state-ico"
+                                        size={34}
+                                    />
+                                    <span className="camodal__state-text">
+                                        {t(errorKeyState)}
+                                    </span>
                                     <div className="camodal__state-actions">
                                         {/* Denied/in-use → retry; missing camera → upload only */}
-                                        {errorKeyState !== "dashboard.cameraNotFound" &&
-                                            errorKeyState !== "dashboard.cameraUnavailable" && (
-                                                <button className="camodal__btn camodal__btn--primary" onClick={startCamera}>
+                                        {errorKeyState !==
+                                            "dashboard.cameraNotFound" &&
+                                            errorKeyState !==
+                                                "dashboard.cameraUnavailable" && (
+                                                <button
+                                                    className="camodal__btn camodal__btn--primary"
+                                                    onClick={startCamera}
+                                                >
                                                     <RotateCcw size={15} />
-                                                    {t("dashboard.cameraTryAgain")}
+                                                    {t(
+                                                        "dashboard.cameraTryAgain",
+                                                    )}
                                                 </button>
                                             )}
-                                        <button className="camodal__btn" onClick={onClose}>
+                                        <button
+                                            className="camodal__btn"
+                                            onClick={onClose}
+                                        >
                                             {t("common.close")}
                                         </button>
                                     </div>
@@ -308,7 +356,10 @@ export default function CameraModal({
 
                         {camStage === "live" && (
                             <div className="camodal__controls">
-                                <button className="camodal__cancel" onClick={onClose}>
+                                <button
+                                    className="camodal__cancel"
+                                    onClick={onClose}
+                                >
                                     {t("common.close")}
                                 </button>
                                 <button
@@ -330,24 +381,119 @@ export default function CameraModal({
                 {flow === "photo-preview" && photo && (
                     <>
                         <div className="camodal__photo-frame">
-                            <img className="camodal__photo" src={photo.url} alt={t("dashboard.cropDiagnosis")} decoding="async" />
+                            <img
+                                className="camodal__photo"
+                                src={photo.url}
+                                alt={t("dashboard.cropDiagnosis")}
+                                decoding="async"
+                            />
                         </div>
                         <div className="camodal__actions">
-                            {photo.source === "camera" ? (
-                                <button className="camodal__btn" onClick={onRetake}>
-                                    <RotateCcw size={15} />
-                                    {t("dashboard.retake")}
+                            <label className="camodal__model-picker">
+                                <span>Analysis model</span>
+                                <select
+                                    value={diseaseModel}
+                                    onChange={(event) =>
+                                        onDiseaseModelChange?.(
+                                            event.target.value,
+                                        )
+                                    }
+                                >
+                                    <option value="v1">
+                                        Existing Model (6 Classes)
+                                    </option>
+                                    <option
+                                        value="v2"
+                                        disabled={!advancedAvailable}
+                                    >
+                                        Advanced Model (15 Classes)
+                                    </option>
+                                    <option
+                                        value="browser-v2"
+                                        disabled={!browserAvailable}
+                                    >
+                                        Browser Model (15 Classes)
+                                    </option>
+                                </select>
+                            </label>
+                            <div className="camodal__preview-buttons">
+                                <button
+                                    type="button"
+                                    className="camodal__btn"
+                                    onClick={
+                                        photo.source === "camera"
+                                            ? onRetake
+                                            : onChooseAnother
+                                    }
+                                    aria-label={t(
+                                        photo.source === "camera"
+                                            ? "dashboard.retake"
+                                            : "dashboard.chooseAnother",
+                                    )}
+                                    title={t(
+                                        photo.source === "camera"
+                                            ? "dashboard.retake"
+                                            : "dashboard.chooseAnother",
+                                    )}
+                                >
+                                    {photo.source === "camera" ? (
+                                        <RotateCcw
+                                            size={15}
+                                            aria-hidden="true"
+                                        />
+                                    ) : (
+                                        <RefreshCcw
+                                            size={15}
+                                            aria-hidden="true"
+                                        />
+                                    )}
+                                    <span className="camodal__secondary-label">
+                                        {t(
+                                            photo.source === "camera"
+                                                ? "dashboard.retake"
+                                                : "dashboard.chooseAnother",
+                                        )}
+                                    </span>
                                 </button>
-                            ) : (
-                                <button className="camodal__btn" onClick={onChooseAnother}>
-                                    <RefreshCcw size={15} />
-                                    {t("dashboard.chooseAnother")}
+                                <button
+                                    type="button"
+                                    className="camodal__btn camodal__paste"
+                                    onClick={onPaste}
+                                    disabled={clipboardBusy}
+                                    aria-busy={clipboardBusy}
+                                    aria-label={t("dashboard.pasteImage")}
+                                    title={t(
+                                        clipboardBusy
+                                            ? "dashboard.clipboardReading"
+                                            : "dashboard.pasteImage",
+                                    )}
+                                >
+                                    {clipboardBusy ? (
+                                        <LoaderCircle
+                                            size={15}
+                                            className="crop-clipboard-spinner"
+                                            aria-hidden="true"
+                                        />
+                                    ) : (
+                                        <ClipboardPaste
+                                            size={15}
+                                            aria-hidden="true"
+                                        />
+                                    )}
+                                    <span className="camodal__secondary-label">
+                                        {t("dashboard.paste")}
+                                    </span>
                                 </button>
-                            )}
-                            <button className="camodal__btn camodal__btn--primary" onClick={onAnalyze}>
-                                <ScanLine size={16} />
-                                {t("dashboard.analyze")}
-                            </button>
+                                <button
+                                    type="button"
+                                    className="camodal__btn camodal__btn--primary"
+                                    onClick={onAnalyze}
+                                    disabled={clipboardBusy}
+                                >
+                                    <ScanLine size={16} aria-hidden="true" />
+                                    <span>{t("dashboard.analyze")}</span>
+                                </button>
+                            </div>
                         </div>
                     </>
                 )}
@@ -356,7 +502,12 @@ export default function CameraModal({
                 {flow === "analysis" && photo && (
                     <div className="camodal__analysis">
                         <div className="camodal__thumb-frame">
-                            <img className="camodal__thumb" src={photo.url} alt="" decoding="async" />
+                            <img
+                                className="camodal__thumb"
+                                src={photo.url}
+                                alt=""
+                                decoding="async"
+                            />
                         </div>
 
                         {analysis?.status === "loading" ? (
@@ -366,14 +517,27 @@ export default function CameraModal({
                                     Analyzing image...
                                 </span>
                                 <span className="camodal__analysis-msg">
-                                    Checking the image with the KRISIVEDA disease model.
+                                    Checking the image with the KRISIVEDA
+                                    disease model.
                                 </span>
                             </div>
-                        ) : analysis?.status === "ok" || analysis?.status === "uncertain" ? (
+                        ) : analysis?.status === "ok" ||
+                          analysis?.status === "uncertain" ? (
                             <div className="camodal__analysis-body">
+                                {analysis.status === "uncertain" && (
+                                    <span className="camodal__uncertain-warning">
+                                        <AlertTriangle size={15} />
+                                        Uncertain prediction — do not treat this
+                                        as a confirmed diagnosis.
+                                    </span>
+                                )}
                                 {analysis.disease && (
                                     <span className="camodal__analysis-disease">
-                                        {analysis.disease.replaceAll("_", " ")}
+                                        {analysis.display_name ||
+                                            analysis.disease.replaceAll(
+                                                "_",
+                                                " ",
+                                            )}
                                     </span>
                                 )}
                                 {typeof analysis.confidence === "number" && (
@@ -382,17 +546,39 @@ export default function CameraModal({
                                         {Math.round(analysis.confidence * 100)}%
                                     </span>
                                 )}
-                                {analysis.message && (
-                                    <span className="camodal__analysis-msg">{analysis.message}</span>
-                                )}
-                                {analysis.status === "uncertain" && analysis.top_predictions?.length > 0 && (
+                                {analysis.model_version && (
                                     <span className="camodal__analysis-msg">
-                                        Possible matches:{" "}
-                                        {analysis.top_predictions
-                                            .map((prediction) => prediction.disease.replaceAll("_", " "))
-                                            .join(", ")}
+                                        Model version: {analysis.model_version}
                                     </span>
                                 )}
+                                {analysis.category && (
+                                    <span className="camodal__analysis-msg">
+                                        Category:{" "}
+                                        {analysis.category
+                                            .charAt(0)
+                                            .toUpperCase() +
+                                            analysis.category.slice(1)}
+                                    </span>
+                                )}
+                                {analysis.message && (
+                                    <span className="camodal__analysis-msg">
+                                        {analysis.message}
+                                    </span>
+                                )}
+                                {analysis.status === "uncertain" &&
+                                    analysis.top_predictions?.length > 0 && (
+                                        <span className="camodal__analysis-msg">
+                                            Possible matches:{" "}
+                                            {analysis.top_predictions
+                                                .map((prediction) =>
+                                                    prediction.disease.replaceAll(
+                                                        "_",
+                                                        " ",
+                                                    ),
+                                                )
+                                                .join(", ")}
+                                        </span>
+                                    )}
                             </div>
                         ) : analysis?.status === "error" ? (
                             <div className="camodal__analysis-body">
@@ -401,11 +587,18 @@ export default function CameraModal({
                                     {t("dashboard.analysisNotReady")}
                                 </span>
                                 <span className="camodal__analysis-msg">
-                                    {analysis.reason === "unsupported-file-type"
-                                        ? "Please upload a JPEG, PNG, or WEBP image."
-                                        : analysis.reason === "file-too-large"
-                                            ? "The image must be smaller than 10 MB."
-                                            : analysis.reason === "no-image"
+                                    {analysis.reason?.startsWith("browser-") &&
+                                    typeof analysis.message === "string"
+                                        ? analysis.message
+                                        : analysis.reason ===
+                                            "unsupported-file-type"
+                                          ? "Please upload a JPEG, PNG, or WEBP image."
+                                          : analysis.reason === "invalid-image"
+                                            ? "The uploaded image is invalid or could not be decoded."
+                                            : analysis.reason ===
+                                                "file-too-large"
+                                              ? "The image must be smaller than 10 MB."
+                                              : analysis.reason === "no-image"
                                                 ? "No image was selected."
                                                 : "Disease recognition is unavailable. Please try again later."}
                                 </span>
@@ -426,6 +619,11 @@ export default function CameraModal({
                             {t("common.close")}
                         </button>
                     </div>
+                )}
+                {clipboardMessage && (
+                    <p className="camodal__clipboard-message" role="status">
+                        {clipboardMessage}
+                    </p>
                 )}
             </div>
         </div>,

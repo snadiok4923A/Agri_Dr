@@ -18,8 +18,12 @@
 }
 
 @keyframes camodal-overlay-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 /* ==================== Glass panel ==================== */
@@ -41,7 +45,7 @@
     backdrop-filter: blur(18px) saturate(125%);
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 22px;
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.40);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
     animation: camodal-in 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
@@ -139,8 +143,12 @@
 }
 
 @keyframes camodal-fade {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 /* ==================== Action row (photo preview) ==================== */
@@ -150,6 +158,75 @@
     justify-content: center;
     gap: 12px;
     flex-wrap: wrap;
+}
+
+.camodal__preview-buttons {
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(0, 0.85fr) minmax(0, 1fr);
+    gap: 8px;
+    width: 100%;
+}
+
+.camodal__preview-buttons .camodal__btn {
+    justify-content: center;
+    min-width: 0;
+    min-height: 44px;
+    padding: 10px 8px;
+    gap: 6px;
+    font-size: clamp(11px, calc(12px * var(--ts-body, 1)), 16px);
+}
+
+.camodal__preview-buttons .camodal__btn svg {
+    flex-shrink: 0;
+}
+
+.camodal__preview-buttons .camodal__btn span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.camodal__btn:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+.camodal__clipboard-message {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--text-secondary);
+    overflow-wrap: anywhere;
+}
+
+.crop-clipboard-spinner {
+    animation: crop-clipboard-spin 1s linear infinite;
+}
+
+@keyframes crop-clipboard-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.camodal__model-picker {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    width: 100%;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.camodal__model-picker select {
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    font: inherit;
 }
 
 /* ==================== Analysis window ==================== */
@@ -226,6 +303,15 @@
     max-width: 40ch;
 }
 
+.camodal__uncertain-warning {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    color: var(--warning);
+    font-weight: 700;
+    line-height: 1.4;
+}
+
 /* ==================== States (starting / error) ==================== */
 .camodal__state {
     position: absolute;
@@ -248,8 +334,13 @@
 }
 
 @keyframes camodal-pulse {
-    0%, 100% { opacity: 0.4; }
-    50% { opacity: 0.85; }
+    0%,
+    100% {
+        opacity: 0.4;
+    }
+    50% {
+        opacity: 0.85;
+    }
 }
 
 .camodal__state-text {
@@ -301,7 +392,9 @@
     border: 3px solid rgba(255, 255, 255, 0.55);
     box-shadow: 0 6px 22px rgba(111, 207, 142, 0.35);
     cursor: pointer;
-    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    transition:
+        transform var(--transition-fast),
+        box-shadow var(--transition-fast);
     flex-shrink: 0;
 }
 
@@ -357,7 +450,10 @@
     .camodal__overlay {
         padding: 12px;
         /* Never slide under the mobile bottom navigation */
-        padding-bottom: max(12px, calc(env(safe-area-inset-bottom, 0px) + 84px));
+        padding-bottom: max(
+            12px,
+            calc(env(safe-area-inset-bottom, 0px) + 84px)
+        );
         align-items: flex-end;
     }
 
@@ -387,13 +483,27 @@
 
     /* Comfortable tap targets in the action rows */
     .camodal__actions .camodal__btn {
-        padding: 12px 20px;
+        padding: 10px 6px;
+        gap: 5px;
+    }
+}
+
+@media (max-width: 380px) {
+    .camodal__preview-buttons {
+        grid-template-columns: 44px 44px minmax(0, 1fr);
+    }
+
+    .camodal__preview-buttons .camodal__secondary-label {
+        display: none;
     }
 }
 
 @media (max-width: 360px) {
     .camodal__overlay {
-        padding-bottom: max(10px, calc(env(safe-area-inset-bottom, 0px) + 84px));
+        padding-bottom: max(
+            10px,
+            calc(env(safe-area-inset-bottom, 0px) + 84px)
+        );
     }
 
     .camodal {
@@ -416,6 +526,10 @@
     .camodal__state-ico--pulse {
         animation: none;
         opacity: 0.6;
+    }
+
+    .crop-clipboard-spinner {
+        animation: none;
     }
 }
 

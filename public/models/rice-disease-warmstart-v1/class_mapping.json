@@ -1,0 +1,196 @@
+{
+  "version": "rice-disease-15class-v1",
+  "num_classes": 15,
+  "order_is_model_output_order": true,
+  "classes": [
+    {
+      "class_id": "bacterial_leaf_blight",
+      "folder_name": "bacterial_leaf_blight",
+      "display_name": "Bacterial leaf blight",
+      "category": "disease",
+      "causal_agent": "Xanthomonas oryzae pv. oryzae",
+      "notes": "Water-soaked to yellow-white lesions starting at leaf tips.",
+      "needs_review": false
+    },
+    {
+      "class_id": "bacterial_leaf_streak",
+      "folder_name": "bacterial_leaf_streak",
+      "display_name": "Bacterial leaf streak",
+      "category": "disease",
+      "causal_agent": "Xanthomonas oryzae pv. oryzicola",
+      "notes": "Narrow translucent streaks; frequently confused with leaf blight.",
+      "needs_review": false
+    },
+    {
+      "class_id": "bacterial_panicle_blight",
+      "folder_name": "bacterial_panicle_blight",
+      "display_name": "Bacterial panicle blight",
+      "category": "disease",
+      "causal_agent": "Burkholderia glumae / B. gladioli",
+      "notes": "Panicle-centred symptoms; leaf-only photos may be unrepresentative.",
+      "needs_review": false
+    },
+    {
+      "class_id": "bacterial_stripe_disease",
+      "folder_name": "bacterial_stripe_disease",
+      "display_name": "Bacterial stripe disease",
+      "category": "disease",
+      "causal_agent": "Acidovorax avenae subsp. avenae",
+      "notes": "Stripe symptoms overlap with leaf streak and blight.",
+      "needs_review": false
+    },
+    {
+      "class_id": "brown_spot",
+      "folder_name": "brown_spot",
+      "display_name": "Brown spot",
+      "category": "disease",
+      "causal_agent": "Bipolaris oryzae",
+      "notes": "Oval brown lesions; overlaps with leaf smut and blast.",
+      "needs_review": false
+    },
+    {
+      "class_id": "dead_heart",
+      "folder_name": "dead_heart",
+      "display_name": "Dead heart",
+      "category": "pest",
+      "causal_agent": "Stem-borer feeding damage",
+      "notes": "Symptom class (not a pathogen); caused by stem borers including the white and yellow stem borer classes in this dataset.",
+      "needs_review": false
+    },
+    {
+      "class_id": "downy_mildew",
+      "folder_name": "downy_mildew",
+      "display_name": "Downy mildew",
+      "category": "disease",
+      "causal_agent": "Peronosclerospora spp. (recorded on rice)",
+      "notes": "Downy mildew is uncommon on rice; confirm these images are not another disease before trusting this class.",
+      "needs_review": true
+    },
+    {
+      "class_id": "healthy_rice_leaf",
+      "folder_name": "Healthy",
+      "display_name": "Healthy leaf",
+      "category": "healthy",
+      "causal_agent": "No pathogen or pest damage",
+      "notes": "Any early, low-contrast lesion can be absorbed into this class.",
+      "needs_review": false
+    },
+    {
+      "class_id": "hispa",
+      "folder_name": "hispa",
+      "display_name": "Rice hispa",
+      "category": "pest",
+      "causal_agent": "Dicladispa armigera",
+      "notes": "Adult scraping and larval mining; label is an insect, not a disease.",
+      "needs_review": false
+    },
+    {
+      "class_id": "leaf_blast",
+      "folder_name": "Leaf Blast",
+      "display_name": "Leaf blast",
+      "category": "disease",
+      "causal_agent": "Magnaporthe oryzae",
+      "notes": "Spindle-shaped lesions; early lesions resemble brown spot.",
+      "needs_review": false
+    },
+    {
+      "class_id": "leaf_smut",
+      "folder_name": "Leaf Smut",
+      "display_name": "Leaf smut",
+      "category": "disease",
+      "causal_agent": "Entyloma oryzae",
+      "notes": "Rare in this dataset; smallest class, so metrics will be noisy.",
+      "needs_review": true
+    },
+    {
+      "class_id": "leaf_roller",
+      "folder_name": "leaf_roller",
+      "display_name": "Leaf roller",
+      "category": "pest",
+      "causal_agent": "Cnaphalocrocis medinalis",
+      "notes": "Folded/glued leaves with scraping damage.",
+      "needs_review": false
+    },
+    {
+      "class_id": "tungro",
+      "folder_name": "tungro",
+      "display_name": "Tungro",
+      "category": "disease",
+      "causal_agent": "Rice tungro virus (leafhopper-transmitted)",
+      "notes": "Yellow-orange discolouration; whole-plant symptoms may be missed in leaf close-ups.",
+      "needs_review": false
+    },
+    {
+      "class_id": "white_stem_borer",
+      "folder_name": "white_stem_borer",
+      "display_name": "White stem borer",
+      "category": "pest",
+      "causal_agent": "Scirpophaga innotata",
+      "notes": "Damage appears as dead heart / white ear; overlaps with dead_heart.",
+      "needs_review": false
+    },
+    {
+      "class_id": "yellow_stem_borer",
+      "folder_name": "yellow_stem_borer",
+      "display_name": "Yellow stem borer",
+      "category": "pest",
+      "causal_agent": "Scirpophaga incertulas",
+      "notes": "Damage appears as dead heart / white ear; overlaps with dead_heart.",
+      "needs_review": false
+    }
+  ],
+  "confusable_pairs": [
+    [
+      "bacterial_leaf_blight",
+      "bacterial_leaf_streak"
+    ],
+    [
+      "bacterial_leaf_blight",
+      "bacterial_stripe_disease"
+    ],
+    [
+      "bacterial_leaf_streak",
+      "bacterial_stripe_disease"
+    ],
+    [
+      "brown_spot",
+      "leaf_blast"
+    ],
+    [
+      "brown_spot",
+      "leaf_smut"
+    ],
+    [
+      "dead_heart",
+      "white_stem_borer"
+    ],
+    [
+      "dead_heart",
+      "yellow_stem_borer"
+    ],
+    [
+      "white_stem_borer",
+      "yellow_stem_borer"
+    ],
+    [
+      "hispa",
+      "leaf_roller"
+    ],
+    [
+      "healthy_rice_leaf",
+      "brown_spot"
+    ],
+    [
+      "healthy_rice_leaf",
+      "leaf_smut"
+    ]
+  ],
+  "label_notes": [
+    "Class set mixes disease, pest-damage and healthy labels.",
+    "dead_heart is a stem-borer symptom, not a distinct pathogen.",
+    "Predictions are dataset labels, not confirmed agronomic diagnoses."
+  ],
+  "model_version": "rice-disease-warmstart-v1",
+  "generated_from": "app/rice_disease_15class/taxonomy.py",
+  "note": "Output order is fixed; the same order must be used at inference."
+}

@@ -1,13 +1,14 @@
 {
-  "name": "krisiveda-playwright-tests",
-  "version": "0.0.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "test": "playwright test",
-    "test:headed": "playwright test --headed"
-  },
-  "devDependencies": {
-    "@playwright/test": "^1.54.0"
-  }
+    "name": "krisiveda-playwright-tests",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "test": "playwright test",
+        "test:browser-model": "playwright test --config browser-model.config.js",
+        "test:headed": "playwright test --headed"
+    },
+    "devDependencies": {
+        "@playwright/test": "^1.54.0"
+    }
 }

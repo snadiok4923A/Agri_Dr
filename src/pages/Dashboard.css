@@ -1114,6 +1114,22 @@
     min-width: 0;
 }
 
+.dashboard-diagnosis-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-width: 0;
+}
+
+.dashboard-diagnosis-clipboard-message {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 12px;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
 .dashboard-diagnosis-tag {
     display: inline-flex;
     align-items: center;
@@ -1252,6 +1268,21 @@
     transform: translateY(-1px);
     border-color: #333333;
     background: var(--bg-hover);
+}
+
+.dashboard-diagnosis-paste {
+    flex-shrink: 0;
+    min-height: 34px;
+    padding: 6px 10px;
+    gap: 5px;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.dashboard-diagnosis-btn:disabled {
+    opacity: 0.6;
+    cursor: wait;
+    transform: none;
 }
 
 /* Light theme: white alphas vanish on the cream card, so Upload Photo

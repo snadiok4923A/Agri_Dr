@@ -1,0 +1,3 @@
+# Immutable publication artifacts: checksums cover their original bytes.
+# Do not normalize JSON line endings on Windows or in a Linux Pages build.
+public/models/rice-disease-warmstart-v1/* -text
