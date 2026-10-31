@@ -1,0 +1,1 @@
+var e=`/Agri_Dr/assets/ort-wasm-simd-threaded-qh98TCA_.wasm`;export{e as default};

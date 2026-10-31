@@ -1,0 +1,33 @@
+{
+  "checked_at": "2026-10-31T10:50:43.569055+00:00",
+  "samples": 128,
+  "max_abs_logit_difference": 1.1205673217773438e-05,
+  "mean_abs_logit_difference": 9.823233995120972e-07,
+  "max_abs_probability_difference": 1.3560056686401367e-06,
+  "predicted_class_agreement": 1.0,
+  "all_within_atol": true,
+  "atol": 0.0001,
+  "input_signature": {
+    "name": "images",
+    "shape": [
+      "batch",
+      3,
+      224,
+      224
+    ],
+    "type": "tensor(float)"
+  },
+  "output_signature": {
+    "name": "logits",
+    "shape": [
+      "batch",
+      15
+    ],
+    "type": "tensor(float)"
+  },
+  "preprocessing_identical": true,
+  "notes": [
+    "Both runtimes consumed the exact same float32 tensor, so any difference is numeric only.",
+    "ONNX Runtime used the CPU execution provider."
+  ]
+}
