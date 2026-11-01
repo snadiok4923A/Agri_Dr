@@ -9,16 +9,16 @@
       "sha256": "5593156d6da4c35132248e1aafcce6b8294e8cdf66f4255ca91db5d95c8fa12a"
     },
     "model_metadata.json": {
-      "bytes": 39030,
-      "sha256": "d2ad6f1b080284bc74e745242a9b6588a6d60b15058cbead347270b758a61539"
+      "bytes": 37829,
+      "sha256": "066e89f2c334dfd973bee66936d6ff616d6bd9ee207a74fb33e4d5e652cab235"
     },
     "class_mapping.json": {
-      "bytes": 6297,
-      "sha256": "1173b26ddeab918ef19a8d213143dff5c9c9c1fff1eb66cd7cd013b3f90a1109"
+      "bytes": 6101,
+      "sha256": "99dceae78a962814b868f99c56e7aba314684d5ef609c29422dc3dc2095035c9"
     },
     "onnx_parity.json": {
-      "bytes": 826,
-      "sha256": "645ed39572fef9e0c3fff64e63375acf4d287c3a571b4f95bb2b980cb71a9a52"
+      "bytes": 793,
+      "sha256": "ec43a3ad89d19861a4925322868d20f7149cffd8abf55bf4a4581e6477aae08c"
     }
   }
 }

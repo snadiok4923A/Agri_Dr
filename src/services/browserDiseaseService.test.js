@@ -208,6 +208,27 @@ test("status validates actual sidecars and HEAD once without loading weights or 
     assert.equal(fetch.mock.callCount(), 5);
 });
 
+test("Git-normalized LF sidecars verify against the same canonical pins as CRLF", async (t) => {
+    const { service, files, write } = await harness(t);
+    for (const name of [
+        "model_metadata.json",
+        "class_mapping.json",
+        "onnx_parity.json",
+    ]) {
+        const checkedOut = files.get(name);
+        const lf = Buffer.from(
+            checkedOut.toString("utf8").replaceAll("\r\n", "\n"),
+        );
+        // A Windows checkout is CRLF; GitHub Pages serves the LF form.
+        assert.ok(lf.length < checkedOut.length);
+        write(name, lf, false);
+    }
+    const status = await service.getBrowserDiseaseStatus();
+    assert.equal(status.available, true);
+    assert.equal(status.reason, null);
+    assert.equal(status.classes, 15);
+});
+
 for (const name of names) {
     test(`missing ${name} fails closed and failed bundle initialization can retry`, async (t) => {
         const { service, state } = await harness(t);

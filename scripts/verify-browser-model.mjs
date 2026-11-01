@@ -28,6 +28,22 @@ const sources = {
 };
 const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const json = (path) => JSON.parse(readFileSync(path, "utf8"));
+// The browser verifier covers the canonical LF form of JSON sidecars, so a
+// Windows CRLF checkout and the Git-normalized LF bytes on GitHub Pages
+// validate against the same manifest. ONNX weights stay byte-exact.
+const canonicalJson = (bytes) => {
+    let crlf = 0;
+    for (let i = 0; i < bytes.length - 1; i += 1)
+        if (bytes[i] === 13 && bytes[i + 1] === 10) crlf += 1;
+    if (!crlf) return bytes;
+    const out = Buffer.allocUnsafe(bytes.length - crlf);
+    for (let i = 0, j = 0; i < bytes.length; i += 1) {
+        if (bytes[i] === 13 && bytes[i + 1] === 10) continue;
+        out[j] = bytes[i];
+        j += 1;
+    }
+    return out;
+};
 
 export function verifyBrowserModel(siteDirectory = "public") {
     const site = resolve(root, siteDirectory);
@@ -55,7 +71,8 @@ export function verifyBrowserModel(siteDirectory = "public") {
     );
     let total = 0;
     for (const name of names) {
-        const bytes = readFileSync(join(directory, name));
+        const raw = readFileSync(join(directory, name));
+        const bytes = name.endsWith(".json") ? canonicalJson(raw) : raw;
         assert.equal(
             bytes.length,
             manifest.files[name].bytes,
@@ -68,13 +85,15 @@ export function verifyBrowserModel(siteDirectory = "public") {
         );
         // Local training assets may be absent in a clean production checkout.
         const source = join(root, sources[name]);
-        if (existsSync(source))
+        if (existsSync(source)) {
+            const original = readFileSync(source);
             assert.equal(
-                sha256(readFileSync(source)),
+                sha256(name.endsWith(".json") ? canonicalJson(original) : original),
                 sha256(bytes),
                 `${name}: production copy differs from its original`,
             );
-        total += bytes.length;
+        }
+        total += raw.length;
     }
     const metadata = json(join(directory, "model_metadata.json"));
     const mapping = json(join(directory, "class_mapping.json"));

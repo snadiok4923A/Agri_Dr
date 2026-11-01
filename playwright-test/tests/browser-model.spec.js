@@ -16,16 +16,16 @@ const MODEL_BASE = `${APP_BASE}models/${VERSION}/`;
 const PINNED_FILES = {
     [MODEL]: { bytes: 6142549, sha256: MODEL_SHA256 },
     "model_metadata.json": {
-        bytes: 39030,
-        sha256: "d2ad6f1b080284bc74e745242a9b6588a6d60b15058cbead347270b758a61539",
+        bytes: 37829,
+        sha256: "066e89f2c334dfd973bee66936d6ff616d6bd9ee207a74fb33e4d5e652cab235",
     },
     "class_mapping.json": {
-        bytes: 6297,
-        sha256: "1173b26ddeab918ef19a8d213143dff5c9c9c1fff1eb66cd7cd013b3f90a1109",
+        bytes: 6101,
+        sha256: "99dceae78a962814b868f99c56e7aba314684d5ef609c29422dc3dc2095035c9",
     },
     "onnx_parity.json": {
-        bytes: 826,
-        sha256: "645ed39572fef9e0c3fff64e63375acf4d287c3a571b4f95bb2b980cb71a9a52",
+        bytes: 793,
+        sha256: "ec43a3ad89d19861a4925322868d20f7149cffd8abf55bf4a4581e6477aae08c",
     },
 };
 const FILES = ["manifest.json", ...Object.keys(PINNED_FILES)].sort();
@@ -419,15 +419,29 @@ test("production publishes exactly the pinned ONNX, manifest, metadata, taxonomy
                     if (!response.ok)
                         throw new Error(`${name}: HTTP ${response.status}`);
                     const bytes = new Uint8Array(await response.arrayBuffer());
-                    const digest = await crypto.subtle.digest("SHA-256", bytes);
+                    const text = name.endsWith(".json");
+                    // The browser pins the canonical LF form of text assets.
+                    const canonical = text
+                        ? bytes.filter(
+                              (_, i) =>
+                                  !(bytes[i] === 13 && bytes[i + 1] === 10),
+                          )
+                        : bytes;
+                    const digest = async (value) =>
+                        Array.from(
+                            new Uint8Array(
+                                await crypto.subtle.digest("SHA-256", value),
+                            ),
+                            (b) => b.toString(16).padStart(2, "0"),
+                        ).join("");
                     return {
                         name,
                         url: response.url,
                         contentType: response.headers.get("content-type"),
-                        bytes: bytes.length,
-                        sha256: Array.from(new Uint8Array(digest), (b) =>
-                            b.toString(16).padStart(2, "0"),
-                        ).join(""),
+                        rawBytes: bytes.length,
+                        rawSha256: await digest(bytes),
+                        bytes: canonical.length,
+                        sha256: await digest(canonical),
                         prefix: new TextDecoder().decode(
                             bytes.subarray(0, 128),
                         ),
@@ -463,13 +477,13 @@ test("production publishes exactly the pinned ONNX, manifest, metadata, taxonomy
         ]);
         const hash = (bytes) =>
             createHash("sha256").update(bytes).digest("hex");
-        expect(asset.sha256, `${asset.name}: HTTP/public mismatch`).toBe(
+        expect(asset.rawSha256, `${asset.name}: HTTP/public mismatch`).toBe(
             hash(source),
         );
-        expect(asset.sha256, `${asset.name}: HTTP/dist mismatch`).toBe(
+        expect(asset.rawSha256, `${asset.name}: HTTP/dist mismatch`).toBe(
             hash(built),
         );
-        expect(asset.bytes).toBe(built.length);
+        expect(asset.rawBytes).toBe(built.length);
         expect(asset.contentType).not.toMatch(/html/i);
         expect(asset.prefix).not.toMatch(
             /^\s*(?:<|version https:\/\/git-lfs\.github\.com\/spec\/v1)/i,
@@ -617,6 +631,39 @@ test("Dashboard preflight keeps V1 default and API V2 disabled without loading w
     ).toBe(true);
     await picker(page).selectOption("v1");
     await expect(picker(page)).toHaveValue("v1");
+});
+
+test("Git-normalized LF sidecars, as served by GitHub Pages, keep Browser Model enabled", async ({
+    page,
+}) => {
+    for (const name of [
+        "model_metadata.json",
+        "class_mapping.json",
+        "onnx_parity.json",
+    ]) {
+        await page.route("**" + MODEL_BASE + name, async (route) => {
+            const response = await route.fetch();
+            const bytes = Buffer.from(await response.body());
+            const lf = Buffer.from(
+                bytes.toString("utf8").replaceAll("\r\n", "\n"),
+            );
+            // The deployed Pages branch stores these JSON files with LF.
+            expect(lf.length).toBeLessThan(bytes.length);
+            await route.fulfill({
+                status: 200,
+                headers: {
+                    "content-type": "application/json; charset=utf-8",
+                    "content-length": String(lf.length),
+                },
+                body: lf,
+            });
+        });
+    }
+    await dashboard(page);
+    await uploadPreview(page);
+    await expect(browserOption(page)).toHaveJSProperty("disabled", false);
+    await picker(page).selectOption("browser-v2");
+    await expect(picker(page)).toHaveValue("browser-v2");
 });
 
 test("production Analyze uses uploaded and pasted PNGs with local WASM, reusing the model/runtime", async ({

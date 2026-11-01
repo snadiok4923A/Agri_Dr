@@ -13,6 +13,10 @@ const SIDECARS = [
     "onnx_parity.json",
 ];
 const INPUT_SHAPE = [1, 3, 224, 224];
+// JSON sidecars are text: a Windows checkout keeps CRLF while GitHub Pages
+// serves the Git-normalized LF bytes. Integrity therefore covers the
+// canonical LF form. The ONNX weights below stay byte-exact.
+const TEXT_ASSETS = new Set(SIDECARS);
 const WARNING =
     "Development model: review this image label with an agricultural expert. It is not a confirmed diagnosis.";
 const INFO = {
@@ -124,9 +128,23 @@ async function request(name, method = "GET") {
         );
     return response;
 }
+function canonicalBytes(bytes) {
+    let crlf = 0;
+    for (let i = 0; i < bytes.length - 1; i += 1)
+        if (bytes[i] === 13 && bytes[i + 1] === 10) crlf += 1;
+    if (!crlf) return bytes;
+    const out = new Uint8Array(bytes.length - crlf);
+    for (let i = 0, j = 0; i < bytes.length; i += 1) {
+        if (bytes[i] === 13 && bytes[i + 1] === 10) continue;
+        out[j] = bytes[i];
+        j += 1;
+    }
+    return out;
+}
 async function verifiedBytes(name, entry) {
-    const bytes = new Uint8Array(await (await request(name)).arrayBuffer());
-    const prefix = new TextDecoder().decode(bytes.subarray(0, 128));
+    const fetched = new Uint8Array(await (await request(name)).arrayBuffer());
+    const bytes = TEXT_ASSETS.has(name) ? canonicalBytes(fetched) : fetched;
+    const prefix = new TextDecoder().decode(fetched.subarray(0, 128));
     if (
         /^\s*(?:<|version https:\/\/git-lfs\.github\.com\/spec\/v1)/i.test(
             prefix,
