@@ -60,9 +60,9 @@ import "./Dashboard.css";
 // base-path aware so it resolves identically on localhost and GitHub Pages.
 const PLANT_LOGO = `${import.meta.env.BASE_URL}plant.svg`;
 const FARM_SEGMENT_COLORS = [
-    "var(--leaf)",
-    "var(--gold)",
-    "var(--teal)",
+    "var(--leaf, #6fcf8e)",
+    "var(--gold, #e8b84b)",
+    "var(--teal, #2dd4bf)",
     "#8b6fc5",
     "#d97954",
     "#4f9d9d",

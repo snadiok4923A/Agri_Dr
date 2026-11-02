@@ -26,6 +26,8 @@
     --gold-dim: rgba(232, 184, 75, 0.55);
     --leaf: #6fcf8e;
     --leaf-soft: rgba(111, 207, 142, 0.12);
+    --teal: #2dd4bf;
+    --teal-soft: rgba(45, 212, 191, 0.12);
     --forest: #123524;
 }
 
@@ -90,6 +92,8 @@
     --gold-dim: rgba(232, 184, 75, 0.55);
     --leaf: #6fcf8e;
     --leaf-soft: rgba(111, 207, 142, 0.12);
+    --teal: #2dd4bf;
+    --teal-soft: rgba(45, 212, 191, 0.12);
 }
 
 /* Light Theme — Warm Coffee / Cream Palette */
@@ -142,6 +146,8 @@
     --gold-dim: rgba(184, 134, 11, 0.6);
     --leaf: #3f8051;
     --leaf-soft: rgba(63, 128, 81, 0.1);
+    --teal: #0d9488;
+    --teal-soft: rgba(13, 148, 136, 0.1);
 }
 
 * {
