@@ -41,6 +41,11 @@ import { useAuth } from "../hooks/useAuth";
 import { profileNameKeyFor, lsGet } from "../lib/profileStore";
 import { getDiseaseV2Status } from "../services/cropAnalysisService";
 import { computeFarmFinance, toAcres } from "../lib/financeCalc";
+import {
+    FARM_RING_CIRCUMFERENCE,
+    FARM_RING_RADIUS,
+    getFarmRingSegmentLengths,
+} from "../lib/farmRing";
 
 import {
     getPastedImage,
@@ -94,19 +99,6 @@ function segmentColors(segments) {
     });
 }
 
-function arcPath(startAngle, endAngle, radius = 48) {
-    const point = (angle) => {
-        const radians = (angle * Math.PI) / 180;
-        return {
-            x: 56 + radius * Math.cos(radians),
-            y: 56 + radius * Math.sin(radians),
-        };
-    };
-    const start = point(startAngle);
-    const end = point(endAngle);
-    const largeArc = endAngle - startAngle > 180 ? 1 : 0;
-    return `M ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArc} 1 ${end.x} ${end.y}`;
-}
 const CLIPBOARD_ERROR_KEYS = {
     "clipboard-empty": "dashboard.clipboardEmpty",
     "no-image": "dashboard.clipboardEmpty",
@@ -338,17 +330,21 @@ export default function Dashboard() {
           }))
         : [];
     const segmentTotal = farmSegments.reduce((sum, parcel) => sum + parcel.value, 0);
-    let segmentAngle = -90;
+    let segmentLength = 0;
+    const segmentLengths = getFarmRingSegmentLengths(
+        farmSegments.map((parcel) => parcel.value),
+    );
     const ringSegments = segmentTotal > 0
         ? farmSegments.map((parcel, index) => {
-              const start = segmentAngle;
-              segmentAngle += (parcel.value / segmentTotal) * 360;
+              const offset = segmentLength;
+              const length = segmentLengths[index];
+              segmentLength += length;
               return {
                   ...parcel,
                   index,
                   identity: parcelIdentity(parcel),
-                  start,
-                  end: segmentAngle,
+                  offset,
+                  length,
               };
           })
         : [];
@@ -670,19 +666,24 @@ export default function Dashboard() {
                                         <circle
                                             cx="56"
                                             cy="56"
-                                            r="48"
+                                            r={FARM_RING_RADIUS}
                                             className="dashboard-ring-segment"
                                             stroke={ringColors[0]}
                                             strokeWidth="7"
                                         />
                                     ) : (
                                         ringSegments.map((segment) => (
-                                            <path
+                                            <circle
                                                 key={segment.identity}
-                                                d={arcPath(segment.start, segment.end)}
+                                                cx="56"
+                                                cy="56"
+                                                r={FARM_RING_RADIUS}
                                                 className="dashboard-ring-segment"
                                                 stroke={ringColors[segment.index]}
                                                 strokeWidth="7"
+                                                strokeDasharray={`${segment.length} ${FARM_RING_CIRCUMFERENCE - segment.length}`}
+                                                strokeDashoffset={-segment.offset}
+                                                transform="rotate(-90 56 56)"
                                             />
                                         ))
                                     )}
