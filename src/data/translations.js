@@ -155,7 +155,7 @@ export const translations = {
             addFarmSummary: "Add your first farm to see your farm summary.",
             farmAreaUnavailable: "Farm area unavailable",
             updateFarmDetails: "Update your farm details to see this summary.",
-            notAvailable: "Not available",
+            notAvailable: "No data",
             cropDiagnosis: "Crop Diagnosis",
             aiPlantDoctor: "AI Plant Doctor",
             diagnosisSub: "Snap a photo — AI detects the problem and the treatment",
