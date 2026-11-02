@@ -113,10 +113,18 @@ export default function Dashboard() {
     // Real onboarding state — farm-dependent sections (production hero,
     // action items, insights) render from the user's OWN farm data or
     // show an empty state; demo numbers never appear for real users.
-    const { isFarmComplete, farm, status } = useOnboarding();
+    const { isFarmComplete, farm, status, refreshFarm } = useOnboarding();
     const { user } = useAuth();
     const parcels = farm.parcels || [];
     const hasFarm = isFarmComplete && parcels.length > 0;
+
+    /* Reconcile with the authenticated user's latest saved farm rows when
+       the dashboard is entered. The shared onboarding context remains the
+       single source of truth; this only repairs stale data after a
+       cross-tab/session update. */
+    useEffect(() => {
+        refreshFarm();
+    }, [refreshFarm]);
     // Real weather state — location permission → Open-Meteo fetch → this card.
     // The card stays a pure presentation of `weather`; all fetching lives in
     // the services layer (spec §24).

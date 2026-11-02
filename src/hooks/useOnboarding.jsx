@@ -124,6 +124,13 @@ export function OnboardingProvider({ children }) {
     const [farm, setFarm] = useState({ name: "", parcels: [] });
 
     const loadedForRef = useRef(undefined); // last identity the state was loaded for
+    /**
+     * Timestamp (Date.now()) of the last completeOnboarding() call.
+     * refreshFarm() checks this to avoid overwriting freshly-saved
+     * in-memory state with older data returned by a Supabase fetch
+     * that started before the save completed (race-condition guard).
+     */
+    const lastSavedRef = useRef(0);
 
     /* ------------------------------------------------------------------
      * Load persisted state whenever the identity changes.
@@ -180,6 +187,10 @@ export function OnboardingProvider({ children }) {
             setCompleted(lsGet(completedKey) === "1");
             setSkipped(false); // server flag decides for real users
 
+            // Snapshot the save-clock before the async fetch. If a save
+            // happens while the Supabase response is in flight we must not
+            // overwrite the freshly-saved in-memory state with stale DB data.
+            const fetchStartSaved = lastSavedRef.current;
             const [profile, farmRow, parcels] = await Promise.all([
                 fetchOnboardingState(userId),
                 fetchFarm(userId),
@@ -203,15 +214,24 @@ export function OnboardingProvider({ children }) {
             );
             if (profile?.selectedLanguage) lsSet(LS_LANG, profile.selectedLanguage);
 
-            if (farmRow || (parcels && parcels.length)) {
-                const nextFarm = {
-                    name: farmRow?.name || "",
-                    parcels: parcels || [],
-                };
-                setFarm(nextFarm);
-                lsSet(draftKey, JSON.stringify(nextFarm));
-            } else if (!local) {
-                setFarm({ name: "", parcels: [] });
+            /* A null parcel result means the query failed or the schema is
+               unavailable; it must not erase the user-scoped mirror. An
+               empty array is a successful response and represents a farm
+               with no parcels.
+               RACE GUARD: skip if a completeOnboarding() save happened
+               after this fetch started — the in-memory state is newer. */
+            if (lastSavedRef.current === fetchStartSaved) {
+                if (parcels !== null && (farmRow || parcels.length)) {
+                    const nextFarm = {
+                        name: farmRow?.name || "",
+                        parcels,
+                    };
+                    setFarm(nextFarm);
+                    lsSet(draftKey, JSON.stringify(nextFarm));
+                } else if (parcels !== null && !farmRow && !parcels.length) {
+                    setFarm({ name: "", parcels: [] });
+                    lsDel(draftKey);
+                }
             }
             setStatus("ready");
         })();
@@ -237,6 +257,9 @@ export function OnboardingProvider({ children }) {
                 name: farmName || "",
                 parcels: (parcels || []).map((p, i) => ({ ...p, order: i })),
             };
+            // Mark the save timestamp BEFORE setting state so that any
+            // concurrent refreshFarm() fetch knows this data is authoritative.
+            lastSavedRef.current = Date.now();
             setFarm(nextFarm);
             setCompleted(true);
             setSkipped(false);
@@ -271,18 +294,37 @@ export function OnboardingProvider({ children }) {
      *  pages (Profit & Cost) when they open so no stale farm value is
      *  ever shown. The server wins ONLY when it actually returns rows:
      *  a failed/absent migration (degraded local mode) or an error keeps
-     *  the current local state untouched. */
+     *  the current local state untouched.
+     *
+     *  RACE GUARD: if completeOnboarding() was called AFTER this fetch
+     *  started, the in-memory state is already authoritative (the user
+     *  just saved) and the Supabase response may be stale (the write
+     *  may not have committed yet). In that case the fetch result is
+     *  discarded so the user's freshly-saved parcels are never overwritten
+     *  with old data from the database. */
     const refreshFarm = useCallback(async () => {
         if (!userId) return;
+        // Snapshot the save-clock BEFORE the async fetch so we can
+        // detect a save that arrives while we are waiting.
+        const fetchStartSaved = lastSavedRef.current;
         try {
             const [farmRow, parcels] = await Promise.all([
                 fetchFarm(userId),
                 fetchParcels(userId),
             ]);
-            if (!farmRow && !(parcels && parcels.length)) return;
+            if (parcels === null) return;
+            // If a save happened after this fetch started, the
+            // in-memory farm is newer than the DB response — skip.
+            if (lastSavedRef.current !== fetchStartSaved) return;
+            if (!farmRow && !parcels.length) {
+                const nextFarm = { name: "", parcels: [] };
+                setFarm(nextFarm);
+                lsDel(draftKeyFor(userId));
+                return;
+            }
             const nextFarm = {
                 name: farmRow?.name || "",
-                parcels: parcels || [],
+                parcels,
             };
             setFarm(nextFarm);
             lsSet(draftKeyFor(userId), JSON.stringify(nextFarm));
