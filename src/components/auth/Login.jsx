@@ -15,6 +15,7 @@ import { useState } from "react";
 import { Navigate, useLocation, useNavigate, Link } from "react-router-dom";
 import { Mail, Lock } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
+import { useLanguage } from "../../hooks/useLanguage";
 import { friendlyAuthError } from "../../lib/authService";
 import { validateLogin, hasErrors } from "./authValidation";
 import AuthLayout from "./AuthLayout";
@@ -30,6 +31,7 @@ export default function Login() {
         initializing,
         enterGuestMode,
     } = useAuth();
+    const { t } = useLanguage();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -89,13 +91,13 @@ export default function Login() {
 
     return (
         <AuthLayout
-            title="Welcome back"
-            subtitle="Sign in to continue to Krisiveda"
+            title={t("auth.login.title")}
+            subtitle={t("auth.login.subtitle")}
             footer={
                 <span>
-                    Don&apos;t have an account?{" "}
+                    {t("auth.noAccount")}{" "}
                     <Link to="/signup" state={{ from: whereTo }}>
-                        Sign up
+                        {t("auth.signUp")}
                     </Link>
                 </span>
             }
@@ -112,7 +114,7 @@ export default function Login() {
                         navigate(whereTo, { replace: true });
                     }}
                 >
-                    Skip for now
+                    {t("auth.skip")}
                 </button>
             }
         >
@@ -130,11 +132,11 @@ export default function Login() {
             <form className="auth-form" onSubmit={handleEmailLogin} noValidate>
                 <AuthField
                     id="login-email"
-                    label="Email"
+                    label={t("auth.emailLabel")}
                     type="email"
                     value={email}
                     onChange={setEmail}
-                    placeholder="you@example.com"
+                    placeholder={t("auth.emailPlaceholder")}
                     autoComplete="email"
                     error={fieldErrors.email}
                     icon={<Mail size={16} />}
@@ -142,36 +144,47 @@ export default function Login() {
 
                 <AuthField
                     id="login-password"
-                    label="Password"
+                    label={t("auth.passwordLabel")}
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={setPassword}
-                    placeholder="Your password"
+                    placeholder={t("auth.passwordPlaceholder")}
                     autoComplete="current-password"
                     error={fieldErrors.password}
                     icon={<Lock size={16} />}
                 >
                     <PasswordToggle
                         visible={showPassword}
-                        onToggle={() => setShowPassword(v => !v)}
-                        label={showPassword ? "Hide password" : "Show password"}
+                        onToggle={() => setShowPassword((v) => !v)}
+                        label={
+                            showPassword
+                                ? t("auth.hidePassword")
+                                : t("auth.showPassword")
+                        }
                     />
                 </AuthField>
 
-                <button type="submit" className="auth-btn auth-btn--primary" disabled={busy}>
+                <button
+                    type="submit"
+                    className="auth-btn auth-btn--primary"
+                    disabled={busy}
+                >
                     {submitting ? (
                         <>
-                            <span className="auth-btn__spinner" aria-hidden="true" />
-                            Signing in…
+                            <span
+                                className="auth-btn__spinner"
+                                aria-hidden="true"
+                            />
+                            {t("auth.signingIn")}
                         </>
                     ) : (
-                        "Login"
+                        t("auth.loginButton")
                     )}
-               </button>
+                </button>
             </form>
 
             <div className="auth-divider">
-                <span>or</span>
+                <span>{t("auth.or")}</span>
             </div>
 
             <button
@@ -180,19 +193,40 @@ export default function Login() {
                 onClick={handleGoogleLogin}
                 disabled={busy}
             >
-                <svg className="auth-btn__google-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-                    <path fill="#4285F4" d="M23.5 12.3c0-.9-.1-1.5-.3-2.2H12v4.1h6.5c-.1 1.1-.8 2.7-2.4 3.8l3.7 2.9c2.3-2.1 3.7-5.1 3.7-8.6z" />
-                    <path fill="#34A853" d="M12 24c3.2 0 5.9-1.1 7.9-2.9l-3.7-2.9c-1 .7-2.4 1.2-4.2 1.2-3.2 0-5.9-2.1-6.8-5.1L1.3 17.2C3.3 21.2 7.3 24 12 24z" />
-                    <path fill="#FBBC05" d="M5.2 14.3c-.2-.7-.4-1.5-.4-2.3s.1-1.6.4-2.3L1.3 6.8C.5 8.4 0 10.1 0 12s.5 3.6 1.3 5.2l3.9-2.9z" />
-                    <path fill="#EA4335" d="M12 4.7c1.8 0 3 .8 3.7 1.4l3.3-3.2C17.9 1.1 15.2 0 12 0 7.3 0 3.3 2.8 1.3 6.8l3.9 2.9c.9-2.9 3.6-5 6.8-5z" />
+                <svg
+                    className="auth-btn__google-icon"
+                    viewBox="0 0 24 24"
+                    width="18"
+                    height="18"
+                    aria-hidden="true"
+                >
+                    <path
+                        fill="#4285F4"
+                        d="M23.5 12.3c0-.9-.1-1.5-.3-2.2H12v4.1h6.5c-.1 1.1-.8 2.7-2.4 3.8l3.7 2.9c2.3-2.1 3.7-5.1 3.7-8.6z"
+                    />
+                    <path
+                        fill="#34A853"
+                        d="M12 24c3.2 0 5.9-1.1 7.9-2.9l-3.7-2.9c-1 .7-2.4 1.2-4.2 1.2-3.2 0-5.9-2.1-6.8-5.1L1.3 17.2C3.3 21.2 7.3 24 12 24z"
+                    />
+                    <path
+                        fill="#FBBC05"
+                        d="M5.2 14.3c-.2-.7-.4-1.5-.4-2.3s.1-1.6.4-2.3L1.3 6.8C.5 8.4 0 10.1 0 12s.5 3.6 1.3 5.2l3.9-2.9z"
+                    />
+                    <path
+                        fill="#EA4335"
+                        d="M12 4.7c1.8 0 3 .8 3.7 1.4l3.3-3.2C17.9 1.1 15.2 0 12 0 7.3 0 3.3 2.8 1.3 6.8l3.9 2.9c.9-2.9 3.6-5 6.8-5z"
+                    />
                 </svg>
                 {googleBusy ? (
                     <>
-                        <span className="auth-btn__spinner" aria-hidden="true" />
-                        Connecting to Google…
+                        <span
+                            className="auth-btn__spinner"
+                            aria-hidden="true"
+                        />
+                        {t("auth.connectingGoogle")}
                     </>
                 ) : (
-                    "Continue with Google"
+                    t("auth.continueWithGoogle")
                 )}
             </button>
         </AuthLayout>

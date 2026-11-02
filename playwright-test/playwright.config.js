@@ -26,11 +26,11 @@ export default defineConfig({
     // Start the dev server before tests and shut it down after.
     // This keeps the repo self-contained for the logout E2E check.
     webServer: {
-        command: "npm run dev -- --host localhost --port 5173 --strictPort",
+        command: "npm run dev -- --host 127.0.0.1 --port 5173 --strictPort",
         cwd: fileURLToPath(new URL("..", import.meta.url)),
-        url: "http://localhost:5173/Agri_Dr/",
-        reuseExistingServer: !process.env.CI,
+        url: "http://127.0.0.1:5173/Agri_Dr/",
+        reuseExistingServer: true,
         timeout: 30_000,
-        env: { BASE_URL: "http://localhost:5173" },
+        env: { BASE_URL: "http://127.0.0.1:5173" },
     },
 });

@@ -18,43 +18,65 @@
  * `languages` config the rest of the app uses, and the selection state.
  */
 
+import { useState } from "react";
 import AuthLayout from "../auth/AuthLayout";
 import { useLanguage } from "../../hooks/useLanguage";
+import { translations } from "../../data/translations";
 
 export default function AuthLanguageGate({ children }) {
     const { t, language, changeLanguage, languages } = useLanguage();
+    const [selectedCode, setSelectedCode] = useState(language || "en");
+    const [isConfirmed, setIsConfirmed] = useState(() => {
+        return Boolean(localStorage.getItem("krisiveda-lang"));
+    });
 
-    // Language already persisted (previous visit) → skip straight to auth.
-    if (localStorage.getItem("krisiveda-lang")) return children;
+    // Language already persisted (previous visit or confirmed selection) → skip straight to auth.
+    if (isConfirmed || localStorage.getItem("krisiveda-lang")) {
+        return children;
+    }
 
     const select = (code) => {
-        // Persist via the EXISTING language system so Settings/Header stay
-        // in sync — no second language state anywhere.
-        changeLanguage(code);
+        setSelectedCode(code);
     };
 
-    // Never block on the default: English is pre-selected on first paint.
-    const canProceed = languages.some((l) => l.code === language);
+    const canProceed = languages.some((l) => l.code === selectedCode);
+
+    const handleContinue = (e) => {
+        if (e && typeof e.preventDefault === "function") {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        if (!canProceed) return;
+        changeLanguage(selectedCode);
+        setIsConfirmed(true);
+    };
+
+    const activeTitle =
+        translations[selectedCode]?.onboarding?.language?.title ||
+        t("onboarding.language.title");
+    const activeSubtitle =
+        translations[selectedCode]?.onboarding?.language?.subtitle ||
+        t("onboarding.language.subtitle");
+    const continueLabel =
+        translations[selectedCode]?.onboarding?.language?.continue ||
+        t("onboarding.language.continue");
 
     return (
-        <AuthLayout
-            title={t("onboarding.language.title")}
-            subtitle={t("onboarding.language.subtitle")}
-        >
+        <AuthLayout title={activeTitle} subtitle={activeSubtitle}>
             {/* Picking a language only updates the selection — the user
                 must still confirm with Continue (no immediate navigation). */}
             <div
                 className="obw-lang-grid"
                 role="listbox"
-                aria-label={t("onboarding.language.title")}
+                aria-label={activeTitle}
             >
                 {languages.map((l) => (
                     <button
                         key={l.code}
                         type="button"
                         role="option"
-                        aria-selected={language === l.code}
-                        className={`obw-lang ${language === l.code ? "obw-lang--active" : ""}`}
+                        aria-selected={selectedCode === l.code}
+                        className={`obw-lang ${selectedCode === l.code ? "obw-lang--active" : ""}`}
                         onClick={() => select(l.code)}
                     >
                         <span className="obw-lang__flag" aria-hidden="true">
@@ -69,15 +91,10 @@ export default function AuthLanguageGate({ children }) {
             <button
                 type="button"
                 className="obw-lang-continue"
-                onClick={() => {
-                    // Persist + reveal the auth window the same way the old
-                    // single-pick path did, but only after an explicit
-                    // Continue — never on the language tap itself.
-                    select(language);
-                }}
+                onClick={handleContinue}
                 disabled={!canProceed}
             >
-                {t("onboarding.language.continue")}
+                {continueLabel}
             </button>
         </AuthLayout>
     );
