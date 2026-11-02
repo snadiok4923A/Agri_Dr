@@ -63,6 +63,37 @@ const FARM_SEGMENT_COLORS = [
     "#4f9d9d",
 ];
 
+function parcelIdentity(parcel) {
+    return String(
+        parcel?.id ||
+        `${parcel?.order ?? ""}:${parcel?.unit || ""}:${parcel?.riceVariety || ""}:${parcel?.stage || ""}`,
+    );
+}
+
+function hashIdentity(identity) {
+    let hash = 2166136261;
+    for (let index = 0; index < identity.length; index += 1) {
+        hash ^= identity.charCodeAt(index);
+        hash = Math.imul(hash, 16777619);
+    }
+    return hash >>> 0;
+}
+
+function segmentColors(segments) {
+    const used = new Set();
+    return segments.map((segment) => {
+        const identityHash = hashIdentity(segment.identity);
+        const paletteIndex = identityHash % FARM_SEGMENT_COLORS.length;
+        if (!used.has(paletteIndex)) {
+            used.add(paletteIndex);
+            return FARM_SEGMENT_COLORS[paletteIndex];
+        }
+        // A deterministic HSL fallback avoids duplicate colors for parcels
+        // whose identities hash to the same theme palette entry.
+        return `hsl(${identityHash % 360} 48% 52%)`;
+    });
+}
+
 function arcPath(startAngle, endAngle, radius = 48) {
     const point = (angle) => {
         const radians = (angle * Math.PI) / 180;
@@ -315,11 +346,13 @@ export default function Dashboard() {
               return {
                   ...parcel,
                   index,
+                  identity: parcelIdentity(parcel),
                   start,
                   end: segmentAngle,
               };
           })
         : [];
+    const ringColors = segmentColors(ringSegments);
 
     // Weather card → centered glass modal (not navigation)
     const [weatherOpen, setWeatherOpen] = useState(false);
@@ -639,16 +672,16 @@ export default function Dashboard() {
                                             cy="56"
                                             r="48"
                                             className="dashboard-ring-segment"
-                                            stroke={FARM_SEGMENT_COLORS[0]}
+                                            stroke={ringColors[0]}
                                             strokeWidth="7"
                                         />
                                     ) : (
                                         ringSegments.map((segment) => (
                                             <path
-                                                key={`${segment.index}-${segment.order ?? segment.index}`}
+                                                key={segment.identity}
                                                 d={arcPath(segment.start, segment.end)}
                                                 className="dashboard-ring-segment"
-                                                stroke={FARM_SEGMENT_COLORS[segment.index % FARM_SEGMENT_COLORS.length]}
+                                                stroke={ringColors[segment.index]}
                                                 strokeWidth="7"
                                             />
                                         ))

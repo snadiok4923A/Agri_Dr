@@ -146,7 +146,7 @@ export async function fetchParcels(userId) {
     try {
         const { data, error } = await supabase
             .from("land_parcels")
-            .select("order_index, area, unit, rice_variety, crop_stage")
+            .select("id, order_index, area, unit, rice_variety, crop_stage")
             .eq("user_id", userId)
             .order("order_index", { ascending: true });
         if (error) {
@@ -155,6 +155,7 @@ export async function fetchParcels(userId) {
             return null;
         }
         return (data || []).map((row) => ({
+            id: row.id,
             order: row.order_index,
             area: Number(row.area),
             unit: row.unit,

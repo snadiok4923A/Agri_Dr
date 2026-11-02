@@ -46,6 +46,7 @@ const EXACT_NAMES = new Set(riceVarieties.map((v) => v.name.toLowerCase()));
 /** Fresh parcel row (draft values prefill from the persisted farm). */
 function parcelFromDraft(draft, unitFallback) {
     return {
+        id: draft?.id || "",
         area: draft && draft.area != null ? String(draft.area) : "",
         unit: (draft && draft.unit) || unitFallback,
         variety: (draft && draft.riceVariety) || "",

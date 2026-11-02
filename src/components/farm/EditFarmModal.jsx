@@ -17,6 +17,7 @@ const EXACT_NAMES = new Set(riceVarieties.map((v) => v.name.toLowerCase()));
 /* Editor row shape (strings so inputs behave while typing). */
 function rowFromParcel(p) {
     return {
+        id: p?.id || "",
         area: p && p.area != null ? String(p.area) : "",
         unit: (p && p.unit) || "acre",
         variety: (p && p.riceVariety) || "",
