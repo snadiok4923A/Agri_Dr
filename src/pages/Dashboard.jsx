@@ -671,7 +671,7 @@ export default function Dashboard() {
                                 <div className="dashboard-hero-stat">
                                     <span className="dashboard-hero-stat-num">
                                         {expectedYield === null ? (
-                                            t("common.noData")
+                                            t("dashboard.notAvailable")
                                         ) : (
                                             <>
                                                 <AnimatedNumber

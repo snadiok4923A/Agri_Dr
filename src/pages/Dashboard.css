@@ -8,6 +8,10 @@
     display: flex;
     flex-direction: column;
     gap: 24px;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    overflow-x: clip;
 }
 
 /* ==================== 1. GREETING ==================== */
@@ -23,12 +27,17 @@
     display: flex;
     flex-direction: column;
     gap: 4px;
+    min-width: 0;
+    max-width: 100%;
 }
 
 .dashboard-greeting-tag {
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
     font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
     font-weight: 600;
     color: var(--gold);
@@ -48,6 +57,8 @@
     letter-spacing: -0.03em;
     margin: 0;
     line-height: 1.15;
+    max-width: 100%;
+    overflow-wrap: anywhere;
 }
 
 /* ==================== 2. PRODUCTION + WEATHER ROW ==================== */
@@ -56,6 +67,7 @@
    empty areas via CSS grid areas (see .dashboard-page below). */
 .dashboard-top-row {
     width: 100%;
+    min-width: 0;
     display: grid;
     grid-template-columns: minmax(0, auto) minmax(0, auto);
     justify-content: flex-start;
@@ -130,6 +142,8 @@
     box-shadow: var(--shadow-sm);
     position: relative;
     overflow: hidden;
+    min-width: 0;
+    box-sizing: border-box;
 }
 
 .dashboard-ring-container {
@@ -140,6 +154,7 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    aspect-ratio: 1;
 }
 
 .dashboard-ring-svg {
@@ -175,6 +190,7 @@
     align-items: center;
     gap: 18px;
     min-width: 0;
+    flex: 1 1 auto;
 }
 
 .dashboard-hero-stat {
@@ -182,6 +198,7 @@
     flex-direction: column;
     gap: 2px;
     min-width: 0;
+    flex: 1 1 0;
 }
 
 .dashboard-hero-stat-num {
@@ -193,6 +210,11 @@
     display: inline-flex;
     align-items: baseline;
     gap: 3px;
+    min-width: 0;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .dashboard-hero-stat-num em {
@@ -211,6 +233,7 @@
     flex-direction: column;
     gap: 8px;
     min-width: 220px;
+    max-width: 100%;
 }
 
 .dashboard-hero-empty strong {
@@ -1053,6 +1076,17 @@
         align-items: stretch;
         width: 100%;
         min-width: 0;
+    }
+
+    .dashboard-top-row {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 14px;
+    }
+
+    .dashboard-hero-card,
+    .dashboard-weather-card {
+        width: 100%;
+        max-width: none;
     }
 
     .dashboard-voice-row,
@@ -1928,20 +1962,9 @@
 }
 
 @media (max-width: 680px) {
-    /* Both cards stay side-by-side with identical widths: the pair shares
-       the row equally and never stacks the columns */
-    .dashboard-top-row {
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-        gap: 10px;
-    }
-
     .dashboard-hero-card {
-        flex-direction: column;
-        align-items: center;
-        justify-content: center; /* rebalance: content sits centered, not top-packed */
-        text-align: center;
-        gap: 12px;
-        padding: 16px 12px;
+        gap: clamp(12px, 4vw, 20px);
+        padding: 14px clamp(12px, 4vw, 20px);
     }
 
     .dashboard-weather-card {
@@ -1987,12 +2010,16 @@
     }
 
     .dashboard-ring-container {
-        width: 100px;
-        height: 100px;
+        width: clamp(88px, 24vw, 104px);
+        height: auto;
     }
 
     .dashboard-hero-stat-num {
-        font-size: max(min(calc(26px * var(--ts-heading, 1)), 42px), 12px);
+        font-size: clamp(16px, 3.2vw, 26px);
+    }
+
+    .dashboard-hero-stat-cap {
+        line-height: 1.2;
     }
 
     .dashboard-diagnosis-cta .dashboard-diagnosis-btn {
@@ -2003,7 +2030,30 @@
 
 @media (max-width: 480px) {
     .dashboard-hero-card {
-        padding: 14px 10px;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        gap: 12px;
+        padding: 14px 12px;
+    }
+
+    .dashboard-hero-stats {
+        width: 100%;
+        gap: 12px;
+        justify-content: center;
+    }
+
+    .dashboard-hero-stat {
+        align-items: center;
+    }
+
+    .dashboard-hero-stat-num {
+        font-size: clamp(16px, 5vw, 22px);
+    }
+
+    .dashboard-hero-stat-cap {
+        font-size: clamp(10px, 3vw, 12px);
     }
 
     .dashboard-weather-card {
@@ -2058,21 +2108,20 @@
 /* Very narrow phones (iPhone SE and similar) */
 @media (max-width: 380px) {
     .dashboard-hero-card {
-        gap: 8px;
+        gap: 10px;
         padding: 12px 8px;
     }
 
     .dashboard-hero-stats {
-        gap: 12px;
+        gap: 8px;
     }
 
     .dashboard-ring-container {
-        width: 80px;
-        height: 80px;
+        width: 84px;
     }
 
     .dashboard-hero-stat-num {
-        font-size: max(min(calc(20px * var(--ts-heading, 1)), 32px), 12px);
+        font-size: clamp(15px, 4.8vw, 20px);
     }
 
     .dashboard-hero-stat-sep {
