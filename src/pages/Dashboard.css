@@ -155,11 +155,10 @@
     stroke: var(--bg-elevated);
 }
 
-.dashboard-ring-fill {
+.dashboard-ring-segment {
     fill: none;
-    /* Golden harvest ring — clean flat stroke, zero glow (no filter/shadow). */
-    stroke: var(--gold);
-    transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);
+    stroke-linecap: butt;
+    transition: stroke 300ms ease;
 }
 
 .dashboard-ring-artwork {
@@ -170,7 +169,7 @@
     justify-content: center;
 }
 
-/* Expected vs Potential — the only numbers in the hero */
+/* Farm area and expected yield summary */
 .dashboard-hero-stats {
     display: flex;
     align-items: center;
@@ -203,8 +202,35 @@
     color: var(--text-secondary);
 }
 
-.dashboard-hero-stat-num--potential {
-    color: var(--gold);
+.dashboard-hero-card--empty {
+    min-height: 144px;
+}
+
+.dashboard-hero-empty {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 220px;
+}
+
+.dashboard-hero-empty strong {
+    color: var(--text-primary);
+}
+
+.dashboard-hero-empty span {
+    color: var(--text-muted);
+    font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
+}
+
+.dashboard-hero-empty button {
+    align-self: flex-start;
+    border: 0;
+    padding: 0;
+    color: var(--leaf);
+    background: transparent;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
 }
 
 .dashboard-hero-stat-cap {

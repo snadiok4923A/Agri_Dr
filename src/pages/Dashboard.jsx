@@ -40,6 +40,7 @@ import { useOnboarding } from "../hooks/useOnboarding";
 import { useAuth } from "../hooks/useAuth";
 import { profileNameKeyFor, lsGet } from "../lib/profileStore";
 import { getDiseaseV2Status } from "../services/cropAnalysisService";
+import { computeFarmFinance, toAcres } from "../lib/financeCalc";
 
 import {
     getPastedImage,
@@ -50,9 +51,31 @@ import {
 import EmptyFarmNotice from "../components/onboarding/EmptyFarmNotice";
 import "./Dashboard.css";
 
-// Large plant logo for the Expected/Potential hero card — public asset,
+// Large plant logo for the farm summary card — public asset,
 // base-path aware so it resolves identically on localhost and GitHub Pages.
 const PLANT_LOGO = `${import.meta.env.BASE_URL}plant.svg`;
+const FARM_SEGMENT_COLORS = [
+    "var(--leaf)",
+    "var(--gold)",
+    "var(--teal)",
+    "#8b6fc5",
+    "#d97954",
+    "#4f9d9d",
+];
+
+function arcPath(startAngle, endAngle, radius = 48) {
+    const point = (angle) => {
+        const radians = (angle * Math.PI) / 180;
+        return {
+            x: 56 + radius * Math.cos(radians),
+            y: 56 + radius * Math.sin(radians),
+        };
+    };
+    const start = point(startAngle);
+    const end = point(endAngle);
+    const largeArc = endAngle - startAngle > 180 ? 1 : 0;
+    return `M ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArc} 1 ${end.x} ${end.y}`;
+}
 const CLIPBOARD_ERROR_KEYS = {
     "clipboard-empty": "dashboard.clipboardEmpty",
     "no-image": "dashboard.clipboardEmpty",
@@ -90,7 +113,7 @@ export default function Dashboard() {
     // Real onboarding state — farm-dependent sections (production hero,
     // action items, insights) render from the user's OWN farm data or
     // show an empty state; demo numbers never appear for real users.
-    const { isFarmComplete, farm } = useOnboarding();
+    const { isFarmComplete, farm, status } = useOnboarding();
     const { user } = useAuth();
     const parcels = farm.parcels || [];
     const hasFarm = isFarmComplete && parcels.length > 0;
@@ -231,7 +254,6 @@ export default function Dashboard() {
     })();
 
     const totalYield = farmData.expectedYield;
-    const currentEst = farmData.currentProductionEstimate;
     /* Greeting identity + land summary come from the user's real profile
        name (Header's localStorage field) and their onboarding parcels —
        never from the demo farm. */
@@ -242,16 +264,54 @@ export default function Dashboard() {
         user?.name ||
         (user?.id ? lsGet(profileNameKeyFor(user.id)) : null) ||
         (user?.email ? user.email.split("@")[0] : "");
-    const totalArea = parcels.reduce(
-        (sum, p) => sum + (Number(p.area) || 0),
+    const validAreaParcels = parcels.filter((parcel) => {
+        const area = Number(parcel?.area);
+        return Number.isFinite(area) && area > 0;
+    });
+    const totalArea = validAreaParcels.reduce(
+        (sum, parcel) => sum + Number(parcel.area),
         0,
     );
-    const yieldPct = Math.round((currentEst / totalYield) * 100);
-
-    // Circular progress calculations (Radius 70, Stroke 10, Box 160)
-    const ringRadius = 48;
-    const ringCircumference = 2 * Math.PI * ringRadius;
-    const ringOffset = ringCircumference - (yieldPct / 100) * ringCircumference;
+    const finance = computeFarmFinance(parcels);
+    const hasYield = finance.rows.some((row) => row.yieldTons !== null);
+    const expectedYield = hasYield ? finance.totals.yieldTons : null;
+    const areaGroups = [...validAreaParcels.reduce((groups, parcel) => {
+        const unit = parcel.unit || "acre";
+        groups.set(unit, (groups.get(unit) || 0) + Number(parcel.area));
+        return groups;
+    }, new Map())].map(([unit, area]) => ({ unit, area }));
+    const areaLabel = areaGroups
+        .map(({ unit, area }) => `${formatNumber(area, { maximumFractionDigits: 2 })} ${t(`onboarding.unitNames.${unit}`)}`)
+        .join(" + ");
+    const comparableAreas = validAreaParcels.map((parcel) => ({
+        ...parcel,
+        comparableArea: toAcres(parcel.area, parcel.unit || "acre"),
+    }));
+    const canSegmentAreas =
+        comparableAreas.every((parcel) => parcel.comparableArea !== null) ||
+        new Set(validAreaParcels.map((parcel) => parcel.unit || "acre")).size === 1;
+    const farmSegments = canSegmentAreas
+        ? comparableAreas.map((parcel) => ({
+              ...parcel,
+              value:
+                  parcel.comparableArea ??
+                  Number(parcel.area),
+          }))
+        : [];
+    const segmentTotal = farmSegments.reduce((sum, parcel) => sum + parcel.value, 0);
+    let segmentAngle = -90;
+    const ringSegments = segmentTotal > 0
+        ? farmSegments.map((parcel, index) => {
+              const start = segmentAngle;
+              segmentAngle += (parcel.value / segmentTotal) * 360;
+              return {
+                  ...parcel,
+                  index,
+                  start,
+                  end: segmentAngle,
+              };
+          })
+        : [];
 
     // Weather card → centered glass modal (not navigation)
     const [weatherOpen, setWeatherOpen] = useState(false);
@@ -532,9 +592,32 @@ export default function Dashboard() {
                 >
                     {/* Compact Production Summary (left) — needs the user's
                     real farm data; hidden (not faked) without it */}
-                    {hasFarm && (
-                        <div className="dashboard-hero-card">
-                            {/* Rice visual inside a subtle progress ring */}
+                    {user && status === "ready" && (
+                        <div
+                            className={`dashboard-hero-card${
+                                !hasFarm || !validAreaParcels.length
+                                    ? " dashboard-hero-card--empty"
+                                    : ""
+                            }`}
+                        >
+                            {!hasFarm ? (
+                                <div className="dashboard-hero-empty">
+                                    <strong>{t("dashboard.addFarmSummary")}</strong>
+                                    <button
+                                        type="button"
+                                        onClick={() => navigate("/farm")}
+                                    >
+                                        {t("nav.myFarm")}
+                                    </button>
+                                </div>
+                            ) : !validAreaParcels.length ? (
+                                <div className="dashboard-hero-empty">
+                                    <strong>{t("dashboard.farmAreaUnavailable")}</strong>
+                                    <span>{t("dashboard.updateFarmDetails")}</span>
+                                </div>
+                            ) : (
+                                <>
+                            {/* Circular farm-area distribution */}
                             <div className="dashboard-ring-container">
                                 <svg
                                     className="dashboard-ring-svg"
@@ -542,24 +625,26 @@ export default function Dashboard() {
                                     height="112"
                                     viewBox="0 0 112 112"
                                 >
-                                    <circle
-                                        cx="56"
-                                        cy="56"
-                                        r={ringRadius}
-                                        className="dashboard-ring-bg"
-                                        strokeWidth="7"
-                                    />
-                                    <circle
-                                        cx="56"
-                                        cy="56"
-                                        r={ringRadius}
-                                        className="dashboard-ring-fill"
-                                        strokeWidth="7"
-                                        strokeDasharray={ringCircumference}
-                                        strokeDashoffset={ringOffset}
-                                        strokeLinecap="round"
-                                        transform="rotate(-90 56 56)"
-                                    />
+                                    {ringSegments.length === 1 ? (
+                                        <circle
+                                            cx="56"
+                                            cy="56"
+                                            r="48"
+                                            className="dashboard-ring-segment"
+                                            stroke={FARM_SEGMENT_COLORS[0]}
+                                            strokeWidth="7"
+                                        />
+                                    ) : (
+                                        ringSegments.map((segment) => (
+                                            <path
+                                                key={`${segment.index}-${segment.order ?? segment.index}`}
+                                                d={arcPath(segment.start, segment.end)}
+                                                className="dashboard-ring-segment"
+                                                stroke={FARM_SEGMENT_COLORS[segment.index % FARM_SEGMENT_COLORS.length]}
+                                                strokeWidth="7"
+                                            />
+                                        ))
+                                    )}
                                 </svg>
                                 <div className="dashboard-ring-artwork">
                                     <img
@@ -572,34 +657,38 @@ export default function Dashboard() {
                                 </div>
                             </div>
 
-                            {/* Expected vs Potential — big numbers only */}
+                            {/* Farm area and expected yield */}
                             <div className="dashboard-hero-stats">
                                 <div className="dashboard-hero-stat">
                                     <span className="dashboard-hero-stat-num">
-                                        <AnimatedNumber
-                                            value={currentEst}
-                                            decimals={1}
-                                        />
-                                        <em>T</em>
+                                        {areaLabel || t("dashboard.farmAreaUnavailable")}
                                     </span>
                                     <span className="dashboard-hero-stat-cap">
-                                        {t("dashboard.expected")}
+                                        {t("dashboard.farmArea")}
                                     </span>
                                 </div>
                                 <div className="dashboard-hero-stat-sep" />
                                 <div className="dashboard-hero-stat">
-                                    <span className="dashboard-hero-stat-num dashboard-hero-stat-num--potential">
-                                        <AnimatedNumber
-                                            value={totalYield}
-                                            decimals={1}
-                                        />
-                                        <em>T</em>
+                                    <span className="dashboard-hero-stat-num">
+                                        {expectedYield === null ? (
+                                            t("common.noData")
+                                        ) : (
+                                            <>
+                                                <AnimatedNumber
+                                                    value={expectedYield}
+                                                    decimals={1}
+                                                />
+                                                <em>{t("common.ton")}</em>
+                                            </>
+                                        )}
                                     </span>
                                     <span className="dashboard-hero-stat-cap">
-                                        {t("dashboard.potential")}
+                                        {t("dashboard.expectedYield")}
                                     </span>
                                 </div>
                             </div>
+                                </>
+                            )}
                         </div>
                     )}
 
