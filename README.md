@@ -13,8 +13,8 @@ Currently, two official plugins are available:
   (or the existing hosted fallback), and predictions use `/disease/predict`.
 - In `npm run dev`, V2 status and prediction requests go through the same-origin
   Vite proxy at `/Agri_Dr/api/disease/v2`. It forwards to
-  `http://127.0.0.1:8001/disease/v2/status` and
-  `http://127.0.0.1:8001/disease/v2/predict`, avoiding local backend CORS errors.
+  `http://127.0.0.1:8000/disease/v2/status` and
+  `http://127.0.0.1:8000/disease/v2/predict`, avoiding local backend CORS errors.
   Override only this development target with `VITE_KRISIVEDA_ML_V2_API_URL` if
   needed; restart Vite after changing environment variables.
 - V2 is selectable only when the status JSON contains `available: true` and

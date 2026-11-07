@@ -110,7 +110,7 @@ function githubPagesSpaFallback() {
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, process.cwd(), "VITE_KRISIVEDA_ML_V2_API_URL");
     const v2ApiTarget =
-        env.VITE_KRISIVEDA_ML_V2_API_URL?.trim() || "http://127.0.0.1:8001";
+        env.VITE_KRISIVEDA_ML_V2_API_URL?.trim() || "http://127.0.0.1:8000";
 
     return {
         plugins: [react(), githubPagesSpaFallback()],

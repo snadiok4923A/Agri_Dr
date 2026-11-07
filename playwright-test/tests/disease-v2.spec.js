@@ -143,7 +143,7 @@ test("live local V2 status enables the actual dropdown through the development p
 }) => {
     test.skip(
         process.env.KRISIVEDA_TEST_LIVE_V2 !== "1",
-        "Opt in when the local V2 backend is running on port 8001",
+        "Opt in when the local V2 backend is running on port 8000",
     );
     const responsePromise = page.waitForResponse((response) =>
         response.url().endsWith(STATUS_PATH),

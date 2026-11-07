@@ -299,14 +299,10 @@ function loadBundle() {
             }),
         );
         validateBundle(manifest, metadata, mapping, parity);
-        const head = await request(MODEL, "HEAD");
-        const length = head.headers.get("content-length");
-        if (!/^\d+$/.test(length || "") || Number(length) !== MODEL_BYTES) {
-            fail(
-                "browser-model-integrity",
-                "The browser model HEAD response has a missing or incorrect file size.",
-            );
-        }
+        // Only the downloaded ONNX bytes are authoritative (verifiedBytes()
+        // checks their length and SHA-256). A transport Content-Length is not:
+        // GitHub Pages serves the weights content-encoded, so the header
+        // reports the compressed size rather than the model size.
         return { manifest, metadata, classes: mapping.classes };
     })().catch((error) => {
         bundlePromise = undefined;

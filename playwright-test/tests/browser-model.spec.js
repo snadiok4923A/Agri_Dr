@@ -576,17 +576,8 @@ test("Dashboard preflight keeps V1 default and API V2 disabled without loading w
     page,
     modelTraffic,
 }) => {
-    const headPromise = page.waitForResponse(
-        (response) =>
-            new URL(response.url()).pathname === MODEL_BASE + MODEL &&
-            response.request().method() === "HEAD",
-    );
+    // Readiness is metadata-only: no HEAD probe and no ONNX download.
     await dashboard(page);
-    const head = await headPromise;
-    expect(head.status()).toBe(200);
-    expect(Number(head.headers()["content-length"])).toBe(
-        PINNED_FILES[MODEL].bytes,
-    );
     expect(weightGets(modelTraffic)).toHaveLength(0);
     expect(
         inferenceRequests(modelTraffic).filter(
@@ -619,7 +610,7 @@ test("Dashboard preflight keeps V1 default and API V2 disabled without loading w
         "model_metadata.json",
         "onnx_parity.json",
     ]);
-    expect(preflight.filter(({ method }) => method === "HEAD")).toHaveLength(1);
+    expect(preflight.filter(({ method }) => method === "HEAD")).toHaveLength(0);
     expect(weightGets(modelTraffic)).toHaveLength(0);
     expect(
         inferenceRequests(modelTraffic).filter(
