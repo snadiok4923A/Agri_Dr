@@ -380,6 +380,14 @@ export default function Dashboard() {
           )
         : "";
 
+    /* V2 availability is re-sampled every time the analysis model picker is
+       about to be shown. Sampling once at mount latched a transient failure —
+       the local backend starting after the page loaded, or the hosted API
+       waking from a cold start — for the rest of the session, which left
+       Advanced Model permanently unselectable while Browser Model, whose
+       status comes from local files, stayed available. */
+    const [v2StatusCheck, setV2StatusCheck] = useState(0);
+
     useEffect(() => {
         let alive = true;
         getDiseaseV2Status().then((status) => {
@@ -389,7 +397,11 @@ export default function Dashboard() {
         return () => {
             alive = false;
         };
-    }, []);
+    }, [v2StatusCheck]);
+
+    useEffect(() => {
+        if (diagFlow === "photo-preview") setV2StatusCheck((check) => check + 1);
+    }, [diagFlow]);
 
     useEffect(() => {
         let alive = true;
