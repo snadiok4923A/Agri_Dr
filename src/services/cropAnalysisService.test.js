@@ -93,6 +93,27 @@ for (const configuredApi of ["http://127.0.0.1:8001", "http://localhost:8001", u
     });
 }
 
+test("a stalled prediction returns an explicit timeout instead of loading forever", async (t) => {
+    const service = await loadService();
+    let aborted = false;
+    t.mock.method(
+        globalThis,
+        "fetch",
+        (url, options = {}) =>
+            new Promise((_, reject) => {
+                options.signal?.addEventListener("abort", () => {
+                    aborted = true;
+                    reject(Object.assign(new Error("aborted"), { name: "AbortError" }));
+                });
+            }),
+    );
+    t.mock.timers.enable({ apis: ["setTimeout"] });
+    const pending = service.analyzeCropImage(image(), "v2");
+    t.mock.timers.tick(20000);
+    assert.deepEqual(await pending, { status: "error", reason: "timeout" });
+    assert.equal(aborted, true);
+});
+
 test("image safety checks reject missing, unsupported, and oversized uploads without a request", async (t) => {
     const fetch = t.mock.method(globalThis, "fetch");
     const service = await loadService();

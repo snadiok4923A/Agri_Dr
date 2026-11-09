@@ -13,6 +13,13 @@ const SIDECARS = [
     "onnx_parity.json",
 ];
 const INPUT_SHAPE = [1, 3, 224, 224];
+// Every download and runtime step is bounded. Without these, a stalled
+// connection left the analysis window on "Analyzing image..." forever: the
+// fetch never settled, so neither did the memoized bundle/session promises.
+const MANIFEST_TIMEOUT_MS = 10000;
+const WEIGHTS_TIMEOUT_MS = 30000;
+const RUNTIME_TIMEOUT_MS = 30000;
+const INFERENCE_TIMEOUT_MS = 45000;
 // JSON sidecars are text: a Windows checkout keeps CRLF while GitHub Pages
 // serves the Git-normalized LF bytes. Integrity therefore covers the
 // canonical LF form. The ONNX weights below stay byte-exact.
@@ -65,7 +72,25 @@ let runQueue = Promise.resolve();
 function fail(reason, message) {
     throw Object.assign(new Error(message), { reason });
 }
+/** Console breadcrumbs: a stalled analysis can be located from DevTools. */
+function stage(event, detail) {
+    console.info(`[browser-model] ${event}`, detail ?? "");
+}
+function withTimeout(promise, ms, reason, message, label) {
+    let timer;
+    const timeout = new Promise((_, reject) => {
+        timer = setTimeout(() => {
+            stage("timeout", { step: label, ms });
+            reject(Object.assign(new Error(message), { reason }));
+        }, ms);
+    });
+    return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+}
 function failure(error) {
+    stage("analysis failed", {
+        reason: error?.reason || "browser-model-unavailable",
+        message: error?.message,
+    });
     return {
         ...INFO,
         status: "error",
@@ -99,7 +124,9 @@ async function sha256(bytes) {
         b.toString(16).padStart(2, "0"),
     ).join("");
 }
-async function request(name, method = "GET") {
+async function request(name, method = "GET", timeoutMs = MANIFEST_TIMEOUT_MS) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
     let response;
     try {
         response = await fetch(`${BASE}${name}`, {
@@ -109,12 +136,20 @@ async function request(name, method = "GET") {
                     ? "application/json"
                     : "application/octet-stream",
             },
+            signal: controller.signal,
         });
-    } catch {
+    } catch (error) {
+        if (error?.name === "AbortError")
+            fail(
+                "browser-model-timeout",
+                `Browser model asset ${name} timed out. Please retry.`,
+            );
         fail(
             "browser-model-unavailable",
             "Browser model files could not be reached. Please retry.",
         );
+    } finally {
+        clearTimeout(timer);
     }
     if (!response.ok)
         fail(
@@ -142,7 +177,18 @@ function canonicalBytes(bytes) {
     return out;
 }
 async function verifiedBytes(name, entry) {
-    const fetched = new Uint8Array(await (await request(name)).arrayBuffer());
+    const timeoutMs = name === MODEL ? WEIGHTS_TIMEOUT_MS : MANIFEST_TIMEOUT_MS;
+    const response = await request(name, "GET", timeoutMs);
+    // Headers can arrive while the body stalls, so the download is bounded too.
+    const fetched = new Uint8Array(
+        await withTimeout(
+            response.arrayBuffer(),
+            timeoutMs,
+            "browser-model-timeout",
+            `Browser model asset ${name} timed out while downloading. Please retry.`,
+            `body:${name}`,
+        ),
+    );
     const bytes = TEXT_ASSETS.has(name) ? canonicalBytes(fetched) : fetched;
     const prefix = new TextDecoder().decode(fetched.subarray(0, 128));
     if (
@@ -274,7 +320,14 @@ function loadBundle() {
             );
         let manifest;
         try {
-            manifest = await (await request("manifest.json")).json();
+            const response = await request("manifest.json");
+            manifest = await withTimeout(
+                response.json(),
+                MANIFEST_TIMEOUT_MS,
+                "browser-model-timeout",
+                "The browser model manifest timed out. Please retry.",
+                "body:manifest.json",
+            );
         } catch (error) {
             if (error.reason) throw error;
             fail(
@@ -303,6 +356,10 @@ function loadBundle() {
         // checks their length and SHA-256). A transport Content-Length is not:
         // GitHub Pages serves the weights content-encoded, so the header
         // reports the compressed size rather than the model size.
+        stage("bundle verified", {
+            model: VERSION,
+            classes: mapping.classes.length,
+        });
         return { manifest, metadata, classes: mapping.classes };
     })().catch((error) => {
         bundlePromise = undefined;
@@ -352,9 +409,16 @@ function loadSession() {
             ort.env.wasm.numThreads = 1;
             ort.env.wasm.proxy = false;
             ort.env.wasm.wasmPaths = { wasm: wasm.default, mjs: mjs.default };
-            const session = await ort.InferenceSession.create(bytes, {
-                executionProviders: ["wasm"],
-            });
+            stage("weights verified", { bytes: bytes.byteLength });
+            const session = await withTimeout(
+                ort.InferenceSession.create(bytes, {
+                    executionProviders: ["wasm"],
+                }),
+                RUNTIME_TIMEOUT_MS,
+                "browser-runtime-timeout",
+                "The local WASM runtime did not start in time. Please retry.",
+                "runtime",
+            );
             if (
                 !same(session.inputNames, ["images"]) ||
                 !same(session.outputNames, ["logits"])
@@ -365,6 +429,7 @@ function loadSession() {
                     "The loaded ONNX session has unexpected input/output names.",
                 );
             }
+            stage("runtime ready", { input: "images", output: "logits" });
             return { ort, session, bundle };
         } catch (error) {
             if (error.reason) throw error;
@@ -444,16 +509,29 @@ export async function runBrowserDiseaseTensor(data) {
         const { ort, session, bundle } = await loadSession();
         const task = runQueue.then(async () => {
             let outputs;
+            const started = performance.now();
             try {
-                outputs = await session.run({
-                    images: new ort.Tensor("float32", input, INPUT_SHAPE),
-                });
-            } catch {
+                stage("inference start", { shape: INPUT_SHAPE });
+                outputs = await withTimeout(
+                    session.run({
+                        images: new ort.Tensor("float32", input, INPUT_SHAPE),
+                    }),
+                    INFERENCE_TIMEOUT_MS,
+                    "browser-inference-timeout",
+                    "Browser inference did not finish in time. Please retry.",
+                    "inference",
+                );
+            } catch (error) {
+                if (error?.reason) fail(error.reason, error.message);
                 fail(
                     "browser-runtime-unavailable",
                     "Browser inference failed. Please retry.",
                 );
             }
+            stage("inference done", {
+                ms: Math.round(performance.now() - started),
+                classes: 15,
+            });
             const output = outputs?.logits;
             if (
                 output?.type !== "float32" ||
@@ -494,6 +572,7 @@ export async function analyzeBrowserCropImage(file) {
                 "The image could not be decoded. Choose a clear rice photo of at least 32 x 32 pixels.",
             );
         }
+        stage("preprocessed", { values: tensor.length, layout: "NCHW" });
         return await runBrowserDiseaseTensor(tensor);
     } catch (error) {
         return failure(error);

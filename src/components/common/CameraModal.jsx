@@ -206,10 +206,30 @@ export default function CameraModal({
         }
         const req = ++analysisReqRef.current;
         let alive = true;
+        const started = performance.now();
         setAnalysis({ status: "loading" });
-        analyzeCropImage(photo?.file, diseaseModel).then((result) => {
-            if (alive && analysisReqRef.current === req) setAnalysis(result);
-        });
+        /* Always reach a terminal state: a rejected or empty analysis must
+           replace the spinner with an explicit error instead of leaving the
+           window on "Analyzing image..." indefinitely. */
+        (async () => {
+            let result;
+            try {
+                result = await analyzeCropImage(photo?.file, diseaseModel);
+            } catch (error) {
+                console.error("[crop-analysis] failed", error);
+                result = { status: "error", reason: "analysis-failed" };
+            } finally {
+                console.info(
+                    `[crop-analysis] model=${diseaseModel} settled in ${Math.round(performance.now() - started)}ms`,
+                );
+            }
+            if (!alive || analysisReqRef.current !== req) return;
+            setAnalysis(
+                result && typeof result === "object"
+                    ? result
+                    : { status: "error", reason: "analysis-failed" },
+            );
+        })();
         return () => {
             alive = false;
         };
@@ -590,9 +610,11 @@ export default function CameraModal({
                                     {analysis.reason?.startsWith("browser-") &&
                                     typeof analysis.message === "string"
                                         ? analysis.message
-                                        : analysis.reason ===
-                                            "unsupported-file-type"
-                                          ? "Please upload a JPEG, PNG, or WEBP image."
+                                        : analysis.reason === "timeout"
+                                          ? "The model took too long to respond. Please try again."
+                                          : analysis.reason ===
+                                              "unsupported-file-type"
+                                            ? "Please upload a JPEG, PNG, or WEBP image."
                                           : analysis.reason === "invalid-image"
                                             ? "The uploaded image is invalid or could not be decoded."
                                             : analysis.reason ===

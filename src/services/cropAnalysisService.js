@@ -22,6 +22,19 @@ const V2_API_BASE_URL = import.meta.env.DEV
     ? `${import.meta.env.BASE_URL}api`
     : API_BASE_URL;
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+// A stalled connection must surface as an error, never as an endless spinner.
+const STATUS_TIMEOUT_MS = 6000;
+const PREDICT_TIMEOUT_MS = 20000;
+
+async function fetchWithTimeout(url, options, timeoutMs) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+        return await fetch(url, { ...options, signal: controller.signal });
+    } finally {
+        clearTimeout(timer);
+    }
+}
 export const SUPPORTED_IMAGE_TYPES = new Set([
     "image/jpeg",
     "image/png",
@@ -35,9 +48,11 @@ const DISEASE_ENDPOINTS = {
 
 export async function getDiseaseV2Status() {
     try {
-        const response = await fetch(`${V2_API_BASE_URL}/disease/v2/status`, {
-            headers: { Accept: "application/json" },
-        });
+        const response = await fetchWithTimeout(
+            `${V2_API_BASE_URL}/disease/v2/status`,
+            { headers: { Accept: "application/json" } },
+            STATUS_TIMEOUT_MS,
+        );
         if (!response.ok)
             return { available: false, reason: `api-${response.status}` };
         const result = await response.json();
@@ -79,14 +94,18 @@ export async function analyzeCropImage(file, model = "v1") {
 
     let response;
     try {
-        response = await fetch(
+        response = await fetchWithTimeout(
             `${model === "v2" ? V2_API_BASE_URL : API_BASE_URL}${DISEASE_ENDPOINTS[model] || DISEASE_ENDPOINTS.v1}`,
             {
                 method: "POST",
                 body: formData,
             },
+            PREDICT_TIMEOUT_MS,
         );
-    } catch {
+    } catch (error) {
+        // A timed-out prediction produced no result; never present it as one.
+        if (error?.name === "AbortError")
+            return { status: "error", reason: "timeout" };
         return { status: "not_connected" };
     }
 

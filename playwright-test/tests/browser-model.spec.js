@@ -810,6 +810,60 @@ test("a damaged taxonomy sidecar disables Browser Model and retains the existing
     ).toBe(true);
 });
 
+test("a stalled ONNX download ends Analyze with a timeout error and the next attempt recovers", async ({
+    page,
+    modelTraffic,
+}) => {
+    await page.route("**" + MODEL_BASE + MODEL, () => {});
+    await dashboard(page);
+    await uploadPreview(page);
+    await selectBrowser(page);
+    await page.getByRole("button", { name: "Analyze", exact: true }).click();
+    await expectUiFailure(
+        page,
+        `Browser model asset ${MODEL} timed out. Please retry.`,
+    );
+    await expect(page.locator(".camodal__analysis-body")).not.toContainText(
+        "Analyzing image...",
+    );
+    // A stalled local model never falls back to any API prediction path.
+    expect(
+        modelTraffic.requests.filter(({ url }) =>
+            /\/disease\/(?:predict|v2\/predict)$/.test(new URL(url).pathname),
+        ),
+    ).toEqual([]);
+    await page.unroute("**" + MODEL_BASE + MODEL);
+    await page.locator(".camodal__close").click();
+    await expect(picker(page)).toHaveValue("browser-v2");
+    await page.getByRole("button", { name: "Analyze", exact: true }).click();
+    await expectUiPrediction(page);
+});
+
+test("an undecodable PNG ends Analyze with the image error instead of loading forever", async ({
+    page,
+    modelTraffic,
+}) => {
+    await dashboard(page);
+    await uploadPreview(page);
+    await page.locator('input[type="file"][accept="image/*"]').setInputFiles({
+        name: "leaf.png",
+        mimeType: "image/png",
+        buffer: Buffer.concat([
+            Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+            Buffer.from("truncated png payload that cannot be decoded"),
+        ]),
+    });
+    await expect(picker(page)).toBeVisible();
+    await selectBrowser(page);
+    await page.getByRole("button", { name: "Analyze", exact: true }).click();
+    const body = page.locator(".camodal__analysis-body");
+    await expect(body).toContainText(
+        "The uploaded image is invalid or could not be decoded.",
+    );
+    await expect(body).not.toContainText("Analyzing image...");
+    expect(weightGets(modelTraffic)).toHaveLength(0);
+});
+
 test("an unsupported WASM environment reports an Analyze-time error without switching models or using an API", async ({
     page,
     modelTraffic,

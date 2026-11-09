@@ -63,6 +63,7 @@ async function harness(t) {
         runFailures: 0,
         decodeFailure: false,
         missing: new Set(),
+        stall: new Set(),
         headType: "application/octet-stream",
         headLength: String(originals.get(MODEL).length),
         modelType: "application/octet-stream",
@@ -140,6 +141,16 @@ async function harness(t) {
             );
             const name = url.slice(BASE.length);
             assert.ok(names.includes(name));
+            if (state.stall.has(name))
+                return new Promise((_, reject) => {
+                    options.signal?.addEventListener("abort", () =>
+                        reject(
+                            Object.assign(new Error("aborted"), {
+                                name: "AbortError",
+                            }),
+                        ),
+                    );
+                });
             if (state.missing.has(name))
                 return new Response(null, { status: 404 });
             if (options.method === "HEAD") {
@@ -626,6 +637,26 @@ test("output names, shape, float32 type, count, and finite logits are enforced o
         (await service.runBrowserDiseaseTensor(tensor())).status,
         "ok",
     );
+});
+
+test("a stalled weight download times out as a retryable error instead of hanging", async (t) => {
+    const { service, state } = await harness(t);
+    state.stall.add(MODEL);
+    t.mock.timers.enable({ apis: ["setTimeout"] });
+    const pending = service.analyzeBrowserCropImage(file());
+    // Let the bundle fetches settle so their request timers exist before the
+    // fake clock advances past the 30 s weight-download budget.
+    for (let i = 0; i < 10; i += 1)
+        await new Promise((resolve) => setImmediate(resolve));
+    t.mock.timers.tick(30000);
+    assertError(await pending, "browser-model-timeout");
+    // The stalled request must not poison the memoized bundle/session.
+    state.stall.delete(MODEL);
+    const retried = await service.analyzeBrowserCropImage(file());
+    assert.equal(retried.status === "ok" || retried.status === "uncertain", true);
+    assert.equal(retried.logits.length, 15);
+    assert.equal(retried.top_predictions.length, 3);
+    assert.equal(state.createCalls.length, 1);
 });
 
 test("stable softmax handles large logits and uncertainty nulls every primary label", async (t) => {
