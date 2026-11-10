@@ -636,3 +636,128 @@
     animation: none;
   }
 }
+
+/* ==================== VOICE INPUT (Web Speech API) ==================== */
+.ai-doctor__listening {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  padding: 10px 14px;
+  color: var(--text-primary);
+}
+
+.ai-doctor__listening-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.ai-doctor__listening-text {
+  font-weight: 600;
+  font-size: min(max(calc(13px * var(--ts-body, 1)), 9px), 24px);
+  color: var(--accent);
+}
+
+.ai-doctor__voice-lang {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
+  color: var(--text-muted);
+}
+
+.ai-doctor__voice-lang select {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  color: var(--text-primary);
+  font-size: inherit;
+  padding: 3px 6px;
+  max-width: 130px;
+}
+
+.ai-doctor__voice-lang select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.ai-doctor__voice-stop {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 10px;
+  border: 1px solid rgba(239, 68, 68, 0.45);
+  background: rgba(239, 68, 68, 0.14);
+  color: var(--danger);
+  font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
+  font-weight: 600;
+  transition: all var(--transition-fast);
+}
+
+.ai-doctor__voice-stop:hover {
+  background: rgba(239, 68, 68, 0.24);
+}
+
+.ai-doctor__listening-preview {
+  margin: 0;
+  text-align: center;
+  font-size: min(max(calc(12.5px * var(--ts-body, 1)), 9px), 24px);
+  color: var(--text-secondary);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.ai-doctor__voice-hint {
+  margin: 0;
+  text-align: center;
+  font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
+  color: var(--text-muted);
+}
+
+.ai-doctor__voice-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 14px;
+  margin-bottom: 10px;
+  border-radius: 14px;
+  background: var(--bg-surface);
+  border: 1px solid rgba(239, 68, 68, 0.45);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.3);
+  color: var(--text-primary);
+  font-size: min(max(calc(12.5px * var(--ts-body, 1)), 9px), 24px);
+  line-height: 1.5;
+}
+
+.ai-doctor__voice-error svg {
+  color: var(--danger);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.ai-doctor__notice {
+  margin: 0;
+  padding: 2px 0 4px;
+  text-align: center;
+  font-size: min(max(calc(12px * var(--ts-body, 1)), 9px), 24px);
+  color: var(--text-muted);
+}
+
+.ai-doctor__action-btn--active {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.16);
+}
+
+.ai-doctor__action-btn--active svg {
+  color: var(--danger);
+}
+
+@media (max-width: 480px) {
+  /* The select keeps its own aria-label; hide the written label to save space */
+  .ai-doctor__voice-lang > span {
+    display: none;
+  }
+}

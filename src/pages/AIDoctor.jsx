@@ -3,6 +3,8 @@ import { useLanguage } from "../hooks/useLanguage";
 import {
     Camera,
     Mic,
+    MicOff,
+    AlertCircle,
     Plus,
     Send,
     Volume2,
@@ -14,7 +16,10 @@ import {
     TrendingUp,
     DollarSign,
 } from "lucide-react";
-import { askAgricultureAI } from "../data/mockData";
+import {
+    createVoiceRecognitionService,
+    isSpeechRecognitionSupported,
+} from "../services/voiceRecognitionService";
 import "./AIDoctor.css";
 
 const suggestedQuestions = {
@@ -67,16 +72,46 @@ const mockDiagnosis = {
     ],
 };
 
+/* Spoken-language choices for the browser's Web Speech engine. Labels are
+   shown in their own language; the codes match useLanguage's voice locales. */
+const VOICE_LOCALES = [
+    { code: "en-IN", label: "English" },
+    { code: "hi-IN", label: "हिन्दी" },
+    { code: "bn-IN", label: "বাংলা" },
+    { code: "te-IN", label: "తెలుగు" },
+    { code: "ta-IN", label: "தமிழ்" },
+];
+
+const APP_VOICE_LOCALE = {
+    en: "en-IN",
+    bn: "bn-IN",
+    hi: "hi-IN",
+    te: "te-IN",
+    ta: "ta-IN",
+};
+
 export default function AIDoctor() {
     const { t, language, formatNumber } = useLanguage();
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState("");
-    const [listening, setListening] = useState(false);
     const [scanning, setScanning] = useState(false);
-    const [loading, setLoading] = useState(false);
     const [plusOpen, setPlusOpen] = useState(false);
+    // Voice input state — browser Web Speech API only (no AI, no backend).
+    const [voiceSupported] = useState(() => isSpeechRecognitionSupported());
+    const [voiceStatus, setVoiceStatus] = useState("idle"); // idle | starting | listening | restarting
+    const [interim, setInterim] = useState("");
+    const [voiceError, setVoiceError] = useState(""); // translation key suffix
+    const [voiceHint, setVoiceHint] = useState(false);
+    const [voiceLang, setVoiceLang] = useState(
+        () => APP_VOICE_LOCALE[language] || "en-IN",
+    );
     const messagesEndRef = useRef(null);
     const chatbarRef = useRef(null);
+    const voiceRef = useRef(null);
+    const voiceStatusRef = useRef("idle");
+    const voiceWatchdogRef = useRef(null);
+    const noSpeechTimerRef = useRef(null);
+    const listening = voiceStatus !== "idle";
 
     // Close the "+" actions menu when clicking outside the chat bar
     useEffect(() => {
@@ -90,41 +125,185 @@ export default function AIDoctor() {
         return () => document.removeEventListener("pointerdown", onPointerDown);
     }, [plusOpen]);
 
+    /* ------------------------------------------------------------------
+       Voice input — browser Web Speech API only.
+       No AI model, no backend and no external speech service is involved:
+       the browser transcribes speech and we append the text to the input.
+       Recognised speech is NEVER sent automatically.
+    ------------------------------------------------------------------ */
+
+    const clearVoiceTimers = () => {
+        if (voiceWatchdogRef.current) {
+            clearTimeout(voiceWatchdogRef.current);
+            voiceWatchdogRef.current = null;
+        }
+        if (noSpeechTimerRef.current) {
+            clearTimeout(noSpeechTimerRef.current);
+            noSpeechTimerRef.current = null;
+        }
+    };
+
+    const applyVoiceStatus = (next) => {
+        voiceStatusRef.current = next;
+        setVoiceStatus(next);
+    };
+
+    const stopVoice = () => {
+        clearVoiceTimers();
+        const service = voiceRef.current;
+        voiceRef.current = null;
+        try {
+            service?.stop();
+        } catch {
+            /* stopping must never throw */
+        }
+        applyVoiceStatus("idle");
+        setInterim("");
+        setVoiceHint(false);
+    };
+
+    function handleVoiceError(code) {
+        if (code === "aborted" || code === "no-speech") return;
+        stopVoice();
+        if (code === "not-allowed" || code === "service-not-allowed") {
+            setVoiceError("voiceDenied");
+        } else if (code === "audio-capture") {
+            setVoiceError("voiceNoMic");
+        } else if (code === "network") {
+            setVoiceError("voiceNetwork");
+        } else {
+            setVoiceError("voiceStartFailed");
+        }
+    }
+
+    const startVoice = () => {
+        if (!voiceSupported) {
+            setVoiceError("voiceUnsupported");
+            return;
+        }
+        setVoiceError("");
+        setVoiceHint(false);
+        applyVoiceStatus("starting");
+
+        let service = voiceRef.current;
+        if (!service) {
+            service = createVoiceRecognitionService({
+                lang: voiceLang,
+                onState: (state) => {
+                    if (state === "idle") {
+                        // The engine gave up while we still thought it was
+                        // running — never leave the UI stuck in audio state.
+                        if (voiceRef.current) {
+                            voiceRef.current = null;
+                            clearVoiceTimers();
+                            setInterim("");
+                            setVoiceHint(false);
+                            applyVoiceStatus("idle");
+                        }
+                        return;
+                    }
+                    if (!voiceRef.current) return; // late event after Stop
+                    applyVoiceStatus(state);
+                    if (state === "listening") {
+                        clearVoiceTimers();
+                        // No-speech feedback: the engine keeps listening, we
+                        // just tell the user we have not heard anything yet.
+                        noSpeechTimerRef.current = setTimeout(() => {
+                            if (voiceRef.current) setVoiceHint(true);
+                        }, 12000);
+                    }
+                },
+                onInterim: (text) => {
+                    setInterim(text);
+                    if (text) setVoiceHint(false);
+                },
+                onFinal: (text) => {
+                    // Append for review — the user decides when to send.
+                    setInterim("");
+                    setVoiceHint(false);
+                    setInput((prev) =>
+                        prev.trim() ? `${prev.trim()} ${text}` : text,
+                    );
+                },
+                onError: handleVoiceError,
+            });
+            voiceRef.current = service;
+        }
+
+        // Safety net: if the engine never reports "listening" (permission
+        // prompt dismissed, browser quirk), fail loudly instead of spinning.
+        voiceWatchdogRef.current = setTimeout(() => {
+            if (voiceStatusRef.current !== "starting") return;
+            const stale = voiceRef.current;
+            voiceRef.current = null;
+            try {
+                stale?.stop();
+            } catch {
+                /* ignore */
+            }
+            clearVoiceTimers();
+            applyVoiceStatus("idle");
+            setInterim("");
+            setVoiceError("voiceStartFailed");
+        }, 8000);
+
+        service.setLang(voiceLang);
+        service.start();
+    };
+
+    const toggleVoice = () => {
+        if (voiceStatusRef.current !== "idle") stopVoice();
+        else startVoice();
+    };
+
+    const handleVoiceLang = (next) => {
+        setVoiceLang(next);
+        voiceRef.current?.setLang(next);
+    };
+
+    /* Follow the app language as the default spoken language. */
+    useEffect(() => {
+        if (voiceRef.current) return;
+        setVoiceLang(APP_VOICE_LOCALE[language] || "en-IN");
+    }, [language]);
+
+    /* Leaving the page must never leave the microphone open. */
+    useEffect(
+        () => () => {
+            clearVoiceTimers();
+            const service = voiceRef.current;
+            voiceRef.current = null;
+            try {
+                service?.stop();
+            } catch {
+                /* ignore */
+            }
+        },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [],
+    );
+
     const scrollToBottom = () =>
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
 
-    const sendMessage = async (text) => {
-        if (!text.trim()) return;
+    /* Deliberately model-free: the question becomes a user message and
+       nothing else. No AI answer is invented while the backend is absent. */
+    const sendMessage = (text) => {
+        const trimmed = text.trim();
+        if (!trimmed) return;
         setMessages((prev) => [
             ...prev,
-            { role: "user", content: text, timestamp: new Date() },
+            { role: "user", content: trimmed, timestamp: new Date() },
         ]);
         setInput("");
-        setLoading(true);
-        const response = await askAgricultureAI(text, "default");
-        setMessages((prev) => [
-            ...prev,
-            {
-                role: "assistant",
-                content: response.answer,
-                confidence: response.confidence,
-                timestamp: new Date(),
-            },
-        ]);
-        setLoading(false);
-        setTimeout(scrollToBottom, 100);
+        setPlusOpen(false);
+        setVoiceError("");
+        setTimeout(scrollToBottom, 50);
     };
 
-    const handleVoice = () => {
-        setListening(!listening);
-        if (!listening) {
-            setTimeout(() => {
-                setListening(false);
-                sendMessage(
-                    "আমার ধানের পাতায় বাদামি দাগ দেখা যাচ্ছে, কী ওষুধ দেব?",
-                );
-            }, 2500);
-        }
+    const handleInputChange = (e) => {
+        setInput(e.target.value);
+        if (voiceError) setVoiceError("");
     };
 
     const handlePhoto = () => {
@@ -175,11 +354,16 @@ export default function AIDoctor() {
                             <span>{t("ai.takePhoto")}</span>
                         </button>
                         <button
-                            className="ai-doctor__action-btn ai-doctor__action-btn--voice"
-                            onClick={handleVoice}
+                            className={`ai-doctor__action-btn ai-doctor__action-btn--voice${listening ? " ai-doctor__action-btn--active" : ""}`}
+                            onClick={toggleVoice}
+                            aria-pressed={listening}
                         >
-                            <Mic size={22} />
-                            <span>{t("ai.askByVoice")}</span>
+                            {listening ? <MicOff size={22} /> : <Mic size={22} />}
+                            <span>
+                                {listening
+                                    ? t("ai.stopListening")
+                                    : t("ai.askByVoice")}
+                            </span>
                         </button>
                     </div>
                     <div className="ai-doctor__suggested">
@@ -325,20 +509,12 @@ export default function AIDoctor() {
                                 </div>
                             </div>
                         ))}
-                        {loading && (
-                            <div className="ai-doctor__message ai-doctor__message--assistant">
-                                <div className="ai-doctor__message-avatar ai-doctor__message-avatar--ai">
-                                    <Bot size={18} />
-                                </div>
-                                <div className="ai-doctor__message-content">
-                                    <div className="ai-doctor__typing">
-                                        <span />
-                                        <span />
-                                        <span />
-                                    </div>
-                                </div>
-                            </div>
-                        )}
+                        {messages.length > 0 &&
+                            messages[messages.length - 1].role === "user" && (
+                                <p className="ai-doctor__notice" role="note">
+                                    {t("ai.answerUnavailable")}
+                                </p>
+                            )}
                         <div ref={messagesEndRef} />
                     </div>
                 </div>
@@ -346,10 +522,58 @@ export default function AIDoctor() {
 
             {/* Floating glass chat bar — always visible, hero & chat states */}
             <div className="ai-doctor__chatbar-anchor">
+                {voiceError && (
+                    <div className="ai-doctor__voice-error" role="alert">
+                        <AlertCircle size={16} />
+                        <span>{t(`ai.${voiceError}`)}</span>
+                    </div>
+                )}
                 {listening && (
-                    <div className="ai-doctor__listening">
-                        <div className="ai-doctor__listening-pulse" />
-                        <span>{t("ai.listening")}</span>
+                    <div
+                        className="ai-doctor__listening"
+                        role="status"
+                        aria-live="polite"
+                    >
+                        <div className="ai-doctor__listening-row">
+                            <span className="ai-doctor__listening-pulse" />
+                            <span className="ai-doctor__listening-text">
+                                {voiceStatus === "starting"
+                                    ? t("ai.voiceStarting")
+                                    : t("ai.listening")}
+                            </span>
+                            <label className="ai-doctor__voice-lang">
+                                <span>{t("ai.voiceLanguage")}</span>
+                                <select
+                                    value={voiceLang}
+                                    onChange={(e) =>
+                                        handleVoiceLang(e.target.value)
+                                    }
+                                    aria-label={t("ai.voiceLanguage")}
+                                >
+                                    {VOICE_LOCALES.map((l) => (
+                                        <option key={l.code} value={l.code}>
+                                            {l.label}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
+                            <button
+                                type="button"
+                                className="ai-doctor__voice-stop"
+                                onClick={stopVoice}
+                            >
+                                <MicOff size={14} />
+                                {t("ai.stopListening")}
+                            </button>
+                        </div>
+                        <p className="ai-doctor__listening-preview">
+                            {interim ? `“${interim}”` : t("ai.voiceHint")}
+                        </p>
+                        {voiceHint && (
+                            <p className="ai-doctor__voice-hint">
+                                {t("ai.voiceNoSpeech")}
+                            </p>
+                        )}
                     </div>
                 )}
                 {scanning && (
@@ -389,20 +613,35 @@ export default function AIDoctor() {
                     <input
                         type="text"
                         value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        onKeyDown={(e) =>
-                            e.key === "Enter" && sendMessage(input)
-                        }
+                        onChange={handleInputChange}
+                        onKeyDown={(e) => {
+                            if (
+                                e.key === "Enter" &&
+                                !e.nativeEvent.isComposing
+                            ) {
+                                sendMessage(input);
+                            }
+                        }}
                         placeholder={t("ai.askAnything")}
+                        aria-label={t("ai.askAnything")}
                         className="ai-doctor__chatbar-input"
                     />
                     <button
                         className={`ai-doctor__chatbar-mic ${listening ? "ai-doctor__chatbar-mic--active" : ""}`}
-                        onClick={handleVoice}
-                        title={t("ai.askByVoice")}
-                        aria-label={t("ai.askByVoice")}
+                        onClick={toggleVoice}
+                        title={
+                            listening
+                                ? t("ai.stopListening")
+                                : t("ai.askByVoice")
+                        }
+                        aria-label={
+                            listening
+                                ? t("ai.stopListening")
+                                : t("ai.askByVoice")
+                        }
+                        aria-pressed={listening}
                     >
-                        <Mic size={18} />
+                        {listening ? <MicOff size={18} /> : <Mic size={18} />}
                     </button>
                     <button
                         className="ai-doctor__chatbar-send"

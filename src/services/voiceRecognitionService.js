@@ -132,6 +132,9 @@ export function createVoiceRecognitionService({
                 setTimeout(() => {
                     if (!wantActive) return;
                     try {
+                        // Re-apply the current language on every restart: the
+                        // recognizer instance is reused across sessions.
+                        if (recognition) recognition.lang = currentLang;
                         recognition?.start();
                     } catch {
                         /* already running — onstart will clear `restarting` */
@@ -190,13 +193,19 @@ export function createVoiceRecognitionService({
             if (!nextLang || nextLang === currentLang) return;
             currentLang = nextLang;
             try {
-                if (recognition && !wantActive) recognition.lang = nextLang;
-                else if (recognition) {
-                    // Restart so the new language is guaranteed to apply.
-                    try {
-                        recognition.stop();
-                    } catch {
-                        /* onend restarts with the new lang */
+                if (recognition) {
+                    // The engine keeps the lang of the object it was built
+                    // with, so assign it before any restart — otherwise a
+                    // live session silently keeps recognising the old
+                    // language.
+                    recognition.lang = nextLang;
+                    if (wantActive) {
+                        // Restart so the running engine picks it up.
+                        try {
+                            recognition.stop();
+                        } catch {
+                            /* onend restarts with the new lang */
+                        }
                     }
                 }
                 try {
