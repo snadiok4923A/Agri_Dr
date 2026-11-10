@@ -107,10 +107,16 @@ export default function AIDoctor() {
     );
     const messagesEndRef = useRef(null);
     const chatbarRef = useRef(null);
+    const inputRef = useRef(null);
     const voiceRef = useRef(null);
     const voiceStatusRef = useRef("idle");
     const voiceWatchdogRef = useRef(null);
     const noSpeechTimerRef = useRef(null);
+    // Latest partial transcript — kept in a ref so a stop/error can always
+    // salvage it, even from inside a stale callback closure.
+    const partialRef = useRef("");
+    const capturedRef = useRef(false); // did this session hear anything?
+    const startedAtRef = useRef(0);
     const listening = voiceStatus !== "idle";
 
     // Close the "+" actions menu when clicking outside the chat bar
@@ -148,7 +154,33 @@ export default function AIDoctor() {
         setVoiceStatus(next);
     };
 
-    const stopVoice = () => {
+    /* Append recognised text to the message box instead of replacing it, so
+       nothing the user typed — or said earlier in the session — is ever
+       thrown away. */
+    const appendToInput = (text) => {
+        const chunk = text.trim();
+        if (!chunk) return;
+        setInput((prev) => (prev.trim() ? `${prev.trim()} ${chunk}` : chunk));
+    };
+
+    /* A session that ends must keep whatever was already recognised, even if
+       the engine never got to mark it final. */
+    const commitPartial = () => {
+        const partial = (partialRef.current || "").trim();
+        partialRef.current = "";
+        if (partial) appendToInput(partial);
+        setInterim("");
+    };
+
+    /**
+     * End the session. `error` is a translation-key suffix; `noSpeech` asks
+     * for the "nothing was heard" message when no speech was captured.
+     */
+    const stopVoice = (options) => {
+        // Tolerate being used directly as a click handler.
+        const { error = "", noSpeech = false } = options?.nativeEvent
+            ? {}
+            : options || {};
         clearVoiceTimers();
         const service = voiceRef.current;
         voiceRef.current = null;
@@ -157,23 +189,48 @@ export default function AIDoctor() {
         } catch {
             /* stopping must never throw */
         }
+        commitPartial();
+        const heardSomething = capturedRef.current;
+        const listenedFor = Date.now() - startedAtRef.current;
+        capturedRef.current = false;
         applyVoiceStatus("idle");
-        setInterim("");
         setVoiceHint(false);
+        if (error) setVoiceError(error);
+        // Distinguish "no speech detected" from an engine failure: only the
+        // deliberate stop after a real listening window claims it.
+        else if (noSpeech && !heardSomething && listenedFor >= 2500) {
+            setVoiceError("voiceNoSpeech");
+        }
     };
 
     function handleVoiceError(code) {
-        if (code === "aborted" || code === "no-speech") return;
-        stopVoice();
-        if (code === "not-allowed" || code === "service-not-allowed") {
-            setVoiceError("voiceDenied");
-        } else if (code === "audio-capture") {
-            setVoiceError("voiceNoMic");
-        } else if (code === "network") {
-            setVoiceError("voiceNetwork");
-        } else {
-            setVoiceError("voiceStartFailed");
+        if (code === "aborted") return;
+        if (code === "no-speech") {
+            // Recoverable — the engine keeps listening, so explain it instead
+            // of tearing the session down.
+            setVoiceHint(true);
+            return;
         }
+        let key = "voiceStartFailed";
+        if (code === "not-allowed") {
+            key = "voiceDenied";
+        } else if (code === "audio-capture") {
+            key = "voiceNoMic";
+        } else if (code === "service-not-allowed") {
+            // The browser refused its speech service (policy, extension or
+            // blocked endpoint) — that is not a microphone permission issue.
+            key = "voiceServiceUnavailable";
+        } else if (code === "language-not-supported") {
+            key = "voiceLangUnsupported";
+        } else if (code === "network") {
+            // Browsers report a single `network` code both for a real outage
+            // and for their speech endpoint being unreachable, so only call
+            // it "offline" when the device actually is offline.
+            const offline =
+                typeof navigator !== "undefined" && navigator.onLine === false;
+            key = offline ? "voiceOffline" : "voiceServiceUnavailable";
+        }
+        stopVoice({ error: key });
     }
 
     const startVoice = () => {
@@ -184,6 +241,9 @@ export default function AIDoctor() {
         setVoiceError("");
         setVoiceHint(false);
         applyVoiceStatus("starting");
+        partialRef.current = "";
+        capturedRef.current = false;
+        startedAtRef.current = Date.now();
 
         let service = voiceRef.current;
         if (!service) {
@@ -196,7 +256,7 @@ export default function AIDoctor() {
                         if (voiceRef.current) {
                             voiceRef.current = null;
                             clearVoiceTimers();
-                            setInterim("");
+                            commitPartial();
                             setVoiceHint(false);
                             applyVoiceStatus("idle");
                         }
@@ -214,16 +274,19 @@ export default function AIDoctor() {
                     }
                 },
                 onInterim: (text) => {
+                    partialRef.current = text;
                     setInterim(text);
-                    if (text) setVoiceHint(false);
+                    if (text) {
+                        capturedRef.current = true;
+                        setVoiceHint(false);
+                    }
                 },
                 onFinal: (text) => {
                     // Append for review — the user decides when to send.
-                    setInterim("");
+                    partialRef.current = "";
+                    capturedRef.current = true;
                     setVoiceHint(false);
-                    setInput((prev) =>
-                        prev.trim() ? `${prev.trim()} ${text}` : text,
-                    );
+                    appendToInput(text);
                 },
                 onError: handleVoiceError,
             });
@@ -234,17 +297,7 @@ export default function AIDoctor() {
         // prompt dismissed, browser quirk), fail loudly instead of spinning.
         voiceWatchdogRef.current = setTimeout(() => {
             if (voiceStatusRef.current !== "starting") return;
-            const stale = voiceRef.current;
-            voiceRef.current = null;
-            try {
-                stale?.stop();
-            } catch {
-                /* ignore */
-            }
-            clearVoiceTimers();
-            applyVoiceStatus("idle");
-            setInterim("");
-            setVoiceError("voiceStartFailed");
+            stopVoice({ error: "voiceStartFailed" });
         }, 8000);
 
         service.setLang(voiceLang);
@@ -266,6 +319,25 @@ export default function AIDoctor() {
         if (voiceRef.current) return;
         setVoiceLang(APP_VOICE_LOCALE[language] || "en-IN");
     }, [language]);
+
+    /* Losing the connection mid-session ends recognition inside the browser:
+       stop cleanly, keep what was heard, and say it is the connection. */
+    useEffect(() => {
+        if (!listening) return;
+        const handleOffline = () => {
+            if (voiceStatusRef.current === "idle") return;
+            stopVoice({ error: "voiceOffline" });
+        };
+        window.addEventListener("offline", handleOffline);
+        return () => window.removeEventListener("offline", handleOffline);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [listening]);
+
+    /* Explicit text fallback offered next to every voice error. */
+    const focusMessageInput = () => {
+        setVoiceError("");
+        inputRef.current?.focus();
+    };
 
     /* Leaving the page must never leave the microphone open. */
     useEffect(
@@ -525,7 +597,28 @@ export default function AIDoctor() {
                 {voiceError && (
                     <div className="ai-doctor__voice-error" role="alert">
                         <AlertCircle size={16} />
-                        <span>{t(`ai.${voiceError}`)}</span>
+                        <div className="ai-doctor__voice-error-body">
+                            <span>{t(`ai.${voiceError}`)}</span>
+                            <div className="ai-doctor__voice-error-actions">
+                                {voiceSupported && (
+                                    <button
+                                        type="button"
+                                        className="ai-doctor__voice-retry"
+                                        onClick={startVoice}
+                                    >
+                                        <Mic size={13} />
+                                        {t("ai.voiceRetry")}
+                                    </button>
+                                )}
+                                <button
+                                    type="button"
+                                    className="ai-doctor__voice-type"
+                                    onClick={focusMessageInput}
+                                >
+                                    {t("ai.voiceTypeInstead")}
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 )}
                 {listening && (
@@ -560,7 +653,7 @@ export default function AIDoctor() {
                             <button
                                 type="button"
                                 className="ai-doctor__voice-stop"
-                                onClick={stopVoice}
+                                onClick={() => stopVoice({ noSpeech: true })}
                             >
                                 <MicOff size={14} />
                                 {t("ai.stopListening")}
@@ -612,6 +705,7 @@ export default function AIDoctor() {
                     </div>
                     <input
                         type="text"
+                        ref={inputRef}
                         value={input}
                         onChange={handleInputChange}
                         onKeyDown={(e) => {
