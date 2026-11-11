@@ -75,7 +75,6 @@ def load_rgb(source: Path | BytesIO | bytes, draft: bool = True) -> Image.Image:
         # One error type for every unreadable input, including truncated files.
         raise ValueError("Unreadable image data. Upload a valid JPG, PNG or WEBP photo.") from exc
 
-
 def to_model_tensor(image: Image.Image) -> np.ndarray:
     """Deterministic (3, 224, 224) float32 tensor in RGB, ImageNet-normalized."""
 
