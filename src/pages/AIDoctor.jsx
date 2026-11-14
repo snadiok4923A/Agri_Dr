@@ -314,10 +314,15 @@ export default function AIDoctor() {
         voiceRef.current?.setLang(next);
     };
 
-    /* Follow the app language as the default spoken language. */
+    /* Language is the single source of truth: changing it in Settings or the
+       first-run screen updates the spoken language immediately and re-applies
+       it to a running recognizer (the service restarts its session with the
+       new locale). No refresh, no re-login, no silent English fallback. */
     useEffect(() => {
-        if (voiceRef.current) return;
-        setVoiceLang(APP_VOICE_LOCALE[language] || "en-IN");
+        const next = APP_VOICE_LOCALE[language] || "en-IN";
+        setVoiceLang(next);
+        setVoiceError("");
+        voiceRef.current?.setLang(next);
     }, [language]);
 
     /* Losing the connection mid-session ends recognition inside the browser:

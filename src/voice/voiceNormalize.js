@@ -94,6 +94,13 @@ export const TOKEN_FIXES = new Map([
     ["kotha", "koto"],
     ["kitna", "koto"],
     ["kitne", "koto"],
+    ["kitni", "koto"],
+    ["batao", "dekhaao"],
+    ["bata", "dekhaao"],
+    ["bataiye", "dekhaao"],
+    ["dikhao", "dekhaao"],
+    ["dijiye", "dekhaao"],
+    ["kholiye", "kholo"],
     ["bajarer", "market"],
     ["arer", "of"],
     ["er", "of"],
@@ -105,6 +112,9 @@ export const TOKEN_FIXES = new Map([
 /** Words with no matching value — dropped entirely during normalization. */
 const NOISE_TOKENS = new Set([
     "the", "a", "an", "of", "to", "please", "amake", "kore",
+    // Hindi sentence particles ("मेरी जमीन कितनी है") — the phrase table is
+    // normalized the same way, so removing them never changes a match.
+    "mera", "meri", "mere", "hai", "hain", "ka", "ki", "ke",
     // sentence connectors/fillers (§7: "কি কি disease আছে দেখি")
     "ki", "ache", "achhe", "dekhi",
 ]);

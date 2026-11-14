@@ -11,8 +11,9 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { createVoiceRecognitionService, isSpeechRecognitionSupported } from "../services/voiceRecognitionService";
 import { parseVoiceCommand } from "../voice/voiceCommandParser";
 import { executeVoiceCommand, showUnknownCommandFeedback } from "../voice/executeVoiceCommand";
-import { useLanguage } from "./useLanguage";
+import { LANGUAGES, useLanguage } from "./useLanguage";
 import { useTheme } from "./useTheme";
+import { useOnboarding } from "./useOnboarding";
 
 /**
  * VoiceMode context — the persistent, rule-based voice assistant runtime.
@@ -22,19 +23,25 @@ import { useTheme } from "./useTheme";
  *   transcript → parseVoiceCommand() (pure rules) → executeVoiceCommand()
  *   (whitelisted actions) → UI toast feedback.
  *
+ * LANGUAGE (single source of truth: useLanguage):
+ *   recognition.lang ALWAYS follows the website language and is re-applied
+ *   on every session/restart. There is no silent locale rotation: if the
+ *   browser cannot recognise the selected locale it reports
+ *   language-not-supported, Voice Mode stops and says so in that language,
+ *   and the user can type instead. Every spoken label/feedback string is
+ *   resolved through the same translation tree as the rest of the UI.
+ *
  * - Activation is PERSISTENT: recognition self-restarts (continuous sessions
- *   end after silence in browsers) until stop() is called — a command never
- *   turns Voice Mode off by itself. Navigating between pages also keeps the
- *   session alive, so "Market Intelligence kholo" works from anywhere.
- * - Unknown commands NEVER stop Voice Mode ("Command not recognized" toast).
- * - Voice Mode stops only via: the Stop button/header icon, or a spoken stop
- *   command ("stop voice" / "voice bondho" / "ভয়েস বন্ধ করো" …).
+ *   end after silence in browsers) until stop() is called.
+ * - Unknown commands NEVER stop Voice Mode.
+ * - Voice Mode stops only via: the Stop button/header icon, a spoken stop
+ *   command, a microphone/service/language failure, or leaving the app.
  */
 
 const VoiceModeContext = createContext(null);
 
-/** App language code → Web Speech recognition locale (existing languages only). */
-const SR_LANGS = {
+/** App language code → Web Speech recognition locale (existing languages). */
+export const SR_LANGS = {
     en: "en-IN",
     bn: "bn-IN",
     hi: "hi-IN",
@@ -42,16 +49,28 @@ const SR_LANGS = {
     ta: "ta-IN",
 };
 
-/**
- * §2/§3 — ALL speech locales we rotate through. The SPOKEN language is
- * independent of the website language: recognition starts at the app's
- * locale but automatically rotates (bn → hi → te → ta → en …) whenever a
- * transcript matches no command, so a Bengali sentence is understood even
- * in English mode and vice-versa. The last SUCCESSFUL locale becomes the
- * primary guess (sticky), which is the practical multi-locale strategy for
- * the Web Speech API — no user-visible language switch needed.
- */
-const SR_LOCALES = ["en-IN", "bn-IN", "hi-IN", "te-IN", "ta-IN"];
+/** Recognition error code → translation key suffix under `ai.*`. */
+const VOICE_ERROR_KEYS = {
+    "not-allowed": "voiceDenied",
+    "service-not-allowed": "voiceServiceUnavailable",
+    "language-not-supported": "voiceLangUnsupported",
+    "audio-capture": "voiceNoMic",
+    network: "voiceServiceUnavailable",
+    unsupported: "voiceUnsupported",
+};
+
+/** Errors that mean the engine cannot keep listening at all. */
+const FATAL_ERRORS = new Set([
+    "not-allowed",
+    "service-not-allowed",
+    "language-not-supported",
+    "audio-capture",
+    "unsupported",
+]);
+
+/** Same final transcript delivered twice in quick succession = one command.
+ *  (Continuous recognition + the end/restart cycle can replay a result.) */
+const DUPLICATE_WINDOW_MS = 1200;
 
 /** DOM event used to open the Dashboard's floating Weather modal from voice. */
 export const VOICE_OPEN_WEATHER_EVENT = "krisiveda:voice-open-weather";
@@ -64,31 +83,62 @@ export function VoiceModeProvider({ children }) {
     const [status, setStatus] = useState("idle"); // idle | starting | listening | restarting
     const [transcript, setTranscript] = useState("");
     const [lastCommand, setLastCommand] = useState(null); // { text, intent, at }
+    const [voiceError, setVoiceError] = useState(null); // ai.* key suffix
     const [supported] = useState(() => isSpeechRecognitionSupported());
 
     const navigate = useNavigate();
     const location = useLocation();
-    const { language, changeLanguage } = useLanguage();
+    const { language, changeLanguage, t, formatNumber } = useLanguage();
     const { setTheme } = useTheme();
+    const { farm, isFarmComplete } = useOnboarding();
 
     // Latest callbacks/actions for the recognition loop (avoids restarts).
     const actionsRef = useRef(null);
     const activeRef = useRef(false);
     const serviceRef = useRef(null);
     const stopRef = useRef(null);
-    // Multilingual rotation state (§2/§3).
-    const localeIndexRef = useRef(0);
-    const rotatingRef = useRef(false);
+    const lastFinalRef = useRef({ text: "", at: 0 });
+    const farmRef = useRef({ farm, isFarmComplete });
+
+    useEffect(() => {
+        farmRef.current = { farm, isFarmComplete };
+    }, [farm, isFarmComplete]);
 
     useEffect(() => {
         activeRef.current = active;
     }, [active]);
 
+    /* Localized "your farm has X across N parcels" answer — built from the
+       SAME survey parcels the My Farm / Finance pages use, never demo data.
+       Mixed units are summed per unit (no invented conversion rates). */
+    const getFarmSummary = useCallback(() => {
+        const parcels = farmRef.current.isFarmComplete
+            ? farmRef.current.farm?.parcels || []
+            : [];
+        if (!parcels.length) return null;
+        const byUnit = new Map();
+        parcels.forEach((parcel) => {
+            const unit = parcel.unit || "acre";
+            const area = Number(parcel.area);
+            if (!Number.isFinite(area) || area <= 0) return;
+            byUnit.set(unit, (byUnit.get(unit) || 0) + area);
+        });
+        if (!byUnit.size) return null;
+        const parts = [...byUnit.entries()].map(([unit, sum]) => {
+            const key = `units.${unit}`;
+            const label = t(key);
+            return `${formatNumber(Math.round(sum * 100) / 100)} ${
+                label === key ? unit : label
+            }`;
+        });
+        return { area: parts.join(" + "), count: parcels.length };
+    }, [t, formatNumber]);
+
     const stop = useCallback(() => {
         setActive(false);
         setStatus("idle");
         setTranscript("");
-        rotatingRef.current = false;
+        setVoiceError(null);
         try {
             serviceRef.current?.stop();
         } catch {
@@ -98,13 +148,15 @@ export function VoiceModeProvider({ children }) {
     stopRef.current = stop;
 
     const start = useCallback(() => {
-        if (!supported) return;
+        if (!supported) {
+            setVoiceError("voiceUnsupported");
+            return;
+        }
         setTranscript("");
-        // First guess = the app's current language (§2: most likely locale).
-        const primary = SR_LOCALES.indexOf(SR_LANGS[language] || "en-IN");
-        localeIndexRef.current = primary >= 0 ? primary : 0;
+        setVoiceError(null);
+        lastFinalRef.current = { text: "", at: 0 };
         setActive(true);
-    }, [supported, language]);
+    }, [supported]);
 
     const toggle = useCallback(() => {
         if (active) stop();
@@ -113,6 +165,18 @@ export function VoiceModeProvider({ children }) {
 
     /* ---------- Handle one finalized utterance ---------- */
     const handleFinalTranscript = useCallback((text, alternatives = []) => {
+        const normalized = String(text || "").trim().toLowerCase();
+        if (!normalized) return;
+        // One recognition event must never run a command twice.
+        const now = Date.now();
+        if (
+            lastFinalRef.current.text === normalized &&
+            now - lastFinalRef.current.at < DUPLICATE_WINDOW_MS
+        ) {
+            return;
+        }
+        lastFinalRef.current = { text: normalized, at: now };
+
         setTranscript(text);
         // §30: try the top transcript first, then recognition alternatives —
         // the first alternative that matches a command wins.
@@ -124,24 +188,12 @@ export function VoiceModeProvider({ children }) {
         }
         if (!parsed) {
             setLastCommand({ text, intent: null, at: Date.now() });
-            // §2/§3 fallback: rotate recognition to the next supported
-            // locale so the next attempt (repeat/continuation) is heard in
-            // another language. The Web Speech API cannot re-recognize past
-            // audio, so the rotation is what makes mixed-language use
-            // practical. After a full cycle we wrap to the app language.
-            if (activeRef.current && !rotatingRef.current) {
-                rotatingRef.current = true;
-                localeIndexRef.current = (localeIndexRef.current + 1) % SR_LOCALES.length;
-                serviceRef.current?.setLang(SR_LOCALES[localeIndexRef.current]);
-            }
-            showUnknownCommandFeedback();
+            showUnknownCommandFeedback(actionsRef.current);
             return;
         }
-        // Success: this locale understood the farmer — keep it primary.
-        rotatingRef.current = false;
         setLastCommand({ text, intent: parsed.intent, at: Date.now() });
         const handled = executeVoiceCommand(parsed, actionsRef.current);
-        if (!handled) showUnknownCommandFeedback();
+        if (!handled) showUnknownCommandFeedback(actionsRef.current);
     }, []);
 
     /* ---------- Recognition service lifecycle ---------- */
@@ -156,11 +208,21 @@ export function VoiceModeProvider({ children }) {
                 onFinal: handleFinalTranscript,
                 onInterim: (t) => setTranscript(t),
                 onError: (code) => {
-                    if (code === "not-allowed" || code === "service-not-allowed") {
-                        // Microphone blocked — cannot keep listening.
-                        stopRef.current?.();
+                    const key = VOICE_ERROR_KEYS[code];
+                    if (key) setVoiceError(key);
+                    if (FATAL_ERRORS.has(code)) {
+                        // Cannot keep listening (mic blocked, locale
+                        // unsupported, no input device…). Stop cleanly and
+                        // keep the localized explanation on screen.
+                        setActive(false);
+                        setStatus("idle");
+                        try {
+                            serviceRef.current?.stop();
+                        } catch {
+                            /* noop */
+                        }
                     }
-                    // no-speech / network / aborted: stay in voice mode.
+                    // no-speech / aborted / network: keep voice mode alive.
                 },
             });
         serviceRef.current = service;
@@ -174,9 +236,13 @@ export function VoiceModeProvider({ children }) {
         };
     }, [active, supported, handleFinalTranscript]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    /* Follow the app's language selector so farmers can speak Bangla/Hindi. */
+    /* Follow the app's language selector: recognition switches immediately
+       (the service restarts its live session with the new locale), and a
+       previous "language not supported" message is cleared so the new
+       language gets a fair try. No page refresh, no re-login. */
     useEffect(() => {
         serviceRef.current?.setLang(SR_LANGS[language] || "en-IN");
+        setVoiceError(null);
     }, [language]);
 
     /* ---------- App actions handed to the executor ---------- */
@@ -200,8 +266,21 @@ export function VoiceModeProvider({ children }) {
             setTheme,
             changeLanguage,
             stopVoice: () => stopRef.current?.(),
+            t,
+            formatNumber,
+            getFarmSummary,
+            languageName: (code) =>
+                LANGUAGES.find((l) => l.code === code)?.native || code,
         };
-    }, [navigate, location.pathname, setTheme, changeLanguage]);
+    }, [
+        navigate,
+        location.pathname,
+        setTheme,
+        changeLanguage,
+        t,
+        formatNumber,
+        getFarmSummary,
+    ]);
 
     /* PERF: recognition streams interim transcripts constantly while
        listening — every one of those setState calls re-renders the
@@ -216,11 +295,12 @@ export function VoiceModeProvider({ children }) {
             transcript,
             supported,
             lastCommand,
+            voiceError,
             start,
             stop,
             toggle,
         }),
-        [active, status, transcript, supported, lastCommand, start, stop, toggle]
+        [active, status, transcript, supported, lastCommand, voiceError, start, stop, toggle]
     );
 
     return (

@@ -142,7 +142,7 @@ export const translations = {
             expand: "Expand",
         },
 
-        units: { acre: "acre", acres: "Acres", ton: "Ton", tons: "Tons", quintal: "Quintal", kg: "kg", kmh: "km/h", day: "Day", days: "days" },        dashboard: {
+        units: { acre: "acre", acres: "Acres", hectare: "Hectare", bigha: "Bigha", katha: "Katha", decimal: "Decimal", ton: "Ton", tons: "Tons", quintal: "Quintal", kg: "kg", kmh: "km/h", day: "Day", days: "days" },        dashboard: {
             greeting: "Good morning",
             greetingAfternoon: "Good afternoon",
             greetingEvening: "Good evening",
@@ -576,6 +576,22 @@ export const translations = {
             recognized: "Recognized",
             commandNotRecognized: "Command not recognized",
             opening: "Opening",
+            feedback: {
+                openingNamed: "Opening {name}…",
+                openingWeather: "Opening Weather…",
+                openingMenu: "Opening menu…",
+                openingCamera: "Opening camera…",
+                closed: "Closed",
+                goingBack: "Going back…",
+                darkMode: "Dark mode on",
+                lightMode: "Light mode on",
+                voiceStopped: "Voice Mode stopped",
+                voiceActive: "Voice Mode active",
+                languageSet: "Language: {name}",
+                weatherUnavailable: "Weather data unavailable",
+                farmArea: "Your farm has {area} across {count} parcels.",
+                farmAreaMissing: "No saved farm land found. Add your parcels in My Farm, then ask again.",
+            },
         },
         filters: {
             crop: {
@@ -826,7 +842,7 @@ export const translations = {
             expand: "বিস্তার",
         },
 
-        units: { acre: "একর", acres: "একর", ton: "টন", tons: "টন", quintal: "কুইন্টাল", kg: "কেজি", kmh: "কিমি/ঘণ্টা", day: "দিন", days: "দিন" },        dashboard: {
+        units: { acre: "একর", acres: "একর", hectare: "হেক্টর", bigha: "বিঘা", katha: "কাঠা", decimal: "ডেসিমিল", ton: "টন", tons: "টন", quintal: "কুইন্টাল", kg: "কেজি", kmh: "কিমি/ঘণ্টা", day: "দিন", days: "দিন" },        dashboard: {
             greeting: "শুভ সকাল",
             greetingAfternoon: "শুভ অপরাহ্ন",
             greetingEvening: "শুভ সন্ধ্যা",
@@ -1239,6 +1255,22 @@ export const translations = {
             recognized: "শনাক্ত হয়েছে",
             commandNotRecognized: "নির্দেশ বোঝা যায়নি",
             opening: "খোলা হচ্ছে",
+            feedback: {
+                openingNamed: "{name} খোলা হচ্ছে…",
+                openingWeather: "আবহাওয়া খোলা হচ্ছে…",
+                openingMenu: "মেনু খোলা হচ্ছে…",
+                openingCamera: "ক্যামেরা খোলা হচ্ছে…",
+                closed: "বন্ধ করা হয়েছে",
+                goingBack: "পেছনে যাচ্ছি…",
+                darkMode: "ডার্ক মোড চালু",
+                lightMode: "লাইট মোড চালু",
+                voiceStopped: "ভয়েস মোড বন্ধ হয়েছে",
+                voiceActive: "ভয়েস মোড চালু আছে",
+                languageSet: "ভাষা: {name}",
+                weatherUnavailable: "আবহাওয়ার তথ্য পাওয়া যায়নি",
+                farmArea: "আপনার খামারে {area} আছে, মোট {count}টি জমি।",
+                farmAreaMissing: "সংরক্ষিত জমির তথ্য পাওয়া যায়নি। আমার খামার-এ জমি যোগ করে আবার জিজ্ঞাসা করুন।",
+            },
         },
         filters: {
             crop: {
@@ -1459,7 +1491,7 @@ export const translations = {
             expand: "विस्तार",
         },
 
-        units: { acre: "एकड़", acres: "एकड़", ton: "टन", tons: "टन", quintal: "क्विंटल", kg: "किग्रा", kmh: "किमी/घंटा", day: "दिन", days: "दिन" },        dashboard: {
+        units: { acre: "एकड़", acres: "एकड़", hectare: "हेक्टेयर", bigha: "बीघा", katha: "कट्ठा", decimal: "डिसमिल", ton: "टन", tons: "टन", quintal: "क्विंटल", kg: "किग्रा", kmh: "किमी/घंटा", day: "दिन", days: "दिन" },        dashboard: {
             greeting: "शुभ प्रभात",
             greetingAfternoon: "शुभ अपराह्न",
             greetingEvening: "शुभ संध्या",
@@ -1872,6 +1904,22 @@ export const translations = {
             recognized: "पहचाना गया",
             commandNotRecognized: "आदेश समझ नहीं आया",
             opening: "खोल रहा है",
+            feedback: {
+                openingNamed: "{name} खोला जा रहा है…",
+                openingWeather: "मौसम खोला जा रहा है…",
+                openingMenu: "मेनू खोला जा रहा है…",
+                openingCamera: "कैमरा खोला जा रहा है…",
+                closed: "बंद कर दिया",
+                goingBack: "पीछे जा रहा हूँ…",
+                darkMode: "डार्क मोड चालू",
+                lightMode: "लाइट मोड चालू",
+                voiceStopped: "वॉइस मोड बंद हो गया",
+                voiceActive: "वॉइस मोड चालू है",
+                languageSet: "भाषा: {name}",
+                weatherUnavailable: "मौसम डेटा उपलब्ध नहीं",
+                farmArea: "आपके खेत में {area} है, कुल {count} भूखंड।",
+                farmAreaMissing: "सहेजी गई जमीन नहीं मिली। मेरा खेत में भूखंड जोड़कर फिर पूछें।",
+            },
         },
         filters: {
             crop: {
@@ -2092,7 +2140,7 @@ export const translations = {
             expand: "విస్తరించు",
         },
 
-        units: { acre: "ఎకరం", acres: "ఎకరాలు", ton: "టన్ను", tons: "టన్నులు", quintal: "క్వింటాల్", kg: "కిలోలు", kmh: "కి.మీ/గం", day: "రోజు", days: "రోజులు" },        dashboard: {
+        units: { acre: "ఎకరం", acres: "ఎకరాలు", hectare: "హెక్టారు", bigha: "బీఘా", katha: "కట్టా", decimal: "డెసిమల్", ton: "టన్ను", tons: "టన్నులు", quintal: "క్వింటాల్", kg: "కిలోలు", kmh: "కి.మీ/గం", day: "రోజు", days: "రోజులు" },        dashboard: {
             greeting: "శుభోదయం",
             greetingAfternoon: "శుభ మధ్యాహ్నం",
             greetingEvening: "శుభ సాయంత్రం",
@@ -2505,6 +2553,22 @@ export const translations = {
             recognized: "గుర్తించబడింది",
             commandNotRecognized: "ఆదేశం అర్థం కాలేదు",
             opening: "తెరుస్తోంది",
+            feedback: {
+                openingNamed: "{name} తెరుస్తోంది…",
+                openingWeather: "వాతావరణం తెరుస్తోంది…",
+                openingMenu: "మెనూ తెరుస్తోంది…",
+                openingCamera: "కెమెరా తెరుస్తోంది…",
+                closed: "మూసివేయబడింది",
+                goingBack: "వెనుకకు వెళ్తోంది…",
+                darkMode: "డార్క్ మోడ్ ఆన్",
+                lightMode: "లైట్ మోడ్ ఆన్",
+                voiceStopped: "వాయిస్ మోడ్ ఆపబడింది",
+                voiceActive: "వాయిస్ మోడ్ యాక్టివ్",
+                languageSet: "భాష: {name}",
+                weatherUnavailable: "వాతావరణ డేటా అందుబాటులో లేదు",
+                farmArea: "మీ పొలంలో {area} ఉంది, మొత్తం {count} భూమి భాగాలు.",
+                farmAreaMissing: "సేవ్ చేసిన భూమి సమాచారం దొరకలేదు. నా పొలం లో భాగాలు జోడించి మళ్లీ అడగండి.",
+            },
         },
         filters: {
             crop: {
@@ -2725,7 +2789,7 @@ export const translations = {
             expand: "விரிவாக்கு",
         },
 
-        units: { acre: "ஏக்கர்", acres: "ஏக்கர்", ton: "டன்", tons: "டன்", quintal: "குவிண்டால்", kg: "கிலோ", kmh: "கி.மீ/மணி", day: "நாள்", days: "நாட்கள்" },        dashboard: {
+        units: { acre: "ஏக்கர்", acres: "ஏக்கர்", hectare: "ஹெக்டேர்", bigha: "பிகா", katha: "கட்டா", decimal: "டெசிமல்", ton: "டன்", tons: "டன்", quintal: "குவிண்டால்", kg: "கிலோ", kmh: "கி.மீ/மணி", day: "நாள்", days: "நாட்கள்" },        dashboard: {
             greeting: "காலை வணக்கம்",
             greetingAfternoon: "மதிய வணக்கம்",
             greetingEvening: "மாலை வணக்கம்",
@@ -3138,6 +3202,22 @@ export const translations = {
             recognized: "கண்டறியப்பட்டது",
             commandNotRecognized: "கட்டளை புரியவில்லை",
             opening: "திறக்கிறது",
+            feedback: {
+                openingNamed: "{name} திறக்கிறது…",
+                openingWeather: "வானிலை திறக்கிறது…",
+                openingMenu: "மெனு திறக்கிறது…",
+                openingCamera: "கேமரா திறக்கிறது…",
+                closed: "மூடப்பட்டது",
+                goingBack: "பின்னால் செல்கிறது…",
+                darkMode: "டார்க் மோட் இயக்கப்பட்டது",
+                lightMode: "லைட் மோட் இயக்கப்பட்டது",
+                voiceStopped: "குரல் முறை நிறுத்தப்பட்டது",
+                voiceActive: "குரல் முறை இயக்கத்தில் உள்ளது",
+                languageSet: "மொழி: {name}",
+                weatherUnavailable: "வானிலை தரவு கிடைக்கவில்லை",
+                farmArea: "உங்கள் நிலத்தில் {area} உள்ளது, மொத்தம் {count} நிலப் பிரிவுகள்.",
+                farmAreaMissing: "சேமித்த நிலத் தகவல் கிடைக்கவில்லை. என் நிலம் பக்கத்தில் பிரிவுகளைச் சேர்த்து மீண்டும் கேளுங்கள்.",
+            },
         },
         filters: {
             crop: {

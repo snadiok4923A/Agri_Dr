@@ -195,6 +195,42 @@
     opacity: 0.85;
 }
 
+/* Voice failure explanation (permission / unsupported locale / service) in
+   the selected language, plus a typing fallback. */
+.feature-card__voice-error {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(220, 38, 38, 0.35);
+    background: rgba(220, 38, 38, 0.08);
+    font-size: min(max(calc(12px * var(--ts-small, 1)), 8px), 18px);
+    line-height: 1.4;
+    color: var(--text-primary);
+}
+
+.feature-card__voice-type {
+    align-self: flex-start;
+    padding: 4px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--border, rgba(120, 120, 120, 0.35));
+    background: transparent;
+    color: var(--leaf);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.feature-card__voice-type:hover {
+    border-color: var(--leaf);
+}
+
+.feature-card__voice-type:focus-visible {
+    outline: 2px solid var(--leaf);
+    outline-offset: 2px;
+}
+
 .feature-card__btn {
     display: inline-flex;
     align-items: center;

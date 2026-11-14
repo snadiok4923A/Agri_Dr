@@ -1,4 +1,5 @@
 import { memo, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Mic, Square } from "lucide-react";
 import { useVoiceMode } from "../../hooks/useVoiceMode";
 import { useLanguage } from "../../hooks/useLanguage";
@@ -17,9 +18,18 @@ import "./DashboardFeatureCards.css";
    own context subscriptions still update it normally (spec §11: unrelated
    state must not re-render other cards). */
 export default memo(function VoiceModeCard() {
-    const { active, status, start, stop, supported, transcript, lastCommand } =
-        useVoiceMode();
+    const {
+        active,
+        status,
+        start,
+        stop,
+        supported,
+        transcript,
+        lastCommand,
+        voiceError,
+    } = useVoiceMode();
     const { t } = useLanguage();
+    const navigate = useNavigate();
 
     /* Activation transition (visual only, §state machine):
        click → "activating" → the WHOLE button floods with a flowing
@@ -79,6 +89,22 @@ export default memo(function VoiceModeCard() {
                 the hood. When activation RESOLVES it switches: success →
                 active UI (stop button + border loop); failure/denied →
                 idle button. Mic/commands/stop behavior untouched. */}
+            {/* Every failure is explained in the selected language, with a
+                typing fallback — never a silent stop, never an English
+                message in a Bengali/Hindi/Telugu/Tamil UI. */}
+            {voiceError && (
+                <div className="feature-card__voice-error" role="alert">
+                    <span>{t(`ai.${voiceError}`)}</span>
+                    <button
+                        type="button"
+                        className="feature-card__voice-type"
+                        onClick={() => navigate("/ai-doctor")}
+                    >
+                        {t("ai.voiceTypeInstead")}
+                    </button>
+                </div>
+            )}
+
             {active && !activating ? (
                 <>
                     <p className="feature-card__sub feature-card__sub--live">
