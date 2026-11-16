@@ -13,7 +13,7 @@
  *   · Hinglish ("market kholo", "farm dekhao", "dam koto")
  */
 
-import { riceVarieties } from "../data/riceVarieties";
+import { riceVarieties } from "../data/riceVarieties.js";
 
 /* ------------------------------------------------------------------ *
  * Static navigation / tool commands
@@ -75,6 +75,7 @@ export const VOICE_COMMANDS = [
             "voice mode bondho",
             "voice mode off",
             "stop listening",
+            "ভয়েস বন্ধ করতে চাই",
             "ভয়েস বন্ধ করো",
             "ভয়েস বন্ধ",
             "ভয়েস মোড বন্ধ করো",
@@ -151,6 +152,10 @@ export const VOICE_COMMANDS = [
             "farm open karo",
             "open farm",
             "show farm",
+            "আমার জমি দেখতে চাই",
+            "আমার খামার দেখতে চাই",
+            "খামার দেখতে চাই",
+            "ফার্ম খুলতে চাই",
             // §5: one meaningful word is enough
             "farm",
             "জমি দেখাও",
@@ -282,6 +287,10 @@ export const VOICE_COMMANDS = [
             "ai doctor kholo",
             "ai doctor dekhao",
             "doctor kholo",
+            "doctor dekhao",
+            "doctor দেখতে চাই",
+            "ডাক্তার দেখতে চাই",
+            "ডাক্তার দেখাও",
             "plant doctor kholo",
             "crop doctor kholo",
             "open crop diagnosis",
@@ -321,6 +330,8 @@ export const VOICE_COMMANDS = [
             "plant disease kholo",
             "crop disease kholo",
             "disease medicine dekhao",
+            "রোগ দেখতে চাই",
+            "রোগের তথ্য চাই",
             "রোগের ওষুধ দেখাও",
             "রোগের ওষুধ খোলো",
             "ওষুধের অপশন খোলো",
@@ -342,6 +353,8 @@ export const VOICE_COMMANDS = [
             "open fertilizer",
             "fertilizer schedule kholo",
             "fertilizer",
+            "সার দেখতে চাই",
+            "সারের হিসাব চাই",
             "সারের পরিকল্পনা দেখাও",
             "সারের পরিকল্পনা খোলো",
             "সার দেখাও",
@@ -367,6 +380,8 @@ export const VOICE_COMMANDS = [
             "finance kholo",
             "cost",
             "profit",
+            "খরচ দেখতে চাই",
+            "লাভ দেখতে চাই",
             "লাভ দেখাও",
             "লাভ খোলো",
             "খরচ দেখাও",
@@ -392,6 +407,9 @@ export const VOICE_COMMANDS = [
             "rice price",
             "market price dekhao",
             "market price kholo",
+            "মার্কেট দেখতে চাই",
+            "মার্কেট খুলতে চাই",
+            "বাজার দেখতে চাই",
             "rice price dekhao",
             "rice price kholo",
             "rice price",
@@ -421,6 +439,8 @@ export const VOICE_COMMANDS = [
             "setting kholo",
             "settings",
             "setting",
+            "সেটিংস দেখতে চাই",
+            "সেটিংস খুলতে চাই",
             "সেটিংস খোলো",
             "সেটিংস দেখাও",
         ],
@@ -448,6 +468,10 @@ export const VOICE_COMMANDS = [
             "weather advisory dekhao",
             "weather report dekhao",
             "weather report",
+            "ওয়েদার দেখতে চাই",
+            "ওয়েদার দেখাও",
+            "আবহাওয়া দেখতে চাই",
+            "আবহাওয়া জানতে চাই",
             "আজকের আবহাওয়া দেখাও",
             "আজকের আবহাওয়া",
             "আবহাওয়া দেখাও",

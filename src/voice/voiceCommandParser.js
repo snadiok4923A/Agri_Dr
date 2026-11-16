@@ -20,13 +20,13 @@
 import {
     VOICE_COMMANDS,
     LANGUAGE_ALIASES,
-} from "./voiceCommands";
+} from "./voiceCommands.js";
 import {
     findDiseaseEntity,
     findMarketEntity,
     isBroadMarketAlias,
-} from "./voiceEntities";
-import { normalizeTranscript } from "./voiceNormalize";
+} from "./voiceEntities.js";
+import { normalizeTranscript } from "./voiceNormalize.js";
 
 export { normalizeTranscript };
 

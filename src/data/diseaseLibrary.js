@@ -29,7 +29,10 @@
  * Both the card thumbnail and the modal banner read this ONE property,
  * so card and modal can never show different images for a disease.
  */
-const diseaseImage = (file) => `${import.meta.env.BASE_URL}Disease/${file}`;
+/* `import.meta.env` exists under Vite; the fallback keeps the dataset
+ * importable by plain Node (the voice parser's unit test imports it). */
+const diseaseImage = (file) =>
+    `${import.meta.env?.BASE_URL ?? "/"}Disease/${file}`;
 
 export const diseaseLibrary = [
     /* ==================== Existing (from app diseaseData) ==================== */

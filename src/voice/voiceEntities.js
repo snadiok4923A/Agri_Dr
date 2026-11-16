@@ -17,9 +17,9 @@
  * containment > fuzzy single-token (edit distance ≤ 1, length ≥ 5).
  */
 
-import { diseaseLibrary } from "../data/diseaseLibrary";
-import { marketPrices } from "../data/marketPrices";
-import { normalizeTranscript } from "./voiceNormalize";
+import { diseaseLibrary } from "../data/diseaseLibrary.js";
+import { marketPrices } from "../data/marketPrices.js";
+import { normalizeTranscript } from "./voiceNormalize.js";
 
 /* ------------------------------------------------------------------ *
  * Alias tables — recognition variations + Bengali words farmers use.
