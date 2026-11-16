@@ -60,23 +60,6 @@ export function isSpeechRecognitionSupported() {
 }
 
 /**
- * Ask the Permissions API whether the microphone is already blocked. Resolves
- * `true` when it is safe to start (granted, prompt, or the API is missing).
- * Browsers implement this inconsistently; any failure means "try anyway".
- */
-export async function isMicrophoneBlocked() {
-    try {
-        if (typeof navigator === "undefined" || !navigator.permissions?.query) {
-            return false;
-        }
-        const status = await navigator.permissions.query({ name: "microphone" });
-        return status?.state === "denied";
-    } catch {
-        return false;
-    }
-}
-
-/**
  * Create a recognition service instance.
  * Callbacks (all optional):
  *   onState(state)   – idle | starting | listening | restarting | error
@@ -332,16 +315,13 @@ export function createVoiceRecognitionService({
             }
             wantActive = true;
             retries = 0;
-            // Pre-flight permission check where the browser supports it, so a
-            // denied mic fails fast instead of spinning on "starting".
-            isMicrophoneBlocked().then((blocked) => {
-                if (blocked) {
-                    permissionBlocked = true;
-                    if (wantActive) fail("not-allowed");
-                    return;
-                }
-                if (wantActive) beginSession();
-            });
+            // Start synchronously from the user's click/tap. An async
+            // Permissions API preflight can consume transient user activation
+            // and make browsers reject SpeechRecognition.start() before they
+            // can show their own microphone permission prompt. The recognition
+            // API reports denied permissions via its normal `not-allowed`
+            // error, which is handled and remembered above.
+            beginSession();
         },
 
         /** Stop immediately: timers cleared, handlers detached, mic released. */

@@ -287,6 +287,7 @@ export default function AIDoctor() {
                 onFinal: (text) => {
                     // Append for review — the user decides when to send.
                     partialRef.current = "";
+                    setInterim("");
                     capturedRef.current = true;
                     setVoiceHint(false);
                     appendToInput(text);
