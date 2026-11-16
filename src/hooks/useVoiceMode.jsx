@@ -18,24 +18,27 @@ import { useOnboarding } from "./useOnboarding";
 /**
  * VoiceMode context — the persistent, rule-based voice assistant runtime.
  *
- * Flow (per spec):
+ * Flow:
  *   microphone → Web Speech API (native, no external service) → final
  *   transcript → parseVoiceCommand() (pure rules) → executeVoiceCommand()
  *   (whitelisted actions) → UI toast feedback.
  *
- * LANGUAGE (single source of truth: useLanguage):
- *   recognition.lang ALWAYS follows the website language and is re-applied
- *   on every session/restart. There is no silent locale rotation: if the
- *   browser cannot recognise the selected locale it reports
- *   language-not-supported, Voice Mode stops and says so in that language,
- *   and the user can type instead. Every spoken label/feedback string is
- *   resolved through the same translation tree as the rest of the UI.
+ * LIFECYCLE (see voiceRecognitionService):
+ *   status: idle | starting | listening | restarting | processing | error.
+ *   `listening` is only ever emitted by the engine's own onstart; when the
+ *   engine ends or the service retries, status becomes `restarting`. A
+ *   terminal failure stops the service, clears `active`, and surfaces a
+ *   localized error — the card can never stay stuck on "Listening…".
+ *   Temporary `network` failures are retried (bounded) inside the service;
+ *   `retryInfo` exposes the attempt for the "Reconnecting…" label.
  *
- * - Activation is PERSISTENT: recognition self-restarts (continuous sessions
- *   end after silence in browsers) until stop() is called.
- * - Unknown commands NEVER stop Voice Mode.
- * - Voice Mode stops only via: the Stop button/header icon, a spoken stop
- *   command, a microphone/service/language failure, or leaving the app.
+ * LANGUAGE (single source of truth: useLanguage):
+ *   recognition.lang follows the website language; changing it restarts an
+ *   active session with the new locale. No silent English fallback.
+ *
+ * TEXT FALLBACK: `submitText` runs the SAME parser/executor as a transcript.
+ *   A sentence that is not a command opens the AI Doctor with the question
+ *   preserved (that page owns the assistant conversation).
  */
 
 const VoiceModeContext = createContext(null);
@@ -56,21 +59,27 @@ const VOICE_ERROR_KEYS = {
     "language-not-supported": "voiceLangUnsupported",
     "audio-capture": "voiceNoMic",
     network: "voiceServiceUnavailable",
+    "start-failed": "voiceServiceUnavailable",
     unsupported: "voiceUnsupported",
 };
-
-/** Errors that mean the engine cannot keep listening at all. */
-const FATAL_ERRORS = new Set([
-    "not-allowed",
-    "service-not-allowed",
-    "language-not-supported",
-    "audio-capture",
-    "unsupported",
-]);
 
 /** Same final transcript delivered twice in quick succession = one command.
  *  (Continuous recognition + the end/restart cycle can replay a result.) */
 const DUPLICATE_WINDOW_MS = 1200;
+
+/** How long the "Processing…" state is shown after a transcript/question. */
+const PROCESSING_MS = 700;
+
+/** Typed text that is a question, not a command. Spoken input has no
+ *  punctuation, so this only applies to the text fallback: a sentence like
+ *  "which variety gives the best profit?" contains the word "profit" but
+ *  must reach the assistant instead of opening the finance page. */
+const QUESTION_OPENER =
+    /^(what|which|how|when|where|why|who|whose|is|are|can|could|should|do|does|did|will|would)\b/i;
+
+function looksLikeQuestion(text) {
+    return /[?？]\s*$/.test(text) || QUESTION_OPENER.test(text.trim());
+}
 
 /** DOM event used to open the Dashboard's floating Weather modal from voice. */
 export const VOICE_OPEN_WEATHER_EVENT = "krisiveda:voice-open-weather";
@@ -80,10 +89,12 @@ export const VOICE_OPEN_SIDEBAR_EVENT = "krisiveda:voice-open-sidebar";
 
 export function VoiceModeProvider({ children }) {
     const [active, setActive] = useState(false);
-    const [status, setStatus] = useState("idle"); // idle | starting | listening | restarting
+    const [status, setStatus] = useState("idle");
     const [transcript, setTranscript] = useState("");
     const [lastCommand, setLastCommand] = useState(null); // { text, intent, at }
     const [voiceError, setVoiceError] = useState(null); // ai.* key suffix
+    const [retryInfo, setRetryInfo] = useState(null); // { attempt, max }
+    const [retryable, setRetryable] = useState(false); // temporary failure?
     const [supported] = useState(() => isSpeechRecognitionSupported());
 
     const navigate = useNavigate();
@@ -99,6 +110,7 @@ export function VoiceModeProvider({ children }) {
     const stopRef = useRef(null);
     const lastFinalRef = useRef({ text: "", at: 0 });
     const farmRef = useRef({ farm, isFarmComplete });
+    const processingTimerRef = useRef(null);
 
     useEffect(() => {
         farmRef.current = { farm, isFarmComplete };
@@ -135,10 +147,13 @@ export function VoiceModeProvider({ children }) {
     }, [t, formatNumber]);
 
     const stop = useCallback(() => {
+        clearTimeout(processingTimerRef.current);
         setActive(false);
         setStatus("idle");
         setTranscript("");
         setVoiceError(null);
+        setRetryInfo(null);
+        setRetryable(false);
         try {
             serviceRef.current?.stop();
         } catch {
@@ -152,8 +167,11 @@ export function VoiceModeProvider({ children }) {
             setVoiceError("voiceUnsupported");
             return;
         }
+        clearTimeout(processingTimerRef.current);
         setTranscript("");
         setVoiceError(null);
+        setRetryInfo(null);
+        setRetryable(false);
         lastFinalRef.current = { text: "", at: 0 };
         setActive(true);
     }, [supported]);
@@ -162,6 +180,34 @@ export function VoiceModeProvider({ children }) {
         if (active) stop();
         else start();
     }, [active, start, stop]);
+
+    /** Retry after a terminal failure (fresh attempt budget). */
+    const retry = useCallback(() => {
+        setVoiceError(null);
+        setRetryInfo(null);
+        setRetryable(false);
+        if (active) {
+            // Force a clean restart even if React still sees `active`.
+            stopRef.current?.();
+            setTimeout(() => start(), 0);
+            return;
+        }
+        start();
+    }, [active, start]);
+
+    /** Show processing, then fall back to whatever the engine is really doing. */
+    const showProcessing = useCallback(() => {
+        setStatus("processing");
+        clearTimeout(processingTimerRef.current);
+        processingTimerRef.current = setTimeout(() => {
+            if (!activeRef.current) return;
+            // Only return to Listening if the engine is genuinely listening;
+            // a session that ended in the meantime keeps its own status.
+            if (serviceRef.current?.getState() === "listening") {
+                setStatus("listening");
+            }
+        }, PROCESSING_MS);
+    }, []);
 
     /* ---------- Handle one finalized utterance ---------- */
     const handleFinalTranscript = useCallback((text, alternatives = []) => {
@@ -178,6 +224,7 @@ export function VoiceModeProvider({ children }) {
         lastFinalRef.current = { text: normalized, at: now };
 
         setTranscript(text);
+        showProcessing();
         // §30: try the top transcript first, then recognition alternatives —
         // the first alternative that matches a command wins.
         const candidates = [text, ...alternatives.filter((a) => a && a !== text)];
@@ -194,7 +241,7 @@ export function VoiceModeProvider({ children }) {
         setLastCommand({ text, intent: parsed.intent, at: Date.now() });
         const handled = executeVoiceCommand(parsed, actionsRef.current);
         if (!handled) showUnknownCommandFeedback(actionsRef.current);
-    }, []);
+    }, [showProcessing]);
 
     /* ---------- Recognition service lifecycle ---------- */
     useEffect(() => {
@@ -204,46 +251,68 @@ export function VoiceModeProvider({ children }) {
             serviceRef.current ||
             createVoiceRecognitionService({
                 lang: SR_LANGS[language] || "en-IN",
-                onState: (s) => setStatus(s),
-                onFinal: handleFinalTranscript,
-                onInterim: (t) => setTranscript(t),
+                onState: (s) => {
+                    setStatus(s);
+                    if (s === "listening") setRetryInfo(null);
+                },
+                onInterim: (next) => setTranscript(next),
+                onRetry: (info) =>
+                    setRetryInfo({ attempt: info.attempt, max: info.max }),
                 onError: (code) => {
-                    const key = VOICE_ERROR_KEYS[code];
-                    if (key) setVoiceError(key);
-                    if (FATAL_ERRORS.has(code)) {
-                        // Cannot keep listening (mic blocked, locale
-                        // unsupported, no input device…). Stop cleanly and
-                        // keep the localized explanation on screen.
-                        setActive(false);
-                        setStatus("idle");
-                        try {
-                            serviceRef.current?.stop();
-                        } catch {
-                            /* noop */
-                        }
-                    }
-                    // no-speech / aborted / network: keep voice mode alive.
+                    // The service has already stopped and released the mic.
+                    setVoiceError(VOICE_ERROR_KEYS[code] || "voiceServiceUnavailable");
+                    setRetryable(code === "network" || code === "start-failed");
+                    setRetryInfo(null);
+                    setActive(false);
+                    setStatus("idle");
                 },
             });
         serviceRef.current = service;
-        service.setHandlers({ onFinal: handleFinalTranscript });
+        service.setHandlers({
+            onFinal: handleFinalTranscript,
+            onState: (s) => {
+                setStatus(s);
+                if (s === "listening") setRetryInfo(null);
+            },
+            onRetry: (info) =>
+                setRetryInfo({ attempt: info.attempt, max: info.max }),
+            onError: (code) => {
+                setVoiceError(VOICE_ERROR_KEYS[code] || "voiceServiceUnavailable");
+                setRetryable(code === "network" || code === "start-failed");
+                setRetryInfo(null);
+                setActive(false);
+                setStatus("idle");
+            },
+        });
         service.setLang(SR_LANGS[language] || "en-IN");
         service.start();
 
         return () => {
-            // Component-scoped cleanup only happens when voice mode turns off
-            // (or the provider unmounts) — stop() already covers navigation.
+            // stop() is explicit everywhere; the provider also stops on
+            // unmount below, so a navigation can never leave the mic open.
         };
     }, [active, supported, handleFinalTranscript]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    /* Follow the app's language selector: recognition switches immediately
-       (the service restarts its live session with the new locale), and a
-       previous "language not supported" message is cleared so the new
-       language gets a fair try. No page refresh, no re-login. */
+    /* Follow the app's language selector: an active session is stopped and
+       restarted by the service with the new locale. */
     useEffect(() => {
         serviceRef.current?.setLang(SR_LANGS[language] || "en-IN");
         setVoiceError(null);
     }, [language]);
+
+    /* Provider unmount = no Voice Mode: release the microphone. */
+    useEffect(
+        () => () => {
+            clearTimeout(processingTimerRef.current);
+            try {
+                serviceRef.current?.stop();
+            } catch {
+                /* noop */
+            }
+            serviceRef.current = null;
+        },
+        [],
+    );
 
     /* ---------- App actions handed to the executor ---------- */
     useEffect(() => {
@@ -282,12 +351,40 @@ export function VoiceModeProvider({ children }) {
         getFarmSummary,
     ]);
 
+    /**
+     * Typed fallback — the same rule parser and executor a transcript uses.
+     * A real question (not a command) is handed to the assistant page with
+     * the text intact, so nothing is lost and no answer is invented here.
+     */
+    const submitText = useCallback(
+        (text) => {
+            const trimmed = String(text || "").trim();
+            if (!trimmed) return false;
+            // A typed submission is a working fallback: clear the failure
+            // state so the card does not keep showing a dead engine.
+            setVoiceError(null);
+            setRetryInfo(null);
+            setRetryable(false);
+            setTranscript(trimmed);
+            showProcessing();
+            const parsed = looksLikeQuestion(trimmed)
+                ? null
+                : parseVoiceCommand(trimmed);
+            if (parsed) {
+                setLastCommand({ text: trimmed, intent: parsed.intent, at: Date.now() });
+                const handled = executeVoiceCommand(parsed, actionsRef.current);
+                if (handled) return true;
+            }
+            navigate("/ai-doctor", { state: { question: trimmed } });
+            return true;
+        },
+        [navigate, showProcessing],
+    );
+
     /* PERF: recognition streams interim transcripts constantly while
        listening — every one of those setState calls re-renders the
-       provider. A stable value object (plus the already-useCallback'd
-       actions) keeps that churn scoped to the components that actually
-       show voice state (the Voice Mode card and the header indicator)
-       instead of cascading through the whole app. */
+       provider. A stable value object keeps that churn scoped to the
+       components that actually show voice state. */
     const value = useMemo(
         () => ({
             active,
@@ -296,11 +393,29 @@ export function VoiceModeProvider({ children }) {
             supported,
             lastCommand,
             voiceError,
+            retryInfo,
+            retryable,
             start,
             stop,
             toggle,
+            retry,
+            submitText,
         }),
-        [active, status, transcript, supported, lastCommand, voiceError, start, stop, toggle]
+        [
+            active,
+            status,
+            transcript,
+            supported,
+            lastCommand,
+            voiceError,
+            retryInfo,
+            retryable,
+            start,
+            stop,
+            toggle,
+            retry,
+            submitText,
+        ]
     );
 
     return (

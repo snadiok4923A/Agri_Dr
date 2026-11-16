@@ -1,20 +1,49 @@
 /**
- * VoiceRecognitionService — thin, safe wrapper around the browser's native
- * Web Speech API (SpeechRecognition). NO external AI service, NO network
- * speech-to-text beyond what the browser itself provides.
+ * VoiceRecognitionService — guarded wrapper around the browser's native Web
+ * Speech API (SpeechRecognition). NO external speech-to-text service: the
+ * browser does the recognition, this module only owns the lifecycle.
  *
- * Responsibilities:
- *  - Detect support (window.SpeechRecognition || window.webkitSpeechRecognition)
- *  - Run continuous sessions that self-restart when the engine ends on its own
- *    (browsers stop recognition after silence; we restart unless the user
- *    explicitly stopped)
- *  - Surface final transcripts + lifecycle state through small callbacks
- *  - Never throw: every browser API touch is guarded
+ * Reliability contract (why this file exists):
+ *  - ONE recogniser instance at a time. Every session gets a fresh instance
+ *    and a generation number, so events from an aborted session can never
+ *    mutate the state of a newer one.
+ *  - Handlers are detached and the instance aborted before a replacement,
+ *    before a language switch and on stop(), so no orphan keeps the mic open.
+ *  - Temporary failures (`network`, unknown engine errors) retry a BOUNDED
+ *    number of times with growing delays, then surface one clear error.
+ *  - Permanent failures (`not-allowed`, `service-not-allowed`,
+ *    `language-not-supported`, `audio-capture`, no API) never retry; the
+ *    service stops and reports the code.
+ *  - A denied microphone is remembered: starting again does not re-prompt.
+ *  - `no-speech` / `aborted` are not errors (silence and our own restarts).
+ *  - States: idle | starting | listening | restarting | error. `restarting`
+ *    is emitted when the engine ends by itself or a retry is scheduled —
+ *    never `listening`, so the UI cannot claim the mic is live when it isn't.
  *
  * Usage:
- *   const svc = createVoiceRecognitionService({ lang, onFinal, onInterim, onState, onError });
- *   svc.start(); svc.stop(); svc.setLang("bn-IN"); svc.isListening();
+ *   const svc = createVoiceRecognitionService({ lang, onState, onFinal,
+ *     onInterim, onError, onRetry });
+ *   svc.start(); svc.stop(); svc.setLang("bn-IN");
  */
+
+/** Max automatic retries for temporary engine failures. */
+const MAX_RETRIES = 3;
+/** Backoff before each retry (ms) — bounded, no infinite loop. */
+const RETRY_DELAYS = [700, 1500, 3000];
+/** Delay before restarting after the engine ends on its own (silence). */
+const RESTART_DELAY = 300;
+
+/** Failures that retrying cannot fix. */
+const PERMANENT_ERRORS = new Set([
+    "not-allowed",
+    "service-not-allowed",
+    "language-not-supported",
+    "audio-capture",
+    "unsupported",
+]);
+
+/** Errors we treat as temporary and retry. */
+const TRANSIENT_ERRORS = new Set(["network", "start-failed", "unknown"]);
 
 /**
  * @returns {Function|null} the SpeechRecognition constructor, or null when
@@ -31,13 +60,31 @@ export function isSpeechRecognitionSupported() {
 }
 
 /**
+ * Ask the Permissions API whether the microphone is already blocked. Resolves
+ * `true` when it is safe to start (granted, prompt, or the API is missing).
+ * Browsers implement this inconsistently; any failure means "try anyway".
+ */
+export async function isMicrophoneBlocked() {
+    try {
+        if (typeof navigator === "undefined" || !navigator.permissions?.query) {
+            return false;
+        }
+        const status = await navigator.permissions.query({ name: "microphone" });
+        return status?.state === "denied";
+    } catch {
+        return false;
+    }
+}
+
+/**
  * Create a recognition service instance.
  * Callbacks (all optional):
- *   onState(state)   – "idle" | "starting" | "listening" | "restarting"
- *   onFinal(text)    – finalized utterance (trimmed, non-empty)
- *   onInterim(text)  – live partial transcript (may be "")
- *   onError(code)    – recognition error code ("not-allowed", "network", …)
- *   onLangApplied(l) – confirmation that a recognition.lang change was applied
+ *   onState(state)   – idle | starting | listening | restarting | error
+ *   onFinal(text, alternatives)
+ *   onInterim(text)
+ *   onError(code)    – terminal failure; the service has already stopped
+ *   onRetry(info)    – { attempt, max, delay, code } before a retry
+ *   onLangApplied(lang)
  */
 export function createVoiceRecognitionService({
     lang = "en-IN",
@@ -45,54 +92,181 @@ export function createVoiceRecognitionService({
     onFinal,
     onInterim,
     onError,
+    onRetry,
     onLangApplied,
 } = {}) {
-    // Latest-callback holders — mutable config so the recognition loop can
-    // always call the current closures without a restart.
-    let handlers = { onState, onFinal, onInterim, onError, onLangApplied };
+    let handlers = { onState, onFinal, onInterim, onError, onRetry, onLangApplied };
     let currentLang = lang;
     let recognition = null;
-    let wantActive = false; // user intent — NOT the same as the engine's state
-    let restarting = false;
+    let wantActive = false; // user intent, not the engine's state
+    let generation = 0; // invalidates callbacks of older sessions
+    let retries = 0;
+    let retryTimer = null;
+    let restartTimer = null;
+    let permissionBlocked = false; // remembered — never re-prompt in a loop
+    let state = "idle";
 
-    function emitState(state) {
+    function emit(next) {
+        state = next;
         try {
-            handlers.onState?.(state);
+            handlers.onState?.(next);
         } catch {
             /* listener errors must never break the loop */
         }
     }
 
-    function buildRecognition() {
+    function clearTimers() {
+        if (retryTimer) clearTimeout(retryTimer);
+        if (restartTimer) clearTimeout(restartTimer);
+        retryTimer = null;
+        restartTimer = null;
+    }
+
+    /** Remove every handler and abort the instance — no orphaned microphone. */
+    function detach() {
+        const rec = recognition;
+        recognition = null;
+        if (!rec) return;
+        try {
+            rec.onstart = null;
+            rec.onresult = null;
+            rec.onerror = null;
+            rec.onend = null;
+        } catch {
+            /* some engines expose read-only handlers */
+        }
+        try {
+            rec.abort?.();
+        } catch {
+            /* already ended */
+        }
+        try {
+            rec.stop?.();
+        } catch {
+            /* already ended */
+        }
+    }
+
+    /** Terminal stop: clean up, tell the UI exactly why, never pretend live. */
+    function fail(code) {
+        wantActive = false;
+        clearTimers();
+        generation += 1;
+        detach();
+        emit("error");
+        try {
+            handlers.onError?.(code);
+        } catch {
+            /* noop */
+        }
+    }
+
+    function scheduleRestart(delay) {
+        clearTimers();
+        restartTimer = setTimeout(() => {
+            restartTimer = null;
+            if (!wantActive) return;
+            beginSession();
+        }, delay);
+    }
+
+    /** Retry a temporary failure a bounded number of times. */
+    function scheduleRetry(code) {
+        if (retries >= MAX_RETRIES) {
+            fail(code);
+            return;
+        }
+        retries += 1;
+        const delay = RETRY_DELAYS[Math.min(retries - 1, RETRY_DELAYS.length - 1)];
+        emit("restarting");
+        detach();
+        try {
+            handlers.onRetry?.({ code, attempt: retries, max: MAX_RETRIES, delay });
+        } catch {
+            /* noop */
+        }
+        clearTimers();
+        retryTimer = setTimeout(() => {
+            retryTimer = null;
+            if (!wantActive) return;
+            beginSession();
+        }, delay);
+    }
+
+    function handleError(code) {
+        // Our own abort/restart — not a failure.
+        if (code === "aborted") return;
+        // Silence: the engine ends the session itself; onend restarts it.
+        if (code === "no-speech") return;
+        if (code === "not-allowed") permissionBlocked = true;
+        if (PERMANENT_ERRORS.has(code)) {
+            fail(code);
+            return;
+        }
+        if (TRANSIENT_ERRORS.has(code)) {
+            scheduleRetry(code);
+            return;
+        }
+        // Unknown engine code: treat as temporary, still bounded.
+        scheduleRetry(code);
+    }
+
+    /** Build a fresh recogniser and start it. Only one exists at a time. */
+    function beginSession() {
+        if (!wantActive) return;
+        clearTimers();
+        detach(); // guarantees no previous instance is alive
+
         const SR = getSpeechRecognitionCtor();
-        if (!SR) return null;
-        const rec = new SR();
-        rec.continuous = true; // keep listening across utterances
-        rec.interimResults = true; // live "Listening…" feedback
-        rec.maxAlternatives = 3; // §30: alternatives help ambiguous commands
-        rec.lang = currentLang;
+        if (!SR) {
+            fail("unsupported");
+            return;
+        }
+
+        const gen = (generation += 1);
+        emit("starting");
+
+        let rec;
+        try {
+            rec = new SR();
+        } catch {
+            fail("unsupported");
+            return;
+        }
+        recognition = rec;
+        try {
+            rec.continuous = true;
+            rec.interimResults = true;
+            rec.maxAlternatives = 3;
+            rec.lang = currentLang;
+        } catch {
+            /* engines with read-only options still work with defaults */
+        }
 
         rec.onstart = () => {
-            restarting = false;
-            emitState("listening");
+            if (gen !== generation || !wantActive) return;
+            emit("listening");
         };
 
         rec.onresult = (event) => {
+            if (gen !== generation || !wantActive) return;
             let interim = "";
             let finalText = "";
-            let finalAlts = [];
-            for (let i = event.resultIndex; i < event.results.length; i++) {
-                const result = event.results[i];
+            const finalAlts = [];
+            const results = event?.results || [];
+            for (let i = event?.resultIndex || 0; i < results.length; i++) {
+                const result = results[i];
+                if (!result) continue;
                 const text = result[0]?.transcript || "";
                 if (result.isFinal) {
                     finalText += text;
-                    // Collect up to 3 recognition alternatives (§30) — the
-                    // parser tries them in order when the first is unclear.
                     for (let j = 0; j < result.length && j < 3; j++) {
                         const alt = result[j]?.transcript?.trim();
                         if (alt && !finalAlts.includes(alt)) finalAlts.push(alt);
                     }
-                } else interim += text;
+                } else {
+                    interim += text;
+                }
             }
             if (interim.trim()) {
                 try {
@@ -103,6 +277,9 @@ export function createVoiceRecognitionService({
             }
             const final = finalText.trim();
             if (final) {
+                // The engine demonstrably works — give future failures a full
+                // retry budget again.
+                retries = 0;
                 try {
                     handlers.onFinal?.(final, finalAlts);
                 } catch {
@@ -112,115 +289,94 @@ export function createVoiceRecognitionService({
         };
 
         rec.onerror = (event) => {
-            const code = event?.error || "unknown";
-            // Recoverable: keep voice mode alive, surface for debugging only.
-            if (code === "no-speech" || code === "aborted") return;
-            try {
-                handlers.onError?.(code);
-            } catch {
-                /* noop */
-            }
+            if (gen !== generation) return;
+            handleError(event?.error || "unknown");
         };
 
         rec.onend = () => {
-            // Browsers end sessions after silence or per-utterance.
-            // While the user still wants voice mode, restart automatically.
-            if (wantActive) {
-                restarting = true;
-                emitState("restarting");
-                // Small delay avoids "already started" InvalidStateError loops.
-                setTimeout(() => {
-                    if (!wantActive) return;
-                    try {
-                        // Re-apply the current language on every restart: the
-                        // recognizer instance is reused across sessions.
-                        if (recognition) recognition.lang = currentLang;
-                        recognition?.start();
-                    } catch {
-                        /* already running — onstart will clear `restarting` */
-                    }
-                }, 250);
-            } else {
-                emitState("idle");
+            if (gen !== generation) return;
+            // This instance is finished either way.
+            recognition = null;
+            if (!wantActive) {
+                emit("idle");
+                return;
             }
+            // Browsers end continuous sessions after silence; keep the user's
+            // intent alive but say "restarting" — never "listening".
+            emit("restarting");
+            scheduleRestart(RESTART_DELAY);
         };
 
-        return rec;
+        try {
+            rec.start();
+        } catch {
+            // Typically InvalidStateError from a still-closing engine.
+            handleError("start-failed");
+        }
     }
 
     return {
-        /** Begin a persistent listening session (no-op if already active). */
+        /** Begin listening. No-op when already active. */
         start() {
             if (wantActive) return;
-            const SR = getSpeechRecognitionCtor();
-            if (!SR) {
+            if (permissionBlocked) {
+                // Remembered denial: explaining beats re-prompting forever.
+                wantActive = false;
+                emit("error");
                 try {
-                    handlers.onError?.("unsupported");
+                    handlers.onError?.("not-allowed");
                 } catch {
                     /* noop */
                 }
                 return;
             }
             wantActive = true;
-            emitState("starting");
-            if (!recognition) recognition = buildRecognition();
-            try {
-                recognition.lang = currentLang;
-                recognition.start();
-            } catch {
-                /* start() called while already started — onend will recover */
-            }
+            retries = 0;
+            // Pre-flight permission check where the browser supports it, so a
+            // denied mic fails fast instead of spinning on "starting".
+            isMicrophoneBlocked().then((blocked) => {
+                if (blocked) {
+                    permissionBlocked = true;
+                    if (wantActive) fail("not-allowed");
+                    return;
+                }
+                if (wantActive) beginSession();
+            });
         },
 
-        /** Fully stop the session (user intent — no auto-restart). */
+        /** Stop immediately: timers cleared, handlers detached, mic released. */
         stop() {
             wantActive = false;
-            restarting = false;
-            try {
-                recognition?.stop();
-            } catch {
-                /* noop */
-            }
-            recognition = null;
-            emitState("idle");
+            clearTimers();
+            generation += 1;
+            detach();
+            emit("idle");
         },
 
         /**
-         * Change the recognition language (applies live where the engine
-         * supports it; otherwise takes effect on the next auto-restart).
+         * Switch recognition language. An active session is stopped safely and
+         * restarted with the new locale; the retry budget resets because this
+         * is a fresh configuration, not a failure loop.
          */
         setLang(nextLang) {
             if (!nextLang || nextLang === currentLang) return;
             currentLang = nextLang;
             try {
-                if (recognition) {
-                    // The engine keeps the lang of the object it was built
-                    // with, so assign it before any restart — otherwise a
-                    // live session silently keeps recognising the old
-                    // language.
-                    recognition.lang = nextLang;
-                    if (wantActive) {
-                        // Restart so the running engine picks it up.
-                        try {
-                            recognition.stop();
-                        } catch {
-                            /* onend restarts with the new lang */
-                        }
-                    }
-                }
-                try {
-                    handlers.onLangApplied?.(nextLang);
-                } catch {
-                    /* noop */
-                }
+                handlers.onLangApplied?.(nextLang);
             } catch {
-                /* never throw from a language switch */
+                /* noop */
             }
+            if (!wantActive) return;
+            retries = 0;
+            clearTimers();
+            emit("starting");
+            beginSession();
         },
 
         getLang: () => currentLang,
         isListening: () => wantActive,
-        /** Replace callbacks wholesale (keeps the recognition loop alive). */
+        getState: () => state,
+        /** Replace callbacks without disturbing the running session. */
         setHandlers(next = {}) {
             handlers = { ...handlers, ...next };
         },

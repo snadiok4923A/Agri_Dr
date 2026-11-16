@@ -199,6 +199,17 @@ export const translations = {
             cropForDiagnosis: "Crop for diagnosis",
             voiceMode: "Voice Mode",
             voiceControlSub: "Control Krisiveda with your voice",
+
+
+            processing: "Understanding…",
+
+            reconnecting: "Reconnecting… ({attempt}/{max})",
+
+            restarting: "Restarting microphone…",
+
+            voiceTypePlaceholder: "Type a command or question…",
+
+            voiceSend: "Send",
             startVoiceMode: "Start Voice Mode",
             stopVoiceMode: "Stop Voice Mode",
             listening: "Listening…",
@@ -878,6 +889,17 @@ export const translations = {
             cropForDiagnosis: "পরীক্ষার জন্য ফসল",
             voiceMode: "ভয়েস মোড",
             voiceControlSub: "কণ্ঠস্বর দিয়ে কৃষিবেদা চালান",
+
+
+            processing: "বুঝে নিচ্ছি…",
+
+            reconnecting: "আবার সংযুক্ত হচ্ছে… ({attempt}/{max})",
+
+            restarting: "মাইক্রোফোন আবার চালু হচ্ছে…",
+
+            voiceTypePlaceholder: "কমান্ড বা প্রশ্ন টাইপ করুন…",
+
+            voiceSend: "পাঠান",
             startVoiceMode: "চালু করুন",
             stopVoiceMode: "ভয়েস মোড বন্ধ করুন",
             listening: "শুনছি…",
@@ -1527,6 +1549,17 @@ export const translations = {
             cropForDiagnosis: "जांच के लिए फसल",
             voiceMode: "वॉइस मोड",
             voiceControlSub: "आवाज़ से कृषिवेदा चलाएं",
+
+
+            processing: "समझ रहा हूँ…",
+
+            reconnecting: "फिर से जुड़ रहा है… ({attempt}/{max})",
+
+            restarting: "माइक्रोफ़ोन फिर चालू हो रहा है…",
+
+            voiceTypePlaceholder: "कमांड या सवाल टाइप करें…",
+
+            voiceSend: "भेजें",
             startVoiceMode: "वॉइस मोड शुरू करें",
             stopVoiceMode: "वॉइस मोड बंद करें",
             listening: "सुन रहा हूँ…",
@@ -2176,6 +2209,17 @@ export const translations = {
             cropForDiagnosis: "పరీక్ష కోసం పంట",
             voiceMode: "వాయిస్ మోడ్",
             voiceControlSub: "మీ స్వరంతో కృషివేదను నియంత్రించండి",
+
+
+            processing: "అర్థం చేసుకుంటోంది…",
+
+            reconnecting: "మళ్లీ కనెక్ట్ అవుతోంది… ({attempt}/{max})",
+
+            restarting: "మైక్రోఫోన్ మళ్లీ ప్రారంభమవుతోంది…",
+
+            voiceTypePlaceholder: "ఆదేశం లేదా ప్రశ్న టైప్ చేయండి…",
+
+            voiceSend: "పంపు",
             startVoiceMode: "వాయిస్ మోడ్ ప్రారంభించండి",
             stopVoiceMode: "వాయిస్ మోడ్ ఆపండి",
             listening: "వినుతున్నాను…",
@@ -2825,6 +2869,17 @@ export const translations = {
             cropForDiagnosis: "பரிசோதனைக்கான பயிர்",
             voiceMode: "குரல் முறை",
             voiceControlSub: "உங்கள் குரலால் கிருஷிவேதாவை இயக்குங்கள்",
+
+
+            processing: "புரிந்துகொள்கிறது…",
+
+            reconnecting: "மீண்டும் இணைகிறது… ({attempt}/{max})",
+
+            restarting: "மைக்ரோஃபோன் மீண்டும் தொடங்குகிறது…",
+
+            voiceTypePlaceholder: "கட்டளை அல்லது கேள்வியைத் தட்டச்சு செய்யவும்…",
+
+            voiceSend: "அனுப்பு",
             startVoiceMode: "குரல் முறையைத் தொடங்கு",
             stopVoiceMode: "குரல் முறையை நிறுத்து",
             listening: "கேட்கிறேன்…",

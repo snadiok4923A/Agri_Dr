@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useLanguage } from "../hooks/useLanguage";
 import {
     Camera,
@@ -92,6 +93,8 @@ const APP_VOICE_LOCALE = {
 
 export default function AIDoctor() {
     const { t, language, formatNumber } = useLanguage();
+    const location = useLocation();
+    const navigate = useNavigate();
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState("");
     const [scanning, setScanning] = useState(false);
@@ -377,6 +380,20 @@ export default function AIDoctor() {
         setVoiceError("");
         setTimeout(scrollToBottom, 50);
     };
+
+    /* A question handed over from the Voice Mode text fallback belongs in
+       the conversation — keep it instead of dropping it. Consumed once; the
+       router state is cleared so a refresh cannot replay it. */
+    const seededQuestionRef = useRef(false);
+    useEffect(() => {
+        const question = location.state?.question;
+        if (!question || seededQuestionRef.current) return undefined;
+        seededQuestionRef.current = true;
+        sendMessage(question);
+        navigate(location.pathname, { replace: true, state: null });
+        return undefined;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [location.state, location.pathname, navigate]);
 
     const handleInputChange = (e) => {
         setInput(e.target.value);

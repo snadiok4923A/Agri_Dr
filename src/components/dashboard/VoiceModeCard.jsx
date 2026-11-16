@@ -1,6 +1,5 @@
 import { memo, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Mic, Square } from "lucide-react";
+import { Mic, Square, Send } from "lucide-react";
 import { useVoiceMode } from "../../hooks/useVoiceMode";
 import { useLanguage } from "../../hooks/useLanguage";
 import "./DashboardFeatureCards.css";
@@ -9,8 +8,12 @@ import "./DashboardFeatureCards.css";
  * Voice Mode card — entry point for the persistent voice assistant.
  * Mirrors the dashboard's glass card language (surface, border, radius,
  * typography). Activation is persistent: it stays on until stopped from
- * the card, the header icon, or a spoken stop command ("voice bondho").
- * All labels resolve through the i18n system.
+ * the card, the header icon, or a spoken stop command.
+ *
+ * Presentation is honest about the engine:
+ *   starting / listening / restarting / processing are distinct labels, and
+ *   a terminal failure stops the card, explains itself in the selected
+ *   language and offers a typed fallback right here — no stuck "Listening…".
  */
 /* PERF: this card takes no props. React.memo stops it from re-rendering
    when the Dashboard re-renders for unrelated reasons (weather arriving,
@@ -27,26 +30,25 @@ export default memo(function VoiceModeCard() {
         transcript,
         lastCommand,
         voiceError,
+        retryInfo,
+        retryable,
+        retry,
+        submitText,
     } = useVoiceMode();
     const { t } = useLanguage();
-    const navigate = useNavigate();
+    const [typed, setTyped] = useState("");
 
-    /* Activation transition (visual only, §state machine):
-       click → "activating" → the WHOLE button floods with a flowing
-       multi-color gradient while the microphone/permission initializes.
-       It ends only when activation actually RESOLVES:
-         • success: status flips to "listening" → active UI (border loop)
-         • failure/denied: the hook calls stop() → active=false → idle
-       A 10s safety cap guarantees the button can never stay stuck
-       colorful. Recognition/mic/commands are untouched. */
+    /* Activation transition (visual only): click → "activating" → flowing
+       gradient while the microphone/permission initializes. It resolves as
+       soon as the engine reports a real state (listening, retrying, error),
+       with a 10s safety cap. Recognition/commands are untouched. */
     const [activating, setActivating] = useState(false);
 
     useEffect(() => {
         if (!activating) return;
-        if ((active && status === "listening") || !active) {
+        if (!active || (status !== "starting" && status !== "idle")) {
             setActivating(false);
         }
-        // still "starting" (permission prompt, engine warm-up) → keep flowing
     }, [activating, active, status]);
 
     useEffect(() => {
@@ -61,14 +63,37 @@ export default memo(function VoiceModeCard() {
         start();
     };
 
-    const listening = active && (status === "listening" || status === "starting");
-    const restarting = active && status === "restarting";
+    const listening = active && status === "listening";
+    const busy = active && status !== "listening" && status !== "error";
 
+    /* Status is derived from the engine's own events — never optimistic. */
     const statusLabel = !active
         ? null
-        : listening || restarting
+        : status === "listening"
           ? t("dashboard.listening")
-          : t("dashboard.starting");
+          : status === "processing"
+            ? t("dashboard.processing")
+            : status === "restarting" && retryInfo
+              ? t("dashboard.reconnecting", {
+                    attempt: retryInfo.attempt,
+                    max: retryInfo.max,
+                })
+              : status === "restarting"
+                ? t("dashboard.restarting")
+                : t("dashboard.starting");
+
+    /* Retrying only helps when the failure was temporary. Permission denial
+       and unsupported locales need a settings change, not another prompt. */
+    const canRetry = supported && retryable;
+    const showTyping = Boolean(voiceError) || !supported;
+
+    const handleTypedSubmit = (event) => {
+        event?.preventDefault?.();
+        const text = typed.trim();
+        if (!text) return;
+        setTyped("");
+        submitText(text);
+    };
 
     return (
         <div
@@ -83,31 +108,58 @@ export default memo(function VoiceModeCard() {
                 <span className="feature-card__title">{t("dashboard.voiceMode")}</span>
             </div>
 
-            {/* Visual-only gate (§6 state machine): while `activating`, the
-                start button stays mounted with the full-button flowing
-                gradient — even though recognition is already starting under
-                the hood. When activation RESOLVES it switches: success →
-                active UI (stop button + border loop); failure/denied →
-                idle button. Mic/commands/stop behavior untouched. */}
             {/* Every failure is explained in the selected language, with a
                 typing fallback — never a silent stop, never an English
                 message in a Bengali/Hindi/Telugu/Tamil UI. */}
             {voiceError && (
                 <div className="feature-card__voice-error" role="alert">
                     <span>{t(`ai.${voiceError}`)}</span>
-                    <button
-                        type="button"
-                        className="feature-card__voice-type"
-                        onClick={() => navigate("/ai-doctor")}
-                    >
-                        {t("ai.voiceTypeInstead")}
-                    </button>
+                    {canRetry && (
+                        <button
+                            type="button"
+                            className="feature-card__voice-type"
+                            onClick={retry}
+                        >
+                            {t("ai.voiceRetry")}
+                        </button>
+                    )}
                 </div>
+            )}
+
+            {/* Typed fallback — same parser/executor as speech, available
+                without closing Voice Mode. */}
+            {showTyping && (
+                <form
+                    className="feature-card__voice-fallback"
+                    onSubmit={handleTypedSubmit}
+                >
+                    <input
+                        type="text"
+                        value={typed}
+                        onChange={(e) => setTyped(e.target.value)}
+                        placeholder={t("dashboard.voiceTypePlaceholder")}
+                        aria-label={t("dashboard.voiceTypePlaceholder")}
+                        className="feature-card__voice-input"
+                    />
+                    <button
+                        type="submit"
+                        className="feature-card__voice-send"
+                        aria-label={t("dashboard.voiceSend")}
+                        title={t("dashboard.voiceSend")}
+                        disabled={!typed.trim()}
+                    >
+                        <Send size={14} />
+                    </button>
+                </form>
             )}
 
             {active && !activating ? (
                 <>
-                    <p className="feature-card__sub feature-card__sub--live">
+                    <p
+                        className={`feature-card__sub feature-card__sub--live${
+                            busy ? " feature-card__sub--busy" : ""
+                        }`}
+                    >
                         <span className="feature-card__live-dot" />
                         {statusLabel}
                     </p>

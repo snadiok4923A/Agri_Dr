@@ -231,6 +231,61 @@
     outline-offset: 2px;
 }
 
+/* Typed fallback inside the card — same pipeline as speech, no need to
+   leave Voice Mode when the microphone or speech service is unavailable. */
+.feature-card__voice-fallback {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.feature-card__voice-input {
+    flex: 1;
+    min-width: 0;
+    padding: 7px 10px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border, rgba(120, 120, 120, 0.35));
+    background: var(--bg-elevated, rgba(255, 255, 255, 0.06));
+    color: var(--text-primary);
+    font: inherit;
+    font-size: min(max(calc(12.5px * var(--ts-small, 1)), 8px), 18px);
+}
+
+.feature-card__voice-input::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.8;
+}
+
+.feature-card__voice-send {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    flex: 0 0 auto;
+    border-radius: 999px;
+    border: 1px solid var(--border, rgba(120, 120, 120, 0.35));
+    background: transparent;
+    color: var(--leaf);
+    cursor: pointer;
+}
+
+.feature-card__voice-send:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+
+.feature-card__voice-send:focus-visible {
+    outline: 2px solid var(--leaf);
+    outline-offset: 2px;
+}
+
+/* Recovering/processing: the dot must not read as "live microphone". */
+.feature-card__sub--busy .feature-card__live-dot {
+    animation-duration: 2.2s;
+    opacity: 0.6;
+}
+
 .feature-card__btn {
     display: inline-flex;
     align-items: center;
