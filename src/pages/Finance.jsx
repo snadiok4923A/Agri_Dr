@@ -23,6 +23,39 @@ const emptyEntry = () => ({
     date: today(),
 });
 
+/** Expense category label for the active language, falling back to the
+ *  service's English label only if a key is ever missing. */
+function categoryLabel(t, value) {
+    const key = `finance.categories.${value}`;
+    const label = t(key);
+    if (label && label !== key) return label;
+    return EXPENSE_CATEGORIES.find((category) => category.value === value)?.label || value;
+}
+
+/** Area unit ("acre", "bigha"…) through the shared units dictionary. */
+function unitLabel(t, unit) {
+    const key = `units.${unit || "acre"}`;
+    const label = t(key);
+    return label && label !== key ? label : unit || t("units.acre");
+}
+
+/** Stored ISO dates are rendered in the selected locale (input values stay
+ *  ISO — the date picker itself is browser-native). */
+function formatDate(locale, value) {
+    if (!value) return "";
+    const date = new Date(`${value}T00:00:00`);
+    if (Number.isNaN(date.getTime())) return value;
+    try {
+        return new Intl.DateTimeFormat(locale, {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+        }).format(date);
+    } catch {
+        return value;
+    }
+}
+
 function makeDraft(parcels, records) {
     return Object.fromEntries(
         parcels.map((parcel) => {
@@ -109,7 +142,7 @@ function calculate(parcels, records) {
         );
     });
     const categories = EXPENSE_CATEGORIES.map((category, index) => ({
-        name: category.label,
+        value: category.value,
         amount: categoryMap.get(category.value) || 0,
         color: COLORS[index % COLORS.length],
     })).filter((category) => category.amount > 0);
@@ -127,14 +160,14 @@ function calculate(parcels, records) {
     };
 }
 
-function Money({ value, formatNumber }) {
+function Money({ value, formatNumber, emptyLabel }) {
     return value === null || value === undefined
-        ? "Data not available"
+        ? emptyLabel
         : `₹${formatNumber(Math.round(value))}`;
 }
 
 function ExpenseForm({ userId, parcels, initial, onCancel, onSaved }) {
-    const { formatNumber } = useLanguage();
+    const { t, formatNumber } = useLanguage();
     const [draft, setDraft] = useState(initial);
     const [selectedId, setSelectedId] = useState(parcels[0]?.id || "");
     const [saving, setSaving] = useState(false);
@@ -167,11 +200,11 @@ function ExpenseForm({ userId, parcels, initial, onCancel, onSaved }) {
         );
         const validExpenses = expenses.filter((entry) => Number(entry.amount) > 0);
         if (!validExpenses.length) {
-            setError("Add at least one expense amount before saving.");
+            setError(t("finance.errors.emptyExpenses"));
             return;
         }
         if (validExpenses.some((entry) => !entry.date || !entry.category)) {
-            setError("Every expense needs a category and date.");
+            setError(t("finance.errors.categoryDate"));
             return;
         }
         const targets = Object.entries(draft)
@@ -184,7 +217,7 @@ function ExpenseForm({ userId, parcels, initial, onCancel, onSaved }) {
                     Number(target.pricePerQuintal) <= 0,
             )
         ) {
-            setError("Enter both expected production and selling price, or leave both blank.");
+            setError(t("finance.errors.targets"));
             return;
         }
         setSaving(true);
@@ -194,8 +227,8 @@ function ExpenseForm({ userId, parcels, initial, onCancel, onSaved }) {
                 targets,
             });
             onSaved(next);
-        } catch (saveError) {
-            setError(saveError.message || "Could not save your records.");
+        } catch {
+            setError(t("finance.errors.save"));
         } finally {
             setSaving(false);
         }
@@ -204,15 +237,12 @@ function ExpenseForm({ userId, parcels, initial, onCancel, onSaved }) {
     return (
         <form className="finance-form section" onSubmit={submit}>
             <button type="button" className="finance-page__text-btn" onClick={onCancel}>
-                <ArrowLeft size={16} /> Back
+                <ArrowLeft size={16} /> {t("common.back")}
             </button>
-            <h2 className="finance-page__form-title">Enter Your Farming Expenses</h2>
-            <p className="finance-page__form-intro">
-                Enter your actual rice cultivation expenses to calculate production
-                cost, expected selling revenue, and estimated net profit.
-            </p>
+            <h2 className="finance-page__form-title">{t("finance.form.title")}</h2>
+            <p className="finance-page__form-intro">{t("finance.form.intro")}</p>
             <label className="finance-form__label">
-                Select farm / parcel
+                {t("finance.form.selectParcel")}
                 <select
                     className="finance-form__input"
                     value={selectedId}
@@ -220,20 +250,23 @@ function ExpenseForm({ userId, parcels, initial, onCancel, onSaved }) {
                 >
                     {parcels.map((parcel, index) => (
                         <option key={parcel.id} value={parcel.id}>
-                            Parcel {formatNumber(index + 1)} · {parcel.area} {parcel.unit} ·{" "}
-                            {parcel.riceVariety || "Rice variety not set"}
+                            {t("finance.form.parcelOption", {
+                                index: formatNumber(index + 1),
+                                area: formatNumber(parcel.area),
+                                unit: unitLabel(t, parcel.unit),
+                                variety:
+                                    parcel.riceVariety || t("finance.form.varietyNotSet"),
+                            })}
                         </option>
                     ))}
                 </select>
             </label>
-            <div className="finance-form__parcel-note">
-                Area and rice variety are taken from My Farm and cannot be changed here.
-            </div>
+            <div className="finance-form__parcel-note">{t("finance.form.parcelNote")}</div>
             <div className="finance-form__entries">
                 <div className="finance-form__section-heading">
-                    <h3>Expense entries</h3>
+                    <h3>{t("finance.form.entries")}</h3>
                     <button type="button" className="finance-page__small-btn" onClick={addEntry}>
-                        <Plus size={15} /> Add expense
+                        <Plus size={15} /> {t("finance.form.addExpense")}
                     </button>
                 </div>
                 {selected.expenses.map((entry) => (
@@ -242,11 +275,11 @@ function ExpenseForm({ userId, parcels, initial, onCancel, onSaved }) {
                             className="finance-form__input"
                             value={entry.category}
                             onChange={(event) => updateEntry(entry.key, { category: event.target.value })}
-                            aria-label="Expense category"
+                            aria-label={t("finance.form.categoryAria")}
                         >
                             {EXPENSE_CATEGORIES.map((category) => (
                                 <option key={category.value} value={category.value}>
-                                    {category.label}
+                                    {categoryLabel(t, category.value)}
                                 </option>
                             ))}
                         </select>
@@ -255,63 +288,99 @@ function ExpenseForm({ userId, parcels, initial, onCancel, onSaved }) {
                             type="number"
                             min="0.01"
                             step="0.01"
-                            placeholder="Amount (₹)"
+                            placeholder={t("finance.form.amountPlaceholder")}
                             value={entry.amount}
                             onChange={(event) => updateEntry(entry.key, { amount: event.target.value })}
-                            aria-label="Expense amount in rupees"
+                            aria-label={t("finance.form.amountAria")}
                         />
                         <input
                             className="finance-form__input"
                             type="text"
-                            placeholder="Description (optional)"
+                            placeholder={t("finance.form.descriptionPlaceholder")}
                             value={entry.description}
                             onChange={(event) => updateEntry(entry.key, { description: event.target.value })}
-                            aria-label="Expense description"
+                            aria-label={t("finance.form.descriptionAria")}
                         />
                         <input
                             className="finance-form__input"
                             type="date"
                             value={entry.date || ""}
                             onChange={(event) => updateEntry(entry.key, { date: event.target.value })}
-                            aria-label="Expense date"
+                            aria-label={t("finance.form.dateAria")}
                         />
-                        <button type="button" className="finance-form__remove" onClick={() => removeEntry(entry.key)} aria-label="Remove expense">
+                        <button
+                            type="button"
+                            className="finance-form__remove"
+                            onClick={() => removeEntry(entry.key)}
+                            aria-label={t("finance.form.removeAria")}
+                        >
                             <Trash2 size={16} />
                         </button>
                     </div>
                 ))}
                 {!selected.expenses.length && (
-                    <p className="finance-form__empty">No expenses added for this parcel yet.</p>
+                    <p className="finance-form__empty">{t("finance.form.noExpenses")}</p>
                 )}
             </div>
             <div className="finance-form__selling">
-                <h3>Expected selling information</h3>
-                <p>These details are optional now, but are needed to calculate revenue and profit.</p>
+                <h3>{t("finance.form.sellingTitle")}</h3>
+                <p>{t("finance.form.sellingNote")}</p>
                 <div className="finance-form__selling-grid">
                     <label className="finance-form__label">
-                        Expected production (kg)
-                        <input className="finance-form__input" type="number" min="0.01" step="0.01" value={selected.target.productionKg || ""} onChange={(event) => updateSelected({ target: { ...selected.target, productionKg: event.target.value } })} />
+                        {t("finance.form.expectedProduction")}
+                        <input
+                            className="finance-form__input"
+                            type="number"
+                            min="0.01"
+                            step="0.01"
+                            value={selected.target.productionKg || ""}
+                            onChange={(event) =>
+                                updateSelected({
+                                    target: { ...selected.target, productionKg: event.target.value },
+                                })
+                            }
+                        />
                     </label>
                     <label className="finance-form__label">
-                        Selling price per quintal (₹)
-                        <input className="finance-form__input" type="number" min="0.01" step="0.01" value={selected.target.pricePerQuintal || ""} onChange={(event) => updateSelected({ target: { ...selected.target, pricePerQuintal: event.target.value } })} />
+                        {t("finance.form.sellingPrice")}
+                        <input
+                            className="finance-form__input"
+                            type="number"
+                            min="0.01"
+                            step="0.01"
+                            value={selected.target.pricePerQuintal || ""}
+                            onChange={(event) =>
+                                updateSelected({
+                                    target: { ...selected.target, pricePerQuintal: event.target.value },
+                                })
+                            }
+                        />
                     </label>
                     <label className="finance-form__label">
-                        Expected selling date (optional)
-                        <input className="finance-form__input" type="date" value={selected.target.sellingDate || ""} onChange={(event) => updateSelected({ target: { ...selected.target, sellingDate: event.target.value } })} />
+                        {t("finance.form.sellingDate")}
+                        <input
+                            className="finance-form__input"
+                            type="date"
+                            value={selected.target.sellingDate || ""}
+                            onChange={(event) =>
+                                updateSelected({
+                                    target: { ...selected.target, sellingDate: event.target.value },
+                                })
+                            }
+                        />
                     </label>
                 </div>
             </div>
             {error && <p className="finance-form__error" role="alert">{error}</p>}
             <button className="finance-page__primary-btn" type="submit" disabled={saving}>
-                <Save size={16} /> {saving ? "Saving…" : "Save expense records"}
+                <Save size={16} /> {saving ? t("finance.form.saving") : t("finance.form.save")}
             </button>
         </form>
     );
 }
 
 export default function Finance() {
-    const { t, formatNumber } = useLanguage();
+    const { t, formatNumber, locale } = useLanguage();
     const { user } = useAuth();
     const { isFarmComplete, farm, refreshFarm } = useOnboarding();
     const [records, setRecords] = useState({ expenses: [], targets: [] });
@@ -325,12 +394,12 @@ export default function Finance() {
         if (!user?.id) return undefined;
         fetchFinancialRecords(user.id)
             .then((next) => active && setRecords(next))
-            .catch((fetchError) => active && setError(fetchError.message))
+            .catch(() => active && setError(t("finance.errors.load")))
             .finally(() => active && setLoading(false));
         return () => {
             active = false;
         };
-    }, [user?.id, refreshFarm]);
+    }, [user?.id, refreshFarm, t]);
 
     const parcels = farm?.parcels || [];
     const calculation = useMemo(() => calculate(parcels, records), [parcels, records]);
@@ -344,7 +413,13 @@ export default function Finance() {
             </div>
         );
     }
-    if (loading) return <div className="page-container finance-page"><p>Loading your financial records…</p></div>;
+    if (loading) {
+        return (
+            <div className="page-container finance-page">
+                <p>{t("finance.summary.loading")}</p>
+            </div>
+        );
+    }
     if (editing || !hasRecords) {
         return (
             <div className="page-container finance-page">
@@ -372,27 +447,186 @@ export default function Finance() {
             <section className="finance-page__header section">
                 <div>
                     <h1 className="finance-page__title">{t("nav.finance")}</h1>
-                    <p className="dashboard__section-subtitle">Actual expenses and expected selling details from your farm.</p>
+                    <p className="dashboard__section-subtitle">{t("finance.summary.subtitle")}</p>
                 </div>
                 <div className="finance-page__actions">
-                    <button type="button" className="finance-page__small-btn" onClick={() => setEditing(true)}><Pencil size={15} /> Edit records</button>
-                    <button type="button" className="finance-page__primary-btn" onClick={() => setEditing(true)}><Plus size={15} /> Add expense</button>
+                    <button type="button" className="finance-page__small-btn" onClick={() => setEditing(true)}>
+                        <Pencil size={15} /> {t("finance.summary.editRecords")}
+                    </button>
+                    <button type="button" className="finance-page__primary-btn" onClick={() => setEditing(true)}>
+                        <Plus size={15} /> {t("finance.form.addExpense")}
+                    </button>
                 </div>
             </section>
             {error && <p className="finance-form__error" role="alert">{error}</p>}
             <section className="finance-page__summary section">
-                <div className="finance-page__summary-card finance-page__summary-card--expense"><span className="finance-page__summary-label">Total Production Cost</span><span className="finance-page__summary-value"><Money value={calculation.totals.cost} formatNumber={formatNumber} /></span><span className="finance-page__summary-sub">{calculation.totals.costPerArea === null ? "Area not available" : `₹${formatNumber(Math.round(calculation.totals.costPerArea))} per ${calculation.totals.costPerAreaLabel}`}</span></div>
-                <div className="finance-page__summary-card finance-page__summary-card--revenue"><span className="finance-page__summary-label">Expected Selling Revenue</span><span className="finance-page__summary-value"><Money value={calculation.totals.revenue} formatNumber={formatNumber} /></span><span className="finance-page__summary-sub">{calculation.totals.revenue === null ? "Complete your selling details" : "Based on recorded production and price"}</span></div>
-                <div className="finance-page__summary-card finance-page__summary-card--profit"><span className="finance-page__summary-label">Expected Net Profit</span><span className="finance-page__summary-value"><Money value={calculation.totals.profit} formatNumber={formatNumber} /></span><span className="finance-page__summary-sub">{calculation.totals.margin === null ? "Data not available" : `${formatNumber(calculation.totals.margin)}% profit margin`}</span></div>
+                <div className="finance-page__summary-card finance-page__summary-card--expense">
+                    <span className="finance-page__summary-label">{t("finance.totalExpenses")}</span>
+                    <span className="finance-page__summary-value">
+                        <Money
+                            value={calculation.totals.cost}
+                            formatNumber={formatNumber}
+                            emptyLabel={t("finance.summary.dataUnavailable")}
+                        />
+                    </span>
+                    <span className="finance-page__summary-sub">
+                        {calculation.totals.costPerArea === null
+                            ? t("finance.summary.areaUnavailable")
+                            : t("finance.summary.perUnit", {
+                                  amount: formatNumber(Math.round(calculation.totals.costPerArea)),
+                                  unit: unitLabel(t, calculation.totals.costPerAreaLabel),
+                              })}
+                    </span>
+                </div>
+                <div className="finance-page__summary-card finance-page__summary-card--revenue">
+                    <span className="finance-page__summary-label">{t("finance.expectedRevenue")}</span>
+                    <span className="finance-page__summary-value">
+                        <Money
+                            value={calculation.totals.revenue}
+                            formatNumber={formatNumber}
+                            emptyLabel={t("finance.summary.dataUnavailable")}
+                        />
+                    </span>
+                    <span className="finance-page__summary-sub">
+                        {calculation.totals.revenue === null
+                            ? t("finance.summary.completeSelling")
+                            : t("finance.summary.revenueBasis")}
+                    </span>
+                </div>
+                <div className="finance-page__summary-card finance-page__summary-card--profit">
+                    <span className="finance-page__summary-label">{t("finance.estimatedProfit")}</span>
+                    <span className="finance-page__summary-value">
+                        <Money
+                            value={calculation.totals.profit}
+                            formatNumber={formatNumber}
+                            emptyLabel={t("finance.summary.dataUnavailable")}
+                        />
+                    </span>
+                    <span className="finance-page__summary-sub">
+                        {calculation.totals.margin === null
+                            ? t("finance.summary.dataUnavailable")
+                            : t("finance.summary.marginPercent", {
+                                  value: formatNumber(calculation.totals.margin),
+                              })}
+                    </span>
+                </div>
             </section>
-            {calculation.totals.revenue === null && <div className="finance-page__incomplete section">Selling details are incomplete. Add expected production and selling price to see revenue, profit, and margin.</div>}
+            {calculation.totals.revenue === null && (
+                <div className="finance-page__incomplete section">{t("finance.summary.incomplete")}</div>
+            )}
             <section className="finance-page__variety-table-section section">
-                <h2 className="finance-page__section-title">Variety-wise Production &amp; Profit Breakdown</h2>
-                <div className="finance-page__table-wrapper"><table className="finance-page__table"><thead><tr><th>Parcel / variety</th><th>Area</th><th>Production</th><th>Cost</th><th>Revenue</th><th>Profit</th></tr></thead><tbody>{calculation.rows.map((row) => <tr key={row.parcel.id}><td><strong>{row.parcel.riceVariety || "Rice variety not set"}</strong></td><td>{row.parcel.area} {row.parcel.unit}</td><td>{row.productionKg === null ? "Data not available" : `${formatNumber(row.productionKg)} kg`}</td><td>₹{formatNumber(Math.round(row.cost))}</td><td><Money value={row.revenue} formatNumber={formatNumber} /></td><td className={row.profit !== null && row.profit >= 0 ? "finance-page__profit" : ""}><Money value={row.profit} formatNumber={formatNumber} /></td></tr>)}</tbody></table></div>
+                <h2 className="finance-page__section-title">{t("finance.summary.tableTitle")}</h2>
+                <div className="finance-page__table-wrapper">
+                    <table className="finance-page__table">
+                        <thead>
+                            <tr>
+                                <th>{t("finance.summary.colParcel")}</th>
+                                <th>{t("finance.summary.colArea")}</th>
+                                <th>{t("finance.summary.colProduction")}</th>
+                                <th>{t("finance.summary.colCost")}</th>
+                                <th>{t("finance.summary.colRevenue")}</th>
+                                <th>{t("finance.summary.colProfit")}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {calculation.rows.map((row) => (
+                                <tr key={row.parcel.id}>
+                                    <td>
+                                        <strong>
+                                            {row.parcel.riceVariety || t("finance.form.varietyNotSet")}
+                                        </strong>
+                                    </td>
+                                    <td>
+                                        {formatNumber(row.parcel.area)} {unitLabel(t, row.parcel.unit)}
+                                    </td>
+                                    <td>
+                                        {row.productionKg === null
+                                            ? t("finance.summary.dataUnavailable")
+                                            : `${formatNumber(row.productionKg)} ${t("units.kg")}`}
+                                    </td>
+                                    <td>₹{formatNumber(Math.round(row.cost))}</td>
+                                    <td>
+                                        <Money
+                                            value={row.revenue}
+                                            formatNumber={formatNumber}
+                                            emptyLabel={t("finance.summary.dataUnavailable")}
+                                        />
+                                    </td>
+                                    <td className={row.profit !== null && row.profit >= 0 ? "finance-page__profit" : ""}>
+                                        <Money
+                                            value={row.profit}
+                                            formatNumber={formatNumber}
+                                            emptyLabel={t("finance.summary.dataUnavailable")}
+                                        />
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </section>
             <div className="finance-page__grid">
-                <section className="finance-page__breakdown section"><h2 className="finance-page__section-title">Expense Breakdown</h2><div className="finance-page__chart-row">{calculation.categories.length ? <><ResponsiveContainer width={180} height={180}><PieChart><Pie data={calculation.categories} dataKey="amount" innerRadius={50} outerRadius={80} strokeWidth={0}>{calculation.categories.map((entry) => <Cell key={entry.name} fill={entry.color} />)}</Pie><Tooltip formatter={(value) => [`₹${formatNumber(value)}`, "Expense"]} /></PieChart></ResponsiveContainer><div className="finance-page__legend">{calculation.categories.map((item) => <div className="finance-page__legend-item" key={item.name}><span className="finance-page__legend-dot" style={{ background: item.color }} /><span className="finance-page__legend-label">{item.name}</span><strong>₹{formatNumber(Math.round(item.amount))}</strong></div>)}</div></> : <p>Data not available</p>}</div></section>
-                <section className="finance-page__breakdown section"><h2 className="finance-page__section-title">Recorded Expenses</h2><div className="finance-page__record-list">{records.expenses.slice(0, 12).map((entry) => <div className="finance-page__record" key={entry.id}><span>{EXPENSE_CATEGORIES.find((category) => category.value === entry.category)?.label}</span><strong>₹{formatNumber(entry.amount)}</strong><small>{entry.date}{entry.description ? ` · ${entry.description}` : ""}</small></div>)}</div></section>
+                <section className="finance-page__breakdown section">
+                    <h2 className="finance-page__section-title">{t("finance.summary.breakdownTitle")}</h2>
+                    <div className="finance-page__chart-row">
+                        {calculation.categories.length ? (
+                            <>
+                                <ResponsiveContainer width={180} height={180}>
+                                    <PieChart>
+                                        <Pie
+                                            data={calculation.categories}
+                                            dataKey="amount"
+                                            innerRadius={50}
+                                            outerRadius={80}
+                                            strokeWidth={0}
+                                        >
+                                            {calculation.categories.map((entry) => (
+                                                <Cell key={entry.value} fill={entry.color} />
+                                            ))}
+                                        </Pie>
+                                        <Tooltip
+                                            formatter={(value) => [
+                                                `₹${formatNumber(value)}`,
+                                                t("finance.summary.expenseTooltip"),
+                                            ]}
+                                        />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                                <div className="finance-page__legend">
+                                    {calculation.categories.map((item) => (
+                                        <div className="finance-page__legend-item" key={item.value}>
+                                            <span
+                                                className="finance-page__legend-dot"
+                                                style={{ background: item.color }}
+                                            />
+                                            <span className="finance-page__legend-label">
+                                                {categoryLabel(t, item.value)}
+                                            </span>
+                                            <strong>₹{formatNumber(Math.round(item.amount))}</strong>
+                                        </div>
+                                    ))}
+                                </div>
+                            </>
+                        ) : (
+                            <p>{t("finance.summary.dataUnavailable")}</p>
+                        )}
+                    </div>
+                </section>
+                <section className="finance-page__breakdown section">
+                    <h2 className="finance-page__section-title">{t("finance.summary.recordedTitle")}</h2>
+                    <div className="finance-page__record-list">
+                        {records.expenses.slice(0, 12).map((entry) => (
+                            <div className="finance-page__record" key={entry.id}>
+                                <span>{categoryLabel(t, entry.category)}</span>
+                                <strong>₹{formatNumber(entry.amount)}</strong>
+                                <small>
+                                    {formatDate(locale, entry.date)}
+                                    {entry.description ? ` · ${entry.description}` : ""}
+                                </small>
+                            </div>
+                        ))}
+                    </div>
+                </section>
             </div>
         </div>
     );
